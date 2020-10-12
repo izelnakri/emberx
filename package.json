@@ -121,5 +121,10 @@
   "engines": {
     "node": ">= 12.0"
   },
-  "private": true
+  "private": true,
+  "dependencies": {
+    "@glimmerx/service": "^0.2.5",
+    "location-bar": "^3.0.1",
+    "router_js": "^7.1.0"
+  }
 }

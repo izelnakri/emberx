@@ -1,4 +1,14 @@
-# izel-glimmerx
+# glimmerx-router
+
+[Working example](http://emberx-router.surge.sh/)
+
+Experimental router for glimmerx, will ship as emberx/router & emberx/route & emberx/link-to
+
+src/index.js is the API developers will interact with and src/routes/index.ts built as an example.
+
+```
+npm install && parcel index.html
+```
 
 This README outlines the details of collaborating on this GlimmerX application.
 A short introduction of this app could easily go here.

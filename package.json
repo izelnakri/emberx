@@ -52,6 +52,28 @@
     "webpack-cli": "^3.3.11",
     "webpack-dev-server": "^3.10.3"
   },
+  "babel": {
+    "plugins": [
+      [
+        "@glimmer/babel-plugin-glimmer-env",
+        {
+          "DEBUG": true
+        }
+      ],
+      "@glimmerx/babel-plugin-component-templates",
+      [
+        "@babel/plugin-proposal-decorators",
+        {
+          "legacy": true
+        }
+      ],
+      "@babel/plugin-proposal-class-properties"
+    ],
+    "presets": [
+      "@babel/preset-env",
+      "@babel/preset-typescript"
+    ]
+  },
   "eslintConfig": {
     "parser": "@typescript-eslint/parser",
     "parserOptions": {

@@ -1,3 +1,4 @@
+// NOTE: this is messy, will get cleaned up along with tests
 import Router, { Route } from 'router_js';
 import LocationBar from 'location-bar';
 import DefaultRoute from './route';

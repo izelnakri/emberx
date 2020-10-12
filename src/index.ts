@@ -49,5 +49,3 @@ window.Router.start(
   ],
   oldRouterMap
 );
-
-// export default window.Router;

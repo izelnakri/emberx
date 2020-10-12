@@ -7,13 +7,13 @@ import t from '../helpers/t';
 import LinkTo from '../components/LinkTo'; // import LinkTo from 'emberx/link-to';
 import Counter from '../components/Counter';
 
-export default class SomeRoute extends Route {
+export default class IndexRoute extends Route {
   @service intl;
 
   @tracked dynamicObject;
 
-  constructor() {
-    super(...arguments, null);
+  constructor(owner, args) {
+    super(owner, args);
 
     window.setInterval(() => {
       this.dynamicObject = {
@@ -22,8 +22,8 @@ export default class SomeRoute extends Route {
     }, 200);
   }
 
-  static model() {
-    console.log('indexa route model called');
+  static model(): object {
+    console.log('index route model called');
     // this.flashMessages.danger('Invalid verification link');
     // return this.transitionTo('application');
 
@@ -53,7 +53,7 @@ export default class SomeRoute extends Route {
     <Counter/>
   `;
 
-  @action changeLocale() {
+  @action changeLocale(): void {
     this.intl.currentLocale = this.intl.currentLocale === 'en' ? 'es' : 'en';
   }
 }

@@ -31,7 +31,9 @@ export default class EmberXRouter extends Router<Route> {
   static ROUTE_REGISTRY = {};
   static SERVICES = {};
 
-  static convertToRouterJSRouteArray(routerRegistry: FreeObject | void): Array<object> {
+  static convertToRouterJSRouteArray(
+    routerRegistry: FreeObject | void
+  ): Array<object> {
     const targetRegistry = routerRegistry || EmberXRouter.ROUTE_REGISTRY;
 
     return Object.keys(targetRegistry)
@@ -89,7 +91,12 @@ export default class EmberXRouter extends Router<Route> {
   willTransition() {}
   updateURL(url: string): void {}
   replaceURL(_url: string): void {}
-  triggerEvent(handlerInfos: any, ignoreFailure: boolean, name: string, args: any[]) {}
+  triggerEvent(
+    handlerInfos: any,
+    ignoreFailure: boolean,
+    name: string,
+    args: any[]
+  ) {}
   routeDidChange() {}
   routeWillChange() {}
   getSerializer(_name: string): any {
@@ -173,7 +180,6 @@ export default class EmberXRouter extends Router<Route> {
   }
   updateURL(url) {
     this.locationBar.update(url);
-    // window.location.pathname = url;
   }
 
   definitionsToRegistry(arrayOfRouteDefinitions = []) {

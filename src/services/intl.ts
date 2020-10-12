@@ -2,6 +2,7 @@ import { tracked } from '@glimmerx/component';
 
 export default class Locale {
   @tracked currentLocale = 'en';
+
   locales = {
     en: {
       'button.save': 'Save model',

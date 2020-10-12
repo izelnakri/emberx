@@ -1,8 +1,8 @@
 import Router from './router';
 import { renderComponent } from '@glimmerx/core';
 import Component, { hbs } from '@glimmerx/component';
-import { service } from '@glimmerx/service';
 import { action } from '@glimmerx/modifier';
+import { service } from '@glimmerx/service';
 
 export default class Route extends Component<{ model: object }> {
   @service router;
@@ -36,7 +36,7 @@ export default class Route extends Component<{ model: object }> {
     </div>
   `;
 
-  @action transitionTo(routeName, queryParams) {
-    this.router.transitionTo(...arguments);
+  @action transitionTo(routeName, params, options) {
+    this.router.transitionTo(routeName, params, options);
   }
 }

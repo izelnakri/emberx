@@ -30,7 +30,7 @@ export default class EmberXRouter extends Router<Route> {
   static LOG_ROUTES = true;
   static LOG_MODELS = true;
   static ROUTE_REGISTRY = {};
-  static SERVICES = {};
+  static SERVICES: FreeObject = {};
 
   static convertToRouterJSRouteArray(routerRegistry: FreeObject | void): Array<object> {
     const targetRegistry = routerRegistry || EmberXRouter.ROUTE_REGISTRY;
@@ -68,6 +68,8 @@ export default class EmberXRouter extends Router<Route> {
     return '';
   }
 
+  locationBar: FreeObject = {};
+
   runRegistryMap(runRegistryMap, match, routerJSRouteArray) {
     return Object.keys(routerJSRouteArray).map((registryRoute) => {
       const route = routerJSRouteArray[registryRoute];
@@ -88,7 +90,6 @@ export default class EmberXRouter extends Router<Route> {
   // NOTE: maybe these below are redundant if I separate static/lazy stuff from router_js.Route methods below
   didTransition(something) {}
   willTransition() {}
-  updateURL(url: string): void {}
   replaceURL(_url: string): void {}
   triggerEvent(handlerInfos: any, ignoreFailure: boolean, name: string, args: any[]) {}
   routeDidChange() {}
@@ -106,13 +107,13 @@ export default class EmberXRouter extends Router<Route> {
     }
   }
   getRoute(name: string): any {
-    if (this.constructor.LOG_ROUTES) {
+    if (EmberXRouter.LOG_ROUTES) {
       console.log(name);
     }
 
     debugger;
 
-    return this.constructor.ROUTE_REGISTRY[name].route || DefaultRoute;
+    return EmberXRouter.ROUTE_REGISTRY[name].route || DefaultRoute;
   }
 
   route(routeName: string, options, subRoute) {
@@ -160,7 +161,7 @@ export default class EmberXRouter extends Router<Route> {
   constructor() {
     super(...arguments);
 
-    this.constructor.SERVICES.router = this;
+    EmberXRouter.SERVICES.router = this;
     this.locationBar = new LocationBar();
     this.locationBar.start({ pushState: true });
 
@@ -174,7 +175,7 @@ export default class EmberXRouter extends Router<Route> {
       return EmberXRouter.ROUTE_REGISTRY;
     };
   }
-  updateURL(url) {
+  updateURL(url: string): void {
     this.locationBar.update(url);
   }
 

@@ -4,10 +4,10 @@ import { service } from '@glimmerx/service';
 
 import LinkTo from '../../../components/LinkTo'; // import LinkTo from 'emberx/link-to';
 
-export default class SomeRoute extends Route {
+export default class AdminPostsPostRoute extends Route {
   @service intl;
 
-  static model(params) {
+  static model(params: { slug: string }): { slug: string } {
     return {
       slug: params.slug,
     };

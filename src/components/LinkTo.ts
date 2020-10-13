@@ -2,7 +2,11 @@ import Component, { hbs } from '@glimmerx/component';
 import { service } from '@glimmerx/service';
 import { on, action } from '@glimmerx/modifier';
 
-export default class extends Component {
+interface FreeObject {
+  [propName: string]: any;
+}
+
+export default class extends Component<{ model: FreeObject; route: string }> {
   @service router;
 
   // TODO:

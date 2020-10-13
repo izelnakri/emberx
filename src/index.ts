@@ -3,6 +3,12 @@ import AdminPostsPostRoute from './routes/admin/posts/post';
 import LocaleService from './services/intl';
 import Router from './router'; // import Router from 'emberx/router';
 
+declare global {
+  interface Window {
+    Router: any;
+  }
+}
+
 Router.SERVICES = {
   intl: new LocaleService(),
 };

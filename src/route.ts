@@ -11,7 +11,7 @@ export default class Route extends Component<{ model: object }> {
     return this.args.model;
   }
 
-  static model() {}
+  // static model() {}
 
   static setup(model, transition) {
     if (Router.LOG_MODELS) {

@@ -1,18 +1,28 @@
 {
   "compilerOptions": {
-    "target": "es6",
-    "module": "es2015",
+    "incremental": false,                   /* Enable incremental compilation */
+    "target": "ES2019",                          /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', 'ES2018', 'ES2019' or 'ESNEXT'. */
+    "module": "commonjs",                     /* Specify module code generation: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', or 'ESNext'. */
+    "declaration": true,                   /* Generates corresponding '.d.ts' file. */
+    "rootDir": "./src",
+    "outDir": "./dist",                        /* Redirect output structure to the directory. */
     "inlineSourceMap": true,
     "inlineSources": true,
     "moduleResolution": "node",
+    "baseUrl": "./",                       /* Base directory to resolve non-absolute module names. */
     "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,         /* Enables experimental support for emitting type metadata for decorators. */
     "types": [
-      "qunit"
+      "qunit",
+      "node"
     ]
   },
   "exclude": [
     "node_modules",
     "tmp",
-    "dist"
+    "tests",
+    "dist",
+    "scripts",
+    "src/components"
   ]
 }

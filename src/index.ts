@@ -6,14 +6,13 @@ import Router from './router'; // import Router from 'emberx/router';
 declare global {
   interface Window {
     Router: any;
+    router: any;
   }
 }
 
 Router.SERVICES = {
   intl: new LocaleService(),
 };
-
-window.Router = new Router();
 
 const oldRouterMap = function () {
   // this.route('public', { path: '/' }, function () {
@@ -40,13 +39,23 @@ const oldRouterMap = function () {
   this.route('logout');
 };
 
-window.Router.start(
+const router = Router.start(
   [
     {
       path: '/',
       route: IndexRoute,
       routeName: 'index',
     },
+    // {
+    //   path: '/',
+    //   route: IndexRoute,
+    //   routeName: 'public.index',
+    // },
+    // {
+    // path: '/:slug',
+    // route: IndexRoute,
+    // routeName: 'public.blog-post',
+    // },
     {
       path: '/admin/posts/:slug',
       route: AdminPostsPostRoute,
@@ -55,3 +64,6 @@ window.Router.start(
   ],
   oldRouterMap
 );
+
+console.log('index.ts finished');
+export default router;

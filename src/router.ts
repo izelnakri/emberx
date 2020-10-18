@@ -1,4 +1,3 @@
-// NOTE: this is messy, will get cleaned up along with tests
 import Router, { Route } from 'router_js';
 import LocationBar from 'location-bar';
 import DefaultRoute from './route';
@@ -7,16 +6,75 @@ interface FreeObject {
   [propName: string]: any;
 }
 
-interface RouteDefinition {}
-
-interface RouteTemplate {}
-
-interface createRouteDefinition {
+interface RouteDefinition {
   path: string;
-  route: RouteDefinition;
-  indexRoute: RouteDefinition;
-  template: RouteTemplate;
-  indexTemplate: RouteTemplate;
+  route: DefaultRoute;
+  routeName: string;
+  indexRoute: DefaultRoute;
+}
+
+interface RouteRegistry {
+  [propName: string]: RouteDefinition;
+}
+
+interface routerJSRouteDefinition {
+  path: string;
+  route: DefaultRoute;
+  routeName: string;
+  nestedRoutes: [routerJSRouteDefinition];
+}
+
+class RouterJSRouter extends Router<Route> {
+  locationBar: any;
+
+  constructor() {
+    super();
+
+    this.locationBar = new LocationBar();
+    this.locationBar.start({ pushState: true });
+  }
+
+  triggerEvent() {
+    return;
+  }
+  willTransition() {
+    return;
+  }
+  didTransition() {
+    return;
+  }
+  transitionDidError(error: any, transition: any) {
+    if (error.wasAborted || transition.isAborted) {
+      // return logAbort(transition);
+    } else {
+      transition.trigger(false, 'error', error.error, this, error.route);
+      transition.abort();
+      return error.error;
+    }
+  }
+  replaceURL(): void {
+    return;
+  }
+  routeWillChange() {
+    return;
+  }
+  routeDidChange() {
+    return;
+  }
+  getSerializer(): any {
+    return;
+  }
+  getRoute(name: string): any {
+    if (EmberXRouter.LOG_ROUTES) {
+      console.log(name);
+    }
+
+    return EmberXRouter._ROUTE_REGISTRY[name].route || DefaultRoute;
+  }
+
+  updateURL(url: string): void {
+    this.locationBar.update(url);
+  }
 }
 
 // NOTE: check Route.toReadOnlyRouteInfo
@@ -26,16 +84,18 @@ interface createRouteDefinition {
 
 // NOTE: all about receiving route definitions and generating the registry
 // TODO: { path: '/' } resets the path, by default route($segment) is { path: /$segment }, also people can use '/:dynamic' or ':dynamic';
-export default class EmberXRouter extends Router<Route> {
+export default class EmberXRouter {
   static LOG_ROUTES = true;
   static LOG_MODELS = true;
-  static ROUTE_REGISTRY = {};
   static SERVICES: FreeObject = {};
+  static _ROUTE_REGISTRY = {};
+  static _parentRoute: string | null = null;
+  static routerjs: RouterJSRouter = null;
 
-  static convertToRouterJSRouteArray(routerRegistry: FreeObject | void): Array<object> {
-    const targetRegistry = routerRegistry || EmberXRouter.ROUTE_REGISTRY;
-
-    return Object.keys(targetRegistry)
+  static convertToRouterJSRouteArray(
+    routerRegistry: RouteRegistry
+  ): Array<routerJSRouteDefinition> {
+    return Object.keys(routerRegistry)
       .sort()
       .reduce((result, routeName) => {
         const routeSegments = routeName.split('.');
@@ -44,7 +104,7 @@ export default class EmberXRouter extends Router<Route> {
 
         if (routeSegments.length === 0) {
           return result.concat([
-            Object.assign({}, targetRegistry[routeName], { nestedRoutes: [] }),
+            Object.assign({}, routerRegistry[routeName], { nestedRoutes: [] }),
           ]);
         }
 
@@ -52,25 +112,23 @@ export default class EmberXRouter extends Router<Route> {
 
         if (!foundParentRoute) {
           return result.concat([
-            Object.assign({}, targetRegistry[routeName], { nestedRoutes: [] }),
+            Object.assign({}, routerRegistry[routeName], { nestedRoutes: [] }),
           ]);
         }
 
         foundParentRoute.nestedRoutes.push(
-          Object.assign({}, targetRegistry[routeName], { nestedRoutes: [] })
+          Object.assign({}, routerRegistry[routeName], { nestedRoutes: [] })
         );
 
         return result;
       }, []);
   }
 
-  static registryToRouterJSString() {
-    return '';
-  }
-
-  locationBar: FreeObject = {};
-
-  runRegistryMap(runRegistryMap, match, routerJSRouteArray) {
+  static runRegistryMap(
+    runRegistryMap: (any, match, routerJSRouteArray: FreeObject) => {},
+    match: (param: any) => any,
+    routerJSRouteArray: FreeObject
+  ): Array<routerJSRouteDefinition> {
     return Object.keys(routerJSRouteArray).map((registryRoute) => {
       const route = routerJSRouteArray[registryRoute];
 
@@ -84,102 +142,55 @@ export default class EmberXRouter extends Router<Route> {
     });
   }
 
-  parentRoute: string | null;
-  // _map(callback) {}
-
-  // NOTE: maybe these below are redundant if I separate static/lazy stuff from router_js.Route methods below
-  didTransition(something) {}
-  willTransition() {}
-  replaceURL(_url: string): void {}
-  triggerEvent(handlerInfos: any, ignoreFailure: boolean, name: string, args: any[]) {}
-  routeDidChange() {}
-  routeWillChange() {}
-  getSerializer(_name: string): any {
-    return () => {};
-  }
-  transitionDidError(error: any, transition: any) {
-    if (error.wasAborted || transition.isAborted) {
-      // return logAbort(transition);
-    } else {
-      transition.trigger(false, 'error', error.error, this, error.route);
-      transition.abort();
-      return error.error;
-    }
-  }
-  getRoute(name: string): any {
-    if (EmberXRouter.LOG_ROUTES) {
-      console.log(name);
-    }
-
-    debugger;
-
-    return EmberXRouter.ROUTE_REGISTRY[name].route || DefaultRoute;
-  }
-
-  route(routeName: string, options, subRoute) {
-    this.parentRoute = this.parentRoute ? `${this.parentRoute}.${routeName}` : routeName;
+  static route(routeName: string, options: FreeObject, subRoute?: () => {}): any {
+    this._parentRoute = this._parentRoute ? `${this._parentRoute}.${routeName}` : routeName;
 
     const targetOptions =
       typeof options === 'object' && options !== null
         ? Object.assign(options, {
-            path: options.path || getLastPath(this.parentRoute),
+            path: options.path || getLastPath(this._parentRoute),
           })
-        : { path: getLastPath(this.parentRoute) };
+        : { path: getLastPath(this._parentRoute) };
     const targetSubRoute = subRoute || returnOptionsAsSubRouteIfFunction(options);
 
     if (targetSubRoute) {
       targetSubRoute.apply(this);
 
-      const existingIndexRoute = EmberXRouter.ROUTE_REGISTRY[`${this.parentRoute}.index`];
+      const existingIndexRoute = this._ROUTE_REGISTRY[`${this._parentRoute}.index`];
 
-      EmberXRouter.ROUTE_REGISTRY[`${this.parentRoute}.index`] = existingIndexRoute || {
-        routeName: `${this.parentRoute}.index`,
+      this._ROUTE_REGISTRY[`${this._parentRoute}.index`] = existingIndexRoute || {
+        routeName: `${this._parentRoute}.index`,
         options: { path: '/' },
         route: undefined,
-        template: undefined,
       };
     }
 
-    EmberXRouter.ROUTE_REGISTRY[this.parentRoute] = {
-      routeName: this.parentRoute,
+    this._ROUTE_REGISTRY[this._parentRoute] = {
+      routeName: this._parentRoute,
       options: targetOptions,
       route: undefined,
-      template: undefined,
     };
 
-    const segments = this.parentRoute.split('.');
+    const segments = this._parentRoute.split('.');
 
     segments.length = segments.length - 1;
 
-    this.parentRoute = segments.join('.');
+    this._parentRoute = segments.join('.');
 
-    return EmberXRouter.ROUTE_REGISTRY;
+    return this._ROUTE_REGISTRY;
   }
 
-  mapToRegistry(callback) {}
+  static map(routerDefinition: () => {}): RouteRegistry {
+    this._ROUTE_REGISTRY = {};
 
-  constructor() {
-    super(...arguments);
+    routerDefinition.apply(this);
 
-    EmberXRouter.SERVICES.router = this;
-    this.locationBar = new LocationBar();
-    this.locationBar.start({ pushState: true });
-
-    // this._map = this.map;
-
-    this.mapToRegistry = (routerDefinition) => {
-      routerDefinition.apply(this);
-
-      console.log(this);
-
-      return EmberXRouter.ROUTE_REGISTRY;
-    };
-  }
-  updateURL(url: string): void {
-    this.locationBar.update(url);
+    return this._ROUTE_REGISTRY;
   }
 
-  definitionsToRegistry(arrayOfRouteDefinitions = []) {
+  static definitionsToRegistry(
+    arrayOfRouteDefinitions: Array<RouteDefinition> = []
+  ): RouteRegistry {
     arrayOfRouteDefinitions.forEach((routeElement) => {
       const routeName =
         routeElement.routeName ||
@@ -193,19 +204,17 @@ export default class EmberXRouter extends Router<Route> {
           ? `${currentSegment}.${routeSegment}`
           : routeSegment;
 
-        checkInRouteRegistryOrCreateRoute(EmberXRouter.ROUTE_REGISTRY, {
+        checkInRouteRegistryOrCreateRoute(this._ROUTE_REGISTRY, {
           routeName: targetSegmentName,
           options: { path: `/${routePathSegments[index]}` },
           route: index === routeNameSegments.length - 1 ? routeElement.route : undefined,
-          template: index === routeNameSegments.length - 1 ? routeElement.template : undefined,
         });
 
-        if (currentSegment && !EmberXRouter.ROUTE_REGISTRY[`${currentSegment}.index`]) {
-          EmberXRouter.ROUTE_REGISTRY[`${currentSegment}.index`] = {
+        if (currentSegment && !this._ROUTE_REGISTRY[`${currentSegment}.index`]) {
+          this._ROUTE_REGISTRY[`${currentSegment}.index`] = {
             routeName: `${currentSegment}.index`,
             options: { path: '/' },
             route: undefined,
-            template: undefined,
           };
         }
 
@@ -213,47 +222,53 @@ export default class EmberXRouter extends Router<Route> {
       }, undefined);
 
       if (routeElement.indexRoute) {
-        EmberXRouter.ROUTE_REGISTRY[`${routeName}.index`] = {
+        this._ROUTE_REGISTRY[`${routeName}.index`] = {
           routeName: `${routeName}.index`,
           options: { path: '/' }, // NOTE: or should it be something else?
           route: routeElement.indexRoute,
-          template: routeElement.indexTemplate,
         };
       }
     });
 
-    return EmberXRouter.ROUTE_REGISTRY;
+    return this._ROUTE_REGISTRY;
   }
 
   // add to registry by demand
   // add to actual router by demand
 
-  start(arrayOfRouteDefinitions = [], routeMap = undefined) {
-    // 4 different param entries: arrayOfRouteDefinitions, registryDef, routerJSRouteArray, routeMap
-    // move it to 2: arrayOfRouteDefinitions, routeMap
+  static start(
+    arrayOfRouteDefinitions: Array<RouteDefinition> = [],
+    routeMap = undefined
+  ): RouterJSRouter {
+    this._ROUTE_REGISTRY = {};
 
     if (routeMap) {
-      this.mapToRegistry(routeMap);
-      // this.map(routeMap); // move this to super.map since it just mutates the module
+      this.map(routeMap); // move this to super.map since it just mutates the module
     }
 
+    const routeMapRegistry = routeMap ? this.map(routeMap) : {};
     const registry = this.definitionsToRegistry(arrayOfRouteDefinitions);
-    const routerJSRouteArray = EmberXRouter.convertToRouterJSRouteArray(registry);
+    const routerJSRouteArray = this.convertToRouterJSRouteArray(
+      Object.assign(routeMapRegistry, registry)
+    );
 
     const runRegistryMap = this.runRegistryMap;
 
-    this.map(function (match) {
+    this.routerjs = new RouterJSRouter();
+    this.routerjs.map(function (match) {
       runRegistryMap(runRegistryMap, match, routerJSRouteArray);
     });
+    this.SERVICES.router = this.routerjs;
 
-    this.transitonToCurrentPath();
+    if (!globalThis.Qunit) {
+      this.visit(document.location.pathname);
+    }
 
-    return this;
+    return this.routerjs;
   }
 
-  transitonToCurrentPath() {
-    debugger;
-    const targetHandlers = this.recognizer.recognize(document.location.pathname);
+  static async visit(path: string): Promise<void> {
+    const targetHandlers = this.routerjs.recognizer.recognize(path);
 
     if (targetHandlers) {
       const targetHandler: FreeObject = targetHandlers[targetHandlers.length - 1];
@@ -264,12 +279,12 @@ export default class EmberXRouter extends Router<Route> {
         // TODO: params is an object but it needs just the value it needs
 
         console.log(params);
-        this.transitionTo.apply(
-          this,
+        await this.routerjs.transitionTo.apply(
+          this.routerjs,
           [targetHandler.handler].concat(params.map((key) => targetHandler.params[key]))
         );
       } else {
-        this.transitionTo(targetHandler.handler);
+        await this.routerjs.transitionTo(targetHandler.handler);
       }
     } else {
       console.log('NO ROUTE FOUND');
@@ -281,9 +296,9 @@ function returnOptionsAsSubRouteIfFunction(options) {
   return typeof options === 'function' ? options : undefined;
 }
 
-export function createRouteNameFromRouteClass(routeClass) {
+export function createRouteNameFromRouteClass(routeClass: DefaultRoute | void): string | void {
   if (routeClass) {
-    return routeClass.name
+    return routeClass.constructor.name
       .replace(/Route$/g, '')
       .split('')
       .reduce((result, character, index) => {
@@ -298,7 +313,7 @@ export function createRouteNameFromRouteClass(routeClass) {
   }
 }
 
-export function createRouteNameFromPath(routePath) {
+export function createRouteNameFromPath(routePath: string): string {
   const targetPath = routePath[0] === '/' ? routePath.slice(1) : routePath;
 
   return targetPath.replace(/\//g, '.').replace(/:/g, '');
@@ -314,8 +329,6 @@ function checkInRouteRegistryOrCreateRoute(registry, targetRoute) {
     return registry[routeName];
   }
 
-  const valuesToUpdate: { route?: any; template?: any } = {};
-
   if (targetRoute.route) {
     if (foundRoute.route && foundRoute.route.name !== targetRoute.route.name) {
       console.log(
@@ -323,21 +336,7 @@ function checkInRouteRegistryOrCreateRoute(registry, targetRoute) {
       );
     }
 
-    valuesToUpdate.route = targetRoute.route;
-  }
-
-  if (foundRoute.template) {
-    if (foundRoute.template && foundRoute.template !== targetRoute.template) {
-      console.log(
-        `[WARNING]: ${routeName}.template already has a ${foundRoute.template}. You tried to assign to ${routeName}.template ${targetRoute.template}`
-      );
-    }
-
-    valuesToUpdate.template = targetRoute.template;
-  }
-
-  if (Object.keys(valuesToUpdate).length) {
-    registry[routeName] = Object.assign(foundRoute, valuesToUpdate);
+    registry[routeName] = Object.assign(foundRoute, { route: targetRoute.route });
   }
 
   return registry[routeName];

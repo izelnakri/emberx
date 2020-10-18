@@ -4,24 +4,28 @@ import Component, { hbs } from '@glimmerx/component';
 import { action } from '@glimmerx/modifier';
 import { service } from '@glimmerx/service';
 
+interface FreeObject {
+  [propName: string]: any;
+}
+
 export default class Route extends Component<{ model: object }> {
   @service router;
 
-  get model() {
+  get model(): any {
     return this.args.model;
   }
 
-  // static model() {}
-
-  static setup(model, transition) {
+  static setup(model: object, transition: FreeObject): any {
     if (Router.LOG_MODELS) {
-      console.log('setup[model] is', model);
-      console.log('setup[transition] is', transition);
+      console.log(`'${transition.targetName}' Route[model] is`, model);
+      console.log(`'${transition.targetName}' Route[model] is`, transition);
     }
 
-    const containerElement = document.getElementById('app');
+    const containerElement = globalThis.QUnit
+      ? document.getElementById('ember-testing')
+      : document.getElementById('app');
 
-    containerElement.innerHTML = ''; // NOTE: temporary solution, clear previously rendered route
+    containerElement.innerHTML = ''; // TODO: temporary solution, clear previously rendered route
 
     renderComponent(this, {
       element: containerElement,
@@ -36,7 +40,7 @@ export default class Route extends Component<{ model: object }> {
     </div>
   `;
 
-  @action transitionTo(routeName, params, options) {
-    this.router.transitionTo(routeName, params, options);
+  @action transitionTo(routeName: string, params: object, options: object): object {
+    return this.router.transitionTo(routeName, params, options);
   }
 }

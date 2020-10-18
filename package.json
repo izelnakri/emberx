@@ -9,6 +9,7 @@
   },
   "scripts": {
     "lint": "eslint . --ext=js,ts --cache",
+    "dev": "parcel index.html tests/tests.html --no-cache",
     "test:node": "node_modules/.bin/ava --verbose",
     "test": "npm-run-all lint test:browsers test:ava",
     "test:browsers": "parcel tests/index.html",
@@ -99,7 +100,6 @@
   },
   "prettier": {
     "printWidth": 100,
-    "trailingComma": "es5",
     "singleQuote": true
   },
   "eslintConfig": {
@@ -126,7 +126,8 @@
       "!.*"
     ],
     "rules": {
-      "@glimmerx/template-vars": "error"
+      "@glimmerx/template-vars": "error",
+      "@typescript-eslint/no-explicit-any": "off"
     },
     "overrides": [
       {
@@ -137,7 +138,11 @@
           "plugin:@typescript-eslint/eslint-recommended",
           "plugin:@typescript-eslint/recommended",
           "prettier/@typescript-eslint"
-        ]
+        ],
+        "rules": {
+          "@typescript-eslint/no-explicit-any": "off",
+          "@typescript-eslint/ban-types": "off"
+        }
       },
       {
         "files": [

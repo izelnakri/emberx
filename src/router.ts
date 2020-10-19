@@ -26,6 +26,7 @@ interface routerJSRouteDefinition {
 
 class RouterJSRouter extends Router<Route> {
   locationBar: any;
+  path: string;
 
   constructor() {
     super();
@@ -73,7 +74,29 @@ class RouterJSRouter extends Router<Route> {
   }
 
   updateURL(url: string): void {
+    this.path = url;
     this.locationBar.update(url);
+  }
+
+  async visit(path: string): Promise<void> {
+    const targetHandlers = this.recognizer.recognize(path);
+
+    if (targetHandlers) {
+      const targetHandler: FreeObject = targetHandlers[targetHandlers.length - 1];
+      const params = Object.keys(targetHandler.params);
+
+      if (params.length > 0) {
+        const handler: string = targetHandler.handler;
+        // TODO: params is an object but it needs just the value it needs
+        await this.transitionTo(
+          ...[handler].concat(params.map((key) => targetHandler.params[key]))
+        );
+      } else {
+        await this.transitionTo(targetHandler.handler);
+      }
+    } else {
+      console.log('NO ROUTE FOUND');
+    }
   }
 }
 
@@ -261,34 +284,10 @@ export default class EmberXRouter {
     this.SERVICES.router = this.routerjs;
 
     if (!globalThis.Qunit) {
-      this.visit(document.location.pathname);
+      this.routerjs.visit(document.location.pathname);
     }
 
     return this.routerjs;
-  }
-
-  static async visit(path: string): Promise<void> {
-    const targetHandlers = this.routerjs.recognizer.recognize(path);
-
-    if (targetHandlers) {
-      const targetHandler: FreeObject = targetHandlers[targetHandlers.length - 1];
-      const params = Object.keys(targetHandler.params);
-
-      if (params.length > 0) {
-        // window.router.transitionTo(targetHandler.handler, targetHandler.params);
-        // TODO: params is an object but it needs just the value it needs
-
-        console.log(params);
-        await this.routerjs.transitionTo.apply(
-          this.routerjs,
-          [targetHandler.handler].concat(params.map((key) => targetHandler.params[key]))
-        );
-      } else {
-        await this.routerjs.transitionTo(targetHandler.handler);
-      }
-    } else {
-      console.log('NO ROUTE FOUND');
-    }
   }
 }
 

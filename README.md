@@ -1,6 +1,6 @@
 # glimmerx-router
 
-[Working example](http://emberx-router.surge.sh/)
+[Working example](http://emberx-router.surge.sh/tests/tests.html?testId=906afba6)
 
 Experimental router for glimmerx, will ship as `emberx/router` & `emberx/route` & `emberx/link-to`
 

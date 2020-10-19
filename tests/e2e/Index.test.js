@@ -1,9 +1,11 @@
 import { module, test } from 'qunit';
-import { visit, currentURL } from '../test-helpers';
-import { setupApplicationTest } from '../setup-application-test';
+import { visit, currentURL } from '../../src/test-helpers';
+import { setupApplicationTest } from '../../src/test-helpers/setup';
 
 // import { visit, currentURL } from '@ember/test-helpers';
 // import { setupApplicationTest } from 'ember-qunit';
+
+QUnit.config.notrycatch = true;
 
 module('E2E | /', function (hooks) {
   setupApplicationTest(hooks); // TODO: how should this start silently?
@@ -15,9 +17,7 @@ module('E2E | /', function (hooks) {
 
     await visit('/'); // TODO: after route init make this go to that route inside the container
 
-    // console.log('pausestart');
-    await this.pauseTest();
-    // console.log('pausefinish');
+    // NOTE: add content and test interactions
 
     assert.equal(currentURL(), '/'); // TODO: make this assert against currentURL
   });

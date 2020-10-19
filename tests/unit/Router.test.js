@@ -37,6 +37,7 @@ module('Router Unit Test', () => {
       'log',
       'recognizer',
       'locationBar',
+      'path',
     ]);
   });
 

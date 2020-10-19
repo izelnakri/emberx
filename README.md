@@ -1,8 +1,8 @@
 # glimmerx-router
 
-[Working example](http://emberx-router.surge.sh/tests/tests.html?testId=906afba6)
+[Working example/E2E Test](http://emberx-router.surge.sh/tests/tests.html?testId=906afba6)
 
-Experimental router for glimmerx, will ship as `emberx/router` & `emberx/route` & `emberx/link-to`
+Experimental router for glimmerx, will ship as `emberx/router` & `emberx/route` & `emberx/link-to` & `emberx/test-helpers`
 
 `src/index.js` is the public API developers will interact with and `src/routes/index.ts` built as an example.
 
@@ -27,9 +27,7 @@ Router.SERVICES = {
   intl: new LocaleService(),
 };
 
-let router = new Router();
-
-router.start([
+let router = Router.start([
   {
     path: '/',
     route: IndexRoute
@@ -48,6 +46,8 @@ router.start([
     route: PostsPostCommentsRoute
   },
 ]);
+
+export default router;
 ```
 
 This API also will allow custom resolvers that can resolve current ember routers(ie. routes in `Router.map(function() {})`) with a specific resolver definition(classic or MUD) in future:
@@ -74,7 +74,7 @@ let existingMapDefinition = Router.map(function () {
   this.route("login");
 });
 
-Router.start([
+let router = Router.start([
   {
     path: '/',
     route: IndexRoute,
@@ -88,6 +88,8 @@ Router.start([
     indexTemplate: PostsIndexRouteTemplate
   }
 ], existingMapDefinition);
+
+export default router;
 ```
 
 This experiment is also a sketch/request for a new ember edition.
@@ -154,6 +156,7 @@ export default class IndexRoute extends Route {
   }
 }
 ```
+
 ## Prerequisites
 
 You will need the following things properly installed on your computer.

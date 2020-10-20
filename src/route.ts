@@ -15,6 +15,16 @@ export default class Route extends Component<{ model: object }> {
     return this.args.model;
   }
 
+  get routeName(): string {
+    const routeNames = this.router.recognizer.recognize(document.location.pathname);
+
+    return routeNames ? routeNames[routeNames.length - 1].handler : 'not-found';
+  }
+
+  constructor(owner, args) {
+    return super(owner, args);
+  }
+
   static setup(model: object, transition: FreeObject): any {
     if (Router.LOG_MODELS) {
       console.log(`'${transition.targetName}' Route[model] is`, model);

@@ -1,7 +1,9 @@
-import IndexRoute from './routes/index';
+import PublicIndexRoute from './routes/public/index';
+import PublicBlogPostRoute from './routes/public/blog-post';
 import AdminPostsPostRoute from './routes/admin/posts/post';
+import LoginRoute from './routes/login';
 import LocaleService from './services/intl';
-import Router from './router'; // import Router from 'emberx/router';
+import Router, { RouterJSRouter } from './router'; // import Router from 'emberx/router';
 
 declare global {
   interface Window {
@@ -39,31 +41,37 @@ const oldRouterMap = function () {
   this.route('logout');
 };
 
-const router = Router.start(
+const router: RouterJSRouter = Router.start(
   [
     {
       path: '/',
-      route: IndexRoute,
-      routeName: 'index',
+      route: PublicIndexRoute,
+      routeName: 'public.index',
     },
-    // {
-    //   path: '/',
-    //   route: IndexRoute,
-    //   routeName: 'public.index',
-    // },
-    // {
-    // path: '/:slug',
-    // route: IndexRoute,
-    // routeName: 'public.blog-post',
-    // },
+    {
+      path: '/:slug',
+      route: PublicBlogPostRoute,
+      routeName: 'public.blog-post',
+    },
     {
       path: '/admin/posts/:slug',
       route: AdminPostsPostRoute,
       routeName: 'admin.posts.post',
     },
+    {
+      path: '/login',
+      route: LoginRoute,
+      routeName: 'login',
+    },
+    {
+      path: '/*path',
+      routeName: '404',
+    },
   ],
   oldRouterMap
 );
+
+window.router = router;
 
 console.log('index.ts finished');
 export default router;

@@ -10,7 +10,7 @@ interface RouteDefinition {
   path: string;
   route: DefaultRoute;
   routeName: string;
-  indexRoute: DefaultRoute;
+  indexRoute?: DefaultRoute;
 }
 
 interface RouteRegistry {
@@ -24,7 +24,7 @@ interface routerJSRouteDefinition {
   nestedRoutes: [routerJSRouteDefinition];
 }
 
-class RouterJSRouter extends Router<Route> {
+export class RouterJSRouter extends Router<Route> {
   locationBar: any;
   path: string;
 
@@ -35,16 +35,16 @@ class RouterJSRouter extends Router<Route> {
     this.locationBar.start({ pushState: true });
   }
 
-  triggerEvent() {
+  triggerEvent(): void {
     return;
   }
-  willTransition() {
+  willTransition(): void {
     return;
   }
-  didTransition() {
+  didTransition(): void {
     return;
   }
-  transitionDidError(error: any, transition: any) {
+  transitionDidError(error: any, transition: any): void {
     if (error.wasAborted || transition.isAborted) {
       // return logAbort(transition);
     } else {
@@ -56,10 +56,10 @@ class RouterJSRouter extends Router<Route> {
   replaceURL(): void {
     return;
   }
-  routeWillChange() {
+  routeWillChange(): void {
     return;
   }
-  routeDidChange() {
+  routeDidChange(): void {
     return;
   }
   getSerializer(): any {
@@ -220,16 +220,20 @@ export default class EmberXRouter {
         createRouteNameFromRouteClass(routeElement.route) ||
         createRouteNameFromPath(routeElement.path); // NOTE: when /create-user type of paths are defined create a better routeName guess, should I replace order?
       const routeNameSegments = routeName.split('.');
-      const routePathSegments = routeElement.path.slice(1).split('/');
+      const normalizedPath = routeElement.path.startsWith('/')
+        ? routeElement.path.slice(1)
+        : routeElement.path;
+      const routePathSegments = normalizedPath.split('/');
 
       routeNameSegments.reduce((currentSegment, routeSegment, index) => {
         const targetSegmentName = currentSegment
           ? `${currentSegment}.${routeSegment}`
           : routeSegment;
+        const targetIndex = index >= routePathSegments.length ? routePathSegments.length - 1 : index;
 
         checkInRouteRegistryOrCreateRoute(this._ROUTE_REGISTRY, {
           routeName: targetSegmentName,
-          options: { path: `/${routePathSegments[index]}` },
+          options: { path: `/${routePathSegments[targetIndex]}` },
           route: index === routeNameSegments.length - 1 ? routeElement.route : undefined,
         });
 
@@ -242,9 +246,9 @@ export default class EmberXRouter {
         }
 
         return targetSegmentName;
-      }, undefined);
+      }, null);
 
-      if (routeElement.indexRoute) {
+      if (routeElement.indexRoute && routeName !== 'index') {
         this._ROUTE_REGISTRY[`${routeName}.index`] = {
           routeName: `${routeName}.index`,
           options: { path: '/' }, // NOTE: or should it be something else?

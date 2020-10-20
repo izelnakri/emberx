@@ -15,6 +15,6 @@ export default class AdminPostsPostRoute extends Route {
 
   static template = hbs`
     <p>Post slug is: {{this.model.slug}}</p>
-    <LinkTo @route="index">Go back</LinkTo>
+    <LinkTo @route="public.index">Go back</LinkTo>
   `;
 }

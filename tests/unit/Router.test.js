@@ -7,6 +7,8 @@ import targetRouteJSArrayForOldRouterMap from '../helpers/outputs/target-route-j
 
 module('Router Unit Test', () => {
   test('Router.map creates route registry without Router.start()', async (assert) => {
+    Router._ROUTE_REGISTRY = {};
+
     assert.true(Router.LOG_ROUTES);
     assert.true(Router.LOG_MODELS);
     assert.deepEqual(Router._ROUTE_REGISTRY, {});

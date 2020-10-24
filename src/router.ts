@@ -75,7 +75,10 @@ export class RouterJSRouter extends Router<Route> {
 
   updateURL(url: string): void {
     this.path = url;
-    this.locationBar.update(url);
+
+    if (!globalThis.QUnit) {
+      this.locationBar.update(url);
+    }
   }
 
   async visit(path: string): Promise<void> {
@@ -229,7 +232,8 @@ export default class EmberXRouter {
         const targetSegmentName = currentSegment
           ? `${currentSegment}.${routeSegment}`
           : routeSegment;
-        const targetIndex = index >= routePathSegments.length ? routePathSegments.length - 1 : index;
+        const targetIndex =
+          index >= routePathSegments.length ? routePathSegments.length - 1 : index;
 
         checkInRouteRegistryOrCreateRoute(this._ROUTE_REGISTRY, {
           routeName: targetSegmentName,
@@ -251,7 +255,7 @@ export default class EmberXRouter {
       if (routeElement.indexRoute && routeName !== 'index') {
         this._ROUTE_REGISTRY[`${routeName}.index`] = {
           routeName: `${routeName}.index`,
-          options: { path: '/' }, // NOTE: or should it be something else?
+          options: { path: '/' },
           route: routeElement.indexRoute,
         };
       }
@@ -287,7 +291,7 @@ export default class EmberXRouter {
     });
     this.SERVICES.router = this.routerjs;
 
-    if (!globalThis.Qunit) {
+    if (!globalThis.QUnit) {
       this.routerjs.visit(document.location.pathname);
     }
 

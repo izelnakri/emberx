@@ -77,15 +77,12 @@ let existingMapDefinition = Router.map(function () {
 let router = Router.start([
   {
     path: '/',
-    route: IndexRoute,
-    template: IndexRouteTemplate
+    route: IndexRoute
   },
   {
     path: '/posts',
     route: PostsRoute,
-    template: PostsRouteTemplate,
     indexRoute: PostsIndexRoute,
-    indexTemplate: PostsIndexRouteTemplate
   }
 ], existingMapDefinition);
 

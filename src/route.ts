@@ -46,7 +46,7 @@ export default class Route extends Component<{ model: object }> {
 
   static template = hbs`
     <div id="intro">
-      <h1>ROUTE IS MISSING A TEMPLATE!</h1>
+      <h1>{{this.routeName}} ROUTE IS MISSING A TEMPLATE!</h1>
     </div>
   `;
 

@@ -35,6 +35,13 @@ export default class IndexRoute extends Route {
   }
 
   static template = hbs`
+    <nav class="navbar navbar-light bg-light">
+      <div class="container-fluid">
+        <!-- Turn this to LinkTo -->
+        <a class="navbar-brand" href="#">Navbar</a>
+      </div>
+    </nav>
+
     <div id="intro">
       <h1>This is INDEXROUTE</h1>
       <LinkTo @route="admin.posts.post" @model="232">Go to post 232</LinkTo>

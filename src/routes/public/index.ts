@@ -4,6 +4,7 @@ import { service } from '@glimmerx/service';
 import { action, on } from '@glimmerx/modifier';
 import t from '../../helpers/t';
 
+import BlogHeader from '../../components/BlogHeader';
 import LinkTo from '../../components/LinkTo'; // import LinkTo from 'emberx/link-to';
 import Counter from '../../components/Counter';
 
@@ -35,6 +36,8 @@ export default class PublicIndexRoute extends Route {
   }
 
   static template = hbs`
+    <BlogHeader />
+
     <div id="intro">
       <h1>This is INDEXROUTE</h1>
       <LinkTo @route="admin.posts.post" @model="232">Go to post 232</LinkTo>

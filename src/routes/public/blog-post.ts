@@ -8,7 +8,4 @@ export default class PublicBlogPostRoute extends Route {
   @service intl;
 
   static model() {}
-
-  static template = hbs`
-  `;
 }

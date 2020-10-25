@@ -35,6 +35,21 @@ export function setupTest(hooks: QUnitHooks): void {
       });
     };
   });
+
+  hooks.beforeEach(function () {
+    const container = document.createElement('div');
+    const containerPage = document.createElement('div');
+
+    container.id = 'ember-testing-container';
+    containerPage.id = 'ember-testing';
+
+    document.getElementById('qunit-fixture').after(container);
+    container.appendChild(containerPage);
+  });
+
+  hooks.afterEach(function () {
+    document.getElementById('ember-testing-container').remove();
+  });
 }
 
 export function setupRenderingTest(hooks: QUnitHooks): void {
@@ -42,7 +57,10 @@ export function setupRenderingTest(hooks: QUnitHooks): void {
 
   hooks.beforeEach(async function () {
     // TODO: implement owner lookup for services
-    // this.owner = await import('../index');
+    this.router = (await import('../index')).default;
+
+    this.services = { router: this.router };
+
     setContext(this);
   });
 }
@@ -59,3 +77,19 @@ export function setupApplicationTest(hooks: QUnitHooks): void {
 
   // console.log('setupApplicationTest called', hooks);
 }
+
+export default {
+  setupTest,
+  setupRenderingTest,
+  setupApplicationTest,
+};
+
+// import {
+//   renderComponent as glimmerRenderComponent,
+//   ComponentDefinition,
+//   RenderComponentOptions,
+//   didRender,
+// } from '@glimmerx/core';
+
+// // Re-export didRender for convenience
+// export { didRender };

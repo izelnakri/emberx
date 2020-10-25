@@ -2,7 +2,8 @@
 
 [Working example/E2E Test](http://emberx-router.surge.sh/tests/tests.html?testId=906afba6)
 
-Experimental router for glimmerx, will ship as `emberx/router` & `emberx/route` & `emberx/link-to` & `emberx/test-helpers`
+Experimental router for glimmerx, will ship as `emberx/router` & `emberx/route` & `emberx/link-to`
+& `emberx/test-helpers` and `emberx/string`
 
 `src/index.js` is the public API developers will interact with and `src/routes/index.ts` built as an example.
 
@@ -153,6 +154,10 @@ export default class IndexRoute extends Route {
   }
 }
 ```
+
+This experiment is also a sketch/request for a new ember edition.
+Deprecates ember controllers and makes ember-specific CLI systems an option rather than requirement.
+Allows "npm your way to ember", from a React alternative(glimmer) to a full-fledged ember application without ember-cli.
 
 ## Prerequisites
 

@@ -28,7 +28,7 @@ export default class Route extends Component<{ model: object }> {
   static setup(model: object, transition: FreeObject): any {
     if (Router.LOG_MODELS) {
       console.log(`'${transition.targetName}' Route[model] is`, model);
-      console.log(`'${transition.targetName}' Route[model] is`, transition);
+      console.log(`'${transition.targetName}' Route[transition] is`, transition);
     }
 
     const containerElement = globalThis.QUnit

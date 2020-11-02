@@ -1,5 +1,6 @@
 {
   "name": "emberx",
+  "type": "module",
   "version": "1.0.2",
   "author": "Izel Nakri",
   "description": "",

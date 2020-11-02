@@ -52,12 +52,12 @@ export function setupTest(hooks: QUnitHooks): void {
   });
 }
 
-export function setupRenderingTest(hooks: QUnitHooks): void {
+export function setupRenderingTest(hooks: QUnitHooks, Application: any): void {
   setupTest(hooks);
 
   hooks.beforeEach(async function () {
     // TODO: implement owner lookup for services
-    this.router = (await import('../index')).default;
+    this.router = Application;
 
     this.services = { router: this.router };
 
@@ -66,12 +66,12 @@ export function setupRenderingTest(hooks: QUnitHooks): void {
 }
 
 // TODO: also set this.owner, this.owner.lookup
-export function setupApplicationTest(hooks: QUnitHooks): void {
+export function setupApplicationTest(hooks: QUnitHooks, Application: any): void {
   setupTest(hooks);
 
   hooks.beforeEach(async function () {
     // TODO: implement owner lookup for services
-    this.router = await import('../index');
+    this.router = Application;
     setContext(this);
   });
 

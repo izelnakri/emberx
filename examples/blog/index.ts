@@ -4,7 +4,7 @@ import PreviewUserPostsPostRoute from './routes/preview/user/posts/post';
 import PublicIndexRoute from './routes/public/index';
 import PublicBlogPostRoute from './routes/public/blog-post';
 import LocaleService from './services/intl';
-import Router, { RouterJSRouter } from './router'; // import Router from 'emberx/router';
+import Router, { RouterJSRouter } from '../../src/router'; // import Router from 'emberx/router';
 
 declare global {
   interface Window {
@@ -83,4 +83,5 @@ const router: RouterJSRouter = Router.start(
 window.router = router;
 
 console.log('index.ts finished');
+
 export default router;

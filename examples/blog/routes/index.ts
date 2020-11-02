@@ -4,7 +4,7 @@ import { service } from '@glimmerx/service';
 import { action, on } from '@glimmerx/modifier';
 import t from '../helpers/t';
 
-import LinkTo from '../../../src/LinkTo'; // import LinkTo from 'emberx/LinkTo';
+import LinkTo from '../../../src/link-to'; // import LinkTo from 'emberx/LinkTo';
 import Counter from '../components/Counter';
 
 export default class IndexRoute extends Route {

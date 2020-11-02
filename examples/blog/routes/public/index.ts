@@ -5,7 +5,7 @@ import { action, on } from '@glimmerx/modifier';
 import t from '../../helpers/t';
 
 import BlogHeader from '../../components/BlogHeader';
-import LinkTo from '../../../../src/LinkTo'; // import Route from 'emberx/route';
+import LinkTo from '../../../../src/link-to'; // import Route from 'emberx/route';
 import Counter from '../../components/Counter';
 
 export default class PublicIndexRoute extends Route {

@@ -4,7 +4,7 @@ import { render } from '../../src/test-helpers';
 import { setupRenderingTest } from '../../src/test-helpers/setup';
 import Application from '../../examples/blog/index';
 
-import LinkTo from '../../src/LinkTo';
+import LinkTo from '../../src/link-to';
 
 // NOTE: in future also check against currentURL(), spy on this.router.recognizer.generate with right params
 // TODO: also test with different @tagName for td's

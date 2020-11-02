@@ -21,9 +21,9 @@ export default class Route extends Component<{ model: object }> {
     return routeNames ? routeNames[routeNames.length - 1].handler : 'not-found';
   }
 
-  constructor(owner, args) {
-    return super(owner, args);
-  }
+  // constructor(owner, args) {
+  //   return super(owner, args);
+  // }
 
   static setup(model: object, transition: FreeObject): any {
     if (Router.LOG_MODELS) {

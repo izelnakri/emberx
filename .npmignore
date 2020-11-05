@@ -1,0 +1,12 @@
+tests
+scripts
+public
+examples
+
+node_modules
+.parcel-cache
+tmp/*
+dist
+
+yarn-error.log
+.eslintcache

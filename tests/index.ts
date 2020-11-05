@@ -9,6 +9,6 @@ Object.defineProperty(QUnit.assert.dom, 'rootElement', {
   get: () => document.getElementById('ember-testing'),
 });
 
-import './e2e/index.js';
-import './rendering/index.js';
-import './unit/index.js';
+import './e2e/index.ts';
+import './rendering/index.ts';
+import './unit/index.ts';

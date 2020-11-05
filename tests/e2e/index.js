@@ -1,1 +1,0 @@
-import './Index.test.js';

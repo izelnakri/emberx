@@ -1,7 +1,7 @@
 import { module, test } from 'qunit';
 import { visit, currentURL } from '../../src/test-helpers';
 import { setupApplicationTest } from '../../src/test-helpers/setup';
-import Application from '../../examples/blog/index';
+import Application from '../../examples/blog/router';
 
 window.QUnit.config.notrycatch = true;
 

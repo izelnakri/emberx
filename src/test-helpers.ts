@@ -1,3 +1,9 @@
-import helpers from './test-helpers/index';
-
-export default helpers;
+export {
+  visit,
+  currentRouteName,
+  currentURL,
+  render,
+  setupTest,
+  setupRenderingTest,
+  setupApplicationTest,
+} from './test-helpers/index';

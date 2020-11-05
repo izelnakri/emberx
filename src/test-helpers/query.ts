@@ -1,4 +1,12 @@
-// -   [DOM Query Helpers][11]
-//     -   [find][12]
-//     -   [findAll][13]
-//     -   [getRootElement][14]
+export function find(queryString: string): Element | void {
+  return document.querySelector(queryString);
+}
+
+export function findAll(queryString: string): NodeListOf<Element> | void {
+  return document.querySelectorAll(queryString);
+}
+
+export default {
+  find,
+  findAll,
+};

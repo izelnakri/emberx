@@ -1,11 +1,12 @@
 import { renderComponent } from '@glimmerx/core';
 import { getContext } from './context';
 import { setupTest, setupRenderingTest, setupApplicationTest } from './setup';
+import { click } from './input';
 
 export function visit(path: string): Promise<void> {
   const context = getContext();
 
-  return context.router.default.visit(path);
+  return context.router.visit(path);
 }
 
 export function currentRouteName(): string {
@@ -18,7 +19,7 @@ export function currentRouteName(): string {
 export function currentURL(): string {
   const context = getContext();
 
-  return context.router.default.path;
+  return context.router.path;
 }
 
 export function render(template: any, services: object | undefined): Promise<any> {
@@ -33,9 +34,11 @@ export function render(template: any, services: object | undefined): Promise<any
 }
 
 export default {
+  click,
   visit,
   currentRouteName,
   currentURL,
+  render,
   setupTest,
   setupRenderingTest,
   setupApplicationTest,

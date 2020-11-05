@@ -31,6 +31,8 @@ export default class Route extends Component<{ model: object }> {
       console.log(`'${transition.targetName}' Route[transition] is`, transition);
     }
 
+    // TODO: add a throw here if containerElement doesnt exist
+
     const containerElement = globalThis.QUnit
       ? document.getElementById('ember-testing')
       : document.getElementById('app');

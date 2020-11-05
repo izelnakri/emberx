@@ -87,25 +87,36 @@ export default class extends Component<{
 
   // TODO: model, models, query
   get link() {
-    // NOTE: also think about: this.router.recognizer.generate('admin.posts.post', { slug: 'anan' })
+    const targetModel = this.buildModel();
 
-    if (modelIsObject(this.args.model)) {
-      const dynamicSegments = this.router.recognizer.names[this.args.route].handlers.reduce(
-        (result, handlerFunc) => {
-          if (handlerFunc.shouldDecodes) {
-            result.push(this.args.model[handlerFunc.names]); // TODO: maybe @ember/string manipulate in future
-          }
+    debugger;
+    return this.router.recognizer.generate(this.args.route, targetModel); // TODO: append queryParams
+  }
 
-          return result;
-        },
-        []
-      );
-      debugger;
-      // NOTE: check the route dynamic
-      return this.router.recognizer.generate(this.args.route, this.args.model); // TODO: append queryParams
-    }
+  buildModel() {
+    // NOTE: maybe optimize rendering if there is no dynamic segments?
+    const dynamicSegments = this.router.recognizer.names[this.args.route].handlers.reduce(
+      (result, handlerFunc) => {
+        if (handlerFunc.shouldDecodes.length > 0) {
+          result.push(handlerFunc.names); // TODO: maybe @ember/string manipulate in future
+        }
 
-    return this.router.recognizer.generate(this.args.route, this.args.model); // TODO: append queryParams
+        return result;
+      },
+      []
+    );
+
+    if (isObject(this.args.model)) {
+      return dynamicSegments.reduce((model, segment) => {
+        return Object.assign(model, { [segment]: this.args.model[segment] });
+      }, {});
+    } else if (this.args.models) {
+      return dynamicSegments.reduce((model, segment, index) => {
+        return Object.assign(model, { [segment]: this.args.models[index] });
+      }, {});
+    } else if (this.args.model) {
+      return { [dynamicSegments[0]]: this.args.model };
+    } // TODO: or use the existing params from the existing router
   }
 
   // TODO: add activeClass, loadingClass, disabledClass, 'ember-transitioning-in', 'ember-transitioning-out'
@@ -120,6 +131,6 @@ export default class extends Component<{
   }
 }
 
-function modelIsObject(value) {
+function isObject(value) {
   return ['function', 'object'].includes(typeof value) && value !== null && !Array.isArray(value);
 }

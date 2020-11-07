@@ -45,9 +45,7 @@ export default function doubleClick(target: Target, _options: MouseEventInit = {
   const element = getElement(target);
   if (!element) {
     throw new Error(`Element not found when calling \`doubleClick('${target}')\`.`);
-  }
-
-  if (isFormControl(element) && element.disabled) {
+  } else if (isFormControl(element) && element.disabled) {
     throw new Error(`Can not \`doubleClick\` disabled ${element}`);
   }
 

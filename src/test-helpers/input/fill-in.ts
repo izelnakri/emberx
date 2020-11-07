@@ -12,16 +12,12 @@ export default function fillIn(target: Target, text: string): Promise<void> {
     throw new Error('Must pass an element or selector to `fillIn`.');
   }
 
-  let element = getElement(target) as Element | HTMLElement;
+  const element = getElement(target) as Element | HTMLElement;
   if (!element) {
     throw new Error(`Element not found when calling \`fillIn('${target}')\`.`);
-  }
-
-  if (typeof text === 'undefined' || text === null) {
+  } else if (typeof text === 'undefined' || text === null) {
     throw new Error('Must provide `text` when calling `fillIn`.');
-  }
-
-  if (isFormControl(element)) {
+  } else if (isFormControl(element)) {
     if (element.disabled) {
       throw new Error(`Can not \`fillIn\` disabled '${target}'.`);
     }
@@ -47,5 +43,4 @@ export default function fillIn(target: Target, text: string): Promise<void> {
   fireEvent(element, 'change');
 
   // return settled();
-})
 }

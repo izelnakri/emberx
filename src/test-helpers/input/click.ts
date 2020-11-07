@@ -1,5 +1,13 @@
-import { getElement, isFormControl, fireEvent, nodeQuery, isFocusable } from './index.ts';
-import fireEvent from './fire-event.ts';
+import { getElement, isFormControl, nodeQuery, isFocusable } from './index.ts';
+import fireEvent from './fire-event';
+
+const PRIMARY_BUTTON = 1;
+const MAIN_BUTTON_PRESSED = 0;
+
+export const DEFAULT_CLICK_OPTIONS = {
+  buttons: PRIMARY_BUTTON,
+  button: MAIN_BUTTON_PRESSED,
+};
 
 export function __click__(element: Element | Document, options: MouseEventInit): void {
   fireEvent(element, 'mousedown', options);
@@ -12,7 +20,7 @@ export function __click__(element: Element | Document, options: MouseEventInit):
   fireEvent(element, 'click', options);
 }
 
-export default async function (target: nodeQuery): Promise<void> {
+export default async function click(target: nodeQuery): Promise<void> {
   if (!target) {
     throw new Error('Must pass an element or selector to `click`.');
   }

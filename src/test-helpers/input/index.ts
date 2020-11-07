@@ -1,62 +1,73 @@
-// import click from './click';
+import click from './click';
+import blur from './blur';
+import focus from './focus';
+import doubleClick from './double-click';
 
-type inputElement = string; // or DomNode
-
-export async function blur(element: inputElement): Promise<void> {
-  if (!isFocusable(element)) {
-    throw new Error(`${target} is not focusable`);
-  }
-
-  const browserIsNotFocused = document.hasFocus && !document.hasFocus();
-  // makes `document.activeElement` be `body`.
-  // If the browser is focused, it also fires a blur event
-  element.blur();
-  // Chrome/Firefox does not trigger the `blur` event if the window
-  // does not have focus. If the document does not have focus then
-  // fire `blur` event via native event.
-  if (browserIsNotFocused) {
-    fireEvent(element, 'blur', { bubbles: false });
-    fireEvent(element, 'focusout');
-  }
+export type nodeQuery = string | HTMLElement; // or DomNode
+export type FocusableElement = HTMLAnchorElement;
+export type FormControl =
+  | HTMLInputElement
+  | HTMLButtonElement
+  | HTMLSelectElement
+  | HTMLTextAreaElement;
+export interface HTMLElementContentEditable extends HTMLElement {
+  isContentEditable: true;
 }
 
-export async function click(target: inputElement): Promise<void> {
+export function getElement(target: nodeQuery): undefined | HTMLElement {
   if (!target) {
-    throw new Error('Must pass an element or selector to `click`.');
+    return target as undefined;
+  } else if ((target as HTMLElement).nodeName) {
+    return target as HTMLElement;
   }
 
-  const element = getElement(target);
-
-  if (!element) {
-    throw new Error(`Element not found when calling \`click('${target}')\`.`);
-  }
-
-  const isDisabledFormControl = isFormControl(element) && element.disabled;
-
-  if (!isDisabledFormControl) {
-    fireEvent(element, 'mousedown', options);
-    if (isFocusable(element)) {
-      __focus__(element);
-    }
-    fireEvent(element, 'mouseup', options);
-    fireEvent(element, 'click', options);
-  }
-
-  // return settled();
+  return document.querySelector(target as string);
 }
 
-export async function doubleClick(element: inputElement): Promise<void> {
-  fireEvent(element, 'mousedown', options);
-  if (isFocusable(element)) {
-    __focus__(element);
+export function isElement(target: any): target is Element {
+  return target.nodeType === Node.ELEMENT_NODE;
+}
+
+export function isDocument(target: any): target is Document {
+  return target.nodeType === Node.DOCUMENT_NODE;
+}
+
+export function isContentEditable(element: Element): element is HTMLElementContentEditable {
+  return 'isContentEditable' in element && (element as HTMLElement).isContentEditable;
+}
+
+const FORM_CONTROL_TAGS = ['INPUT', 'BUTTON', 'SELECT', 'TEXTAREA'];
+
+export function isFormControl(element: Element | Document): element is FormControl {
+  return (
+    !isDocument(element) &&
+    FORM_CONTROL_TAGS.indexOf(element.tagName) > -1 &&
+    (element as HTMLInputElement).type !== 'hidden'
+  );
+}
+
+const FOCUSABLE_TAGS = ['A'];
+
+function isFocusableElement(element: Element): element is FocusableElement {
+  return FOCUSABLE_TAGS.indexOf(element.tagName) > -1;
+}
+
+export function isFocusable(
+  element: HTMLElement | SVGElement | Element | Document
+): element is HTMLElement | SVGElement {
+  if (isDocument(element)) {
+    return false;
   }
-  fireEvent(element, 'mouseup', options);
-  fireEvent(element, 'click', options);
-  fireEvent(element, 'mousedown', options);
-  fireEvent(element, 'mouseup', options);
-  fireEvent(element, 'click', options);
-  fireEvent(element, 'dblclick', options);
-  // NOTE: await settled();
+
+  if (isFormControl(element)) {
+    return !element.disabled;
+  }
+
+  if (isContentEditable(element) || isFocusableElement(element)) {
+    return true;
+  }
+
+  return element.hasAttribute('tabindex');
 }
 
 export async function fillIn(element: inputElement, value: string): Promise<void> {
@@ -64,10 +75,6 @@ export async function fillIn(element: inputElement, value: string): Promise<void
 }
 
 export async function typeIn(element: inputElement, value: string): Promise<void> {
-  return;
-}
-
-export async function focus(element: inputElement): Promise<void> {
   return;
 }
 

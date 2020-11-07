@@ -1,5 +1,5 @@
-import fireEvent from './fire-event.ts';
-import { getElement, isFocusable } from './index.ts';
+import fireEvent from './fire-event';
+import { getElement, isFocusable, nodeQuery } from './index';
 
 export function __blur__(element: HTMLElement | Element | Document | SVGElement): void {
   if (!isFocusable(element)) {
@@ -21,7 +21,7 @@ export function __blur__(element: HTMLElement | Element | Document | SVGElement)
   }
 }
 
-export default function blur(target: Target = document.activeElement!): Promise<void> {
+export default function blur(target: nodeQuery = document.activeElement!): Promise<void> {
   const element = getElement(target);
 
   if (!element) {

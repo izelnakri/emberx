@@ -2,6 +2,7 @@ import click from './click';
 import blur from './blur';
 import focus from './focus';
 import doubleClick from './double-click';
+import fillIn from './fill-in';
 
 export type nodeQuery = string | HTMLElement; // or DomNode
 export type FocusableElement = HTMLAnchorElement;
@@ -24,12 +25,20 @@ export function getElement(target: nodeQuery): undefined | HTMLElement {
   return document.querySelector(target as string);
 }
 
+export function isNumeric(input: string): boolean {
+  return !isNaN(parseFloat(input)) && isFinite(Number(input));
+}
+
 export function isElement(target: any): target is Element {
   return target.nodeType === Node.ELEMENT_NODE;
 }
 
 export function isDocument(target: any): target is Document {
   return target.nodeType === Node.DOCUMENT_NODE;
+}
+
+export function isSelectElement(element: Element | Document): element is HTMLSelectElement {
+  return !isDocument(element) && element.tagName === 'SELECT';
 }
 
 export function isContentEditable(element: Element): element is HTMLElementContentEditable {
@@ -70,8 +79,26 @@ export function isFocusable(
   return element.hasAttribute('tabindex');
 }
 
-export async function fillIn(element: inputElement, value: string): Promise<void> {
-  return;
+// ref: https://html.spec.whatwg.org/multipage/input.html#concept-input-apply
+const constrainedInputTypes = ['text', 'search', 'url', 'tel', 'email', 'password'];
+
+function isMaxLengthConstrained(
+  element: Element
+): element is HTMLInputElement | HTMLTextAreaElement {
+  return (
+    !!Number(element.getAttribute('maxLength')) &&
+    (element instanceof HTMLInputElement ||
+      (element instanceof HTMLTextAreaElement && constrainedInputTypes.indexOf(element.type) > -1))
+  );
+}
+
+export function guardForMaxlength(element: FormControl, text: string, testHelper: string): void {
+  const maxlength = element.getAttribute('maxlength');
+  if (isMaxLengthConstrained(element) && maxlength && text && text.length > Number(maxlength)) {
+    throw new Error(
+      `Can not \`${testHelper}\` with text: '${text}' that exceeds maxlength: '${maxlength}'.`
+    );
+  }
 }
 
 export async function typeIn(element: inputElement, value: string): Promise<void> {

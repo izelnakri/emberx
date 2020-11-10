@@ -21,7 +21,7 @@ export function __blur__(element: HTMLElement | Element | Document | SVGElement)
   }
 }
 
-export default function blur(target: nodeQuery = document.activeElement!): Promise<void> {
+export default async function blur(target: nodeQuery = document.activeElement!): Promise<void> {
   const element = getElement(target);
 
   if (!element) {

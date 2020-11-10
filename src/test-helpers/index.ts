@@ -1,7 +1,23 @@
 import { renderComponent } from '@glimmerx/core';
 import { getContext } from './context';
 import { setupTest, setupRenderingTest, setupApplicationTest } from './setup';
-import { click } from './input';
+import { tracked } from '@glimmerx/component';
+import Intl from '../../examples/blog/services/intl';
+import {
+  blur,
+  click,
+  doubleClick,
+  fillIn,
+  fireEvent,
+  focus,
+  scrollTo,
+  select,
+  tap,
+  triggerEvent,
+  triggerKeyEvent,
+  typeIn,
+} from './input';
+import { service } from '@glimmerx/service';
 
 export function visit(path: string): Promise<void> {
   const context = getContext();
@@ -28,13 +44,24 @@ export function render(template: any, services: object | undefined): Promise<any
 
   return renderComponent(template, {
     element: document.getElementById('ember-testing'),
-    args: Object.assign({}, context),
-    services: Object.assign({}, context, targetServices),
+    args: context,
+    services: context,
   });
 }
 
-export default {
+export {
+  blur,
   click,
+  doubleClick,
+  fillIn,
+  fireEvent,
+  focus,
+  scrollTo,
+  select,
+  tap,
+  triggerEvent,
+  triggerKeyEvent,
+  typeIn,
   visit,
   currentRouteName,
   currentURL,
@@ -43,6 +70,29 @@ export default {
   setupRenderingTest,
   setupApplicationTest,
 };
+
+export default {
+  blur,
+  click,
+  doubleClick,
+  fillIn,
+  fireEvent,
+  focus,
+  scrollTo,
+  select,
+  tap,
+  triggerEvent,
+  triggerKeyEvent,
+  typeIn,
+  visit,
+  currentRouteName,
+  currentURL,
+  render,
+  setupTest,
+  setupRenderingTest,
+  setupApplicationTest,
+};
+
 //     -   [blur][2]
 //     -   [click][3]
 //     -   [doubleClick][4]

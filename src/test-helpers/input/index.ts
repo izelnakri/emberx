@@ -1,8 +1,15 @@
-import click from './click';
 import blur from './blur';
-import focus from './focus';
+import click from './click';
 import doubleClick from './double-click';
 import fillIn from './fill-in';
+import fireEvent from './fire-event';
+import focus from './focus';
+import scrollTo from './scroll-to';
+import select from './select';
+import tap from './tap';
+import triggerEvent from './trigger-event';
+import triggerKeyEvent from './trigger-key-event';
+import typeIn from './type-in';
 
 export type nodeQuery = string | HTMLElement; // or DomNode
 export type FocusableElement = HTMLAnchorElement;
@@ -101,30 +108,32 @@ export function guardForMaxlength(element: FormControl, text: string, testHelper
   }
 }
 
-export async function typeIn(element: inputElement, value: string): Promise<void> {
-  return;
-}
-
-export async function tap(element: inputElement): Promise<void> {
-  return;
-}
-
-export async function triggerEvent(element: inputElement): Promise<void> {
-  return;
-}
-
-export async function triggerKeyEvent(element: inputElement): Promise<void> {
-  return;
-}
+export {
+  blur,
+  click,
+  doubleClick,
+  fillIn,
+  fireEvent,
+  focus,
+  scrollTo,
+  select,
+  tap,
+  triggerEvent,
+  triggerKeyEvent,
+  typeIn,
+};
 
 export default {
   blur,
   click,
   doubleClick,
   fillIn,
-  typeIn,
+  fireEvent,
   focus,
+  scrollTo,
+  select,
   tap,
   triggerEvent,
   triggerKeyEvent,
+  typeIn,
 };

@@ -17,6 +17,7 @@ import {
   triggerKeyEvent,
   typeIn,
 } from './input';
+import { find, findAll } from './query';
 import { service } from '@glimmerx/service';
 
 export function visit(path: string): Promise<void> {
@@ -38,7 +39,7 @@ export function currentURL(): string {
   return context.router.path;
 }
 
-export function render(template: any, services: object | undefined): Promise<any> {
+export function render(template: any, services?: object | undefined): Promise<any> {
   const context = getContext();
   const targetServices = context.services || services; // TODO: get resolver from QUnit.config object
 
@@ -54,6 +55,8 @@ export {
   click,
   doubleClick,
   fillIn,
+  find,
+  findAll,
   fireEvent,
   focus,
   scrollTo,
@@ -76,6 +79,8 @@ export default {
   click,
   doubleClick,
   fillIn,
+  find,
+  findAll,
   fireEvent,
   focus,
   scrollTo,

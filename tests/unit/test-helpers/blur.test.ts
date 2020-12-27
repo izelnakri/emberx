@@ -4,6 +4,12 @@ import { fn } from '@glimmerx/helper';
 import { module, test } from 'qunit';
 import { setupRenderingTest, render, blur, focus } from '../../../src/test-helpers';
 
+function setupEventStepListeners(assert, element) {
+  ['focus', 'focusin', 'blur', 'focusout'].forEach((eventName) => {
+    element.addEventListener(eventName, () => assert.step(eventName));
+  });
+}
+
 module('emberx/test-helpers | blur', function (hooks) {
   setupRenderingTest(hooks);
 
@@ -23,10 +29,7 @@ module('emberx/test-helpers | blur', function (hooks) {
 
     const input = document.querySelector('[data-test-some-input]');
 
-    input.addEventListener('focus', () => assert.step('focus'));
-    input.addEventListener('focusin', () => assert.step('focusin'));
-    input.addEventListener('blur', () => assert.step('blur'));
-    input.addEventListener('focusout', () => assert.step('focusout'));
+    setupEventStepListeners(assert, input);
 
     assert.dom('[data-test-some-input]').hasValue('Something');
 
@@ -82,10 +85,7 @@ module('emberx/test-helpers | blur', function (hooks) {
 
     const input = document.querySelector('#test-input');
 
-    input.addEventListener('focus', () => assert.step('focus'));
-    input.addEventListener('focusin', () => assert.step('focusin'));
-    input.addEventListener('blur', () => assert.step('blur'));
-    input.addEventListener('focusout', () => assert.step('focusout'));
+    setupEventStepListeners(assert, input);
 
     await focus('#test-input');
 
@@ -135,10 +135,7 @@ module('emberx/test-helpers | blur', function (hooks) {
 
     const input = document.querySelector('#test-input');
 
-    input.addEventListener('focus', () => assert.step('focus'));
-    input.addEventListener('focusin', () => assert.step('focusin'));
-    input.addEventListener('blur', () => assert.step('blur'));
-    input.addEventListener('focusout', () => assert.step('focusout'));
+    setupEventStepListeners(assert, input);
 
     try {
       await focus('#test-input');

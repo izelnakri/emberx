@@ -1,7 +1,7 @@
 import './blur.test';
 import './click.test';
 import './double-click.test';
-// import './fill-in.test';
+import './fill-in.test';
 // import './find-all.test';
 // import './find.test';
 // import './focus.test';

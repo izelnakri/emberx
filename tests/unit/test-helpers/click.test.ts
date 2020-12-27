@@ -4,6 +4,12 @@ import { fn } from '@glimmerx/helper';
 import { module, test } from 'qunit';
 import { setupRenderingTest, render, click } from '../../../src/test-helpers';
 
+function setupEventStepListeners(assert, element) {
+  ['mousedown', 'focus', 'mouseup', 'click'].forEach((eventName) => {
+    element.addEventListener(eventName, () => assert.step(eventName));
+  });
+}
+
 module('emberx/test-helpers | click', function (hooks) {
   setupRenderingTest(hooks);
 
@@ -11,9 +17,7 @@ module('emberx/test-helpers | click', function (hooks) {
     assert.expect(3);
 
     this.title = 'some title';
-    this.assertTrue = (param) => {
-      assert.equal(param, 'some title');
-    };
+    this.assertTrue = (param) => assert.equal(param, 'some title');
 
     await render(hbs`
       <button type="button" {{on "click" (fn @assertTrue @title)}} data-test-some-button>
@@ -60,10 +64,7 @@ module('emberx/test-helpers | click', function (hooks) {
 
     const input = document.querySelector('#test-input');
 
-    input.addEventListener('mousedown', () => assert.step('mousedown'));
-    input.addEventListener('focus', () => assert.step('focus'));
-    input.addEventListener('mouseup', () => assert.step('mouseup'));
-    input.addEventListener('click', () => assert.step('click'));
+    setupEventStepListeners(assert, input);
 
     assert.verifySteps([]);
 
@@ -100,10 +101,7 @@ module('emberx/test-helpers | click', function (hooks) {
 
     const input = document.querySelector('#test-input');
 
-    input.addEventListener('mousedown', () => assert.step('mousedown'));
-    input.addEventListener('focus', () => assert.step('focus'));
-    input.addEventListener('mouseup', () => assert.step('mouseup'));
-    input.addEventListener('click', () => assert.step('click'));
+    setupEventStepListeners(assert, input);
 
     assert.verifySteps([]);
 

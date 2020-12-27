@@ -55,6 +55,7 @@ export function isContentEditable(element: Element): element is HTMLElementConte
 const FORM_CONTROL_TAGS = ['INPUT', 'BUTTON', 'SELECT', 'TEXTAREA'];
 
 export function isFormControl(element: Element | Document): element is FormControl {
+  debugger;
   return (
     !isDocument(element) &&
     FORM_CONTROL_TAGS.indexOf(element.tagName) > -1 &&
@@ -94,8 +95,8 @@ function isMaxLengthConstrained(
 ): element is HTMLInputElement | HTMLTextAreaElement {
   return (
     !!Number(element.getAttribute('maxLength')) &&
-    (element instanceof HTMLInputElement ||
-      (element instanceof HTMLTextAreaElement && constrainedInputTypes.indexOf(element.type) > -1))
+    (element instanceof HTMLTextAreaElement ||
+      (element instanceof HTMLInputElement && constrainedInputTypes.indexOf(element.type) > -1))
   );
 }
 

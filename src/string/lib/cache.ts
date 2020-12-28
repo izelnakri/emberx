@@ -9,18 +9,19 @@ export default class Cache<T, V> {
 
   get(key: T): V {
     if (this.store.has(key)) {
-      this.hits++;
+      this.hits += 1;
 
       return this.store.get(key);
     } else {
-      this.misses++;
+      this.misses += 1;
+
       return this.set(key, this.func(key));
     }
   }
 
   set(key: T, value: V): V {
     if (this.limit > this.size) {
-      this.size++;
+      this.size += 1;
       this.store.set(key, value);
     }
 

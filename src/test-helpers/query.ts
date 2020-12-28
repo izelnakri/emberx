@@ -3,7 +3,7 @@ export function find(queryString: string): Element | void {
 }
 
 export function findAll(queryString: string): NodeListOf<Element> | void {
-  return document.querySelectorAll(queryString);
+  return Array.from(document.querySelectorAll(queryString));
 }
 
 export default {

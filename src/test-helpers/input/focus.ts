@@ -1,8 +1,9 @@
 import fireEvent from './fire-event.ts';
-import __blur__ from './blur.ts';
+import { __blur__ } from './blur.ts';
 import { isFocusable, getElement } from './index.ts';
 
 export function __focus__(element: HTMLElement | Element | Document | SVGElement): void {
+  debugger;
   if (!isFocusable(element)) {
     throw new Error(`${element} is not focusable`);
   }
@@ -33,7 +34,7 @@ export function __focus__(element: HTMLElement | Element | Document | SVGElement
   }
 }
 
-export default function focus(target: Target): Promise<void> {
+export default async function focus(target: Target): Promise<void> {
   if (!target) {
     throw new Error('Must pass an element or selector to `focus`.');
   }

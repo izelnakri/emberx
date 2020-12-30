@@ -7,7 +7,7 @@ import fireEvent from './fire-event';
   scrollTo('#my-long-div', 0, 0); // scroll to top
   scrollTo('#my-long-div', 0, 100); // scroll down
 */
-export default function scrollTo(
+export default async function scrollTo(
   target: string | HTMLElement,
   x: number,
   y: number

@@ -33,7 +33,7 @@ import fireEvent from './fire-event';
  *   }
  * )
  */
-export default function triggerEvent(
+export default async function triggerEvent(
   target: Target,
   eventType: string,
   options?: object

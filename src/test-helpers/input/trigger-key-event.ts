@@ -154,7 +154,7 @@ export function __triggerKeyEvent__(
   @example
   triggerKeyEvent('button', 'keydown', 'Enter');
 */
-export default function triggerKeyEvent(
+export default async function triggerKeyEvent(
   target: Target,
   eventType: KeyboardEventType,
   key: number | string,

@@ -2,7 +2,7 @@ import { getElement, isFormControl } from './index';
 import { __click__ } from './click';
 import fireEvent from './fire-event';
 
-export default function tap(target: Target, options: object = {}): Promise<void> {
+export default async function tap(target: Target, options: object = {}): Promise<void> {
   if (!target) {
     throw new Error('Must pass an element or selector to `tap`.');
   }

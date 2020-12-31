@@ -17,7 +17,7 @@ import fireEvent from './fire-event';
   select('select', ['apple', 'orange']);
   select('select', ['apple', 'orange'], true);
 */
-export default function select(
+export default async function select(
   target: Target,
   options: string | string[],
   keepPreviouslySelected = false

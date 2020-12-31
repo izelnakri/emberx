@@ -44,7 +44,7 @@ export default async function triggerEvent(
     throw new Error(`Must provide an \`eventType\` to \`triggerEvent\``);
   }
 
-  const element = getElement(target);
+  const element = getWindowOrElement(target);
   if (!element) {
     throw new Error(`Element not found when calling \`triggerEvent('${target}', ...)\`.`);
   } else if (isFormControl(element) && element.disabled) {
@@ -54,4 +54,12 @@ export default async function triggerEvent(
   fireEvent(element, eventType, options);
 
   // return settled();
+}
+
+export function getWindowOrElement(target: Target): Element | Document | Window | null {
+  if (target instanceof Window) {
+    return target as Window;
+  }
+
+  return getElement(target);
 }

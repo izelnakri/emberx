@@ -26,7 +26,11 @@ export interface Options {
  * Typically this looks like `focus` -> `focusin` -> `keydown` -> `keypress` -> `keyup` -> `input` -> `change`
  * per character of the passed text (this may vary on some browsers).
  */
-export default function typeIn(target: Target, text: string, options: Options = {}): Promise<void> {
+export default async function typeIn(
+  target: Target,
+  text: string,
+  options: Options = {}
+): Promise<void> {
   if (!target) {
     throw new Error('Must pass an element or selector to `typeIn`.');
   }

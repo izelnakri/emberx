@@ -27,6 +27,8 @@ export function getElement(target: nodeQuery): undefined | HTMLElement {
     return target as undefined;
   } else if ((target as HTMLElement).nodeName) {
     return target as HTMLElement;
+  } else if (typeof target !== 'string') {
+    return;
   }
 
   return document.querySelector(target as string);

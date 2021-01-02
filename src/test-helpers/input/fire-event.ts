@@ -1,3 +1,5 @@
+import { isDocument, isElement } from './index';
+
 export type Lit = string | number | boolean | undefined | null | void | {};
 export default function tuple<T extends Lit[]>(...args: T) {
   return args;
@@ -247,6 +249,7 @@ function buildFileEvent(
       value(index: number) {
         return typeof index === 'number' ? this[index] : null;
       },
+      configurable: true,
     });
     Object.defineProperty(element, 'files', {
       value: files,

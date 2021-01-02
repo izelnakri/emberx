@@ -13,5 +13,5 @@ import './tap.test';
 import './trigger-event.test';
 import './trigger-key-event.test';
 import './type-in.test';
-// import './wait-for.test';
-// import './wait-until.test';
+import './wait-for.test';
+import './wait-until.test';

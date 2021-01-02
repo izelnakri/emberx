@@ -5,7 +5,7 @@ import { setupRenderingTest, render, triggerKeyEvent } from '../../../src/test-h
 module('emberx/test-helpers | triggerKeyEvent', function (hooks) {
   setupRenderingTest(hooks);
 
-  module('assertion before triggerEvent error cases', function () {
+  module('assertion before triggerKeyEvent error cases', function () {
     test('rejects if event type is missing', async function (assert) {
       await render(hbs`<div data-test-some-test-div></div>`);
 

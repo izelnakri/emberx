@@ -18,6 +18,7 @@ import {
   typeIn,
 } from './input';
 import { find, findAll } from './query';
+import { waitFor, waitUntil, settled } from './wait';
 import { service } from '@glimmerx/service';
 
 export function visit(path: string): Promise<void> {
@@ -69,9 +70,12 @@ export {
   currentRouteName,
   currentURL,
   render,
+  settled,
   setupTest,
   setupRenderingTest,
   setupApplicationTest,
+  waitFor,
+  waitUntil,
 };
 
 export default {
@@ -93,9 +97,12 @@ export default {
   currentRouteName,
   currentURL,
   render,
+  settled,
   setupTest,
   setupRenderingTest,
   setupApplicationTest,
+  waitFor,
+  waitUntil,
 };
 
 //     -   [blur][2]

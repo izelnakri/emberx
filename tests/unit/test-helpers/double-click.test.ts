@@ -83,8 +83,6 @@ module('emberx/test-helpers | doubleClick', function (hooks) {
 
       const promise = doubleClick('[data-test-some-div]');
 
-      assert.verifySteps([]);
-
       await promise;
 
       assert.verifySteps([

@@ -36,25 +36,21 @@ type Target = string | Element | Document | Window;
 
   doubleClick('button', { shiftKey: true });
 */
-export default function doubleClick(target: Target, _options: MouseEventInit = {}): Promise<void> {
-  return Promise.resolve().then(() => {
-    return new Promise((resolve) => {
-      const options = Object.assign({}, DEFAULT_CLICK_OPTIONS, _options);
+export default async function doubleClick(target: Target, _options: MouseEventInit = {}): Promise<void> {
+  const options = Object.assign({}, DEFAULT_CLICK_OPTIONS, _options);
 
-      if (!target) {
-        throw new Error('Must pass an element or selector to `doubleClick`.');
-      }
+  if (!target) {
+    throw new Error('Must pass an element or selector to `doubleClick`.');
+  }
 
-      const element = getElement(target);
-      if (!element) {
-        throw new Error(`Element not found when calling \`doubleClick('${target}')\`.`);
-      } else if (isFormControl(element) && element.disabled) {
-        throw new Error(`Can not \`doubleClick\` disabled ${element}`);
-      }
+  const element = getElement(target);
+  if (!element) {
+    throw new Error(`Element not found when calling \`doubleClick('${target}')\`.`);
+  } else if (isFormControl(element) && element.disabled) {
+    throw new Error(`Can not \`doubleClick\` disabled ${element}`);
+  }
 
-      __doubleClick__(element, options);
+  __doubleClick__(element, options);
 
-      return waitUntil(() => true, { timeout: Infinity }).then(() => resolve());
-    });
-  });
+  // return settled();
 }

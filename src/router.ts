@@ -25,6 +25,7 @@ interface routerJSRouteDefinition {
 }
 
 export class RouterJSRouter extends Router<Route> {
+  IS_TESTING = false;
   locationBar: any;
   path: string;
 
@@ -117,6 +118,10 @@ export default class EmberXRouter {
   static _ROUTE_REGISTRY = {};
   static _parentRoute: string | null = null;
   static routerjs: RouterJSRouter = null;
+
+  static IS_TESTING() {
+    return !!globalThis.QUnit;
+  }
 
   static convertToRouterJSRouteArray(
     routerRegistry: RouteRegistry
@@ -290,10 +295,6 @@ export default class EmberXRouter {
       runRegistryMap(runRegistryMap, match, routerJSRouteArray);
     });
     this.SERVICES.router = this.routerjs;
-
-    if (!globalThis.QUnit) {
-      this.routerjs.visit(document.location.pathname);
-    }
 
     return this.routerjs;
   }

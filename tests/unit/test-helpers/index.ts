@@ -8,7 +8,6 @@ import './focus.test';
 import './scroll-to.test';
 import './select-files.test';
 import './select.test';
-// import './settled.test';
 import './tap.test';
 import './trigger-event.test';
 import './trigger-key-event.test';

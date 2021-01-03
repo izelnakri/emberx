@@ -82,6 +82,4 @@ const router: RouterJSRouter = Router.start(
 
 window.router = router;
 
-console.log('index.ts finished');
-
 export default router;

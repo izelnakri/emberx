@@ -3,7 +3,7 @@ import { visit, currentURL } from '../../src/test-helpers';
 import { setupApplicationTest } from '../../src/test-helpers/setup';
 import Application from '../../examples/blog/router';
 
-window.QUnit.config.notrycatch = true;
+// window.QUnit.config.notrycatch = true;
 
 module('E2E | /', function (hooks) {
   setupApplicationTest(hooks, Application); // TODO: how should this start silently?

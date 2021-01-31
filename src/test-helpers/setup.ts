@@ -36,7 +36,7 @@ export function setupTest(hooks: QUnitHooks): void {
     };
   });
 
-  hooks.beforeEach(function () {
+  hooks.beforeEach(async function () {
     const container = document.createElement('div');
     const containerPage = document.createElement('div');
 
@@ -45,6 +45,8 @@ export function setupTest(hooks: QUnitHooks): void {
 
     document.getElementById('qunit-fixture').after(container);
     container.appendChild(containerPage);
+
+    // setContext(this);
   });
 
   hooks.afterEach(function () {
@@ -52,7 +54,7 @@ export function setupTest(hooks: QUnitHooks): void {
   });
 }
 
-export function setupRenderingTest(hooks: QUnitHooks, Application: any): void {
+export function setupRenderingTest(hooks: QUnitHooks, Application?: any | undefined): void {
   setupTest(hooks);
 
   hooks.beforeEach(async function () {
@@ -66,7 +68,7 @@ export function setupRenderingTest(hooks: QUnitHooks, Application: any): void {
 }
 
 // TODO: also set this.owner, this.owner.lookup
-export function setupApplicationTest(hooks: QUnitHooks, Application: any): void {
+export function setupApplicationTest(hooks: QUnitHooks, Application?: any | undefined): void {
   setupTest(hooks);
 
   hooks.beforeEach(async function () {
@@ -74,8 +76,6 @@ export function setupApplicationTest(hooks: QUnitHooks, Application: any): void 
     this.router = Application;
     setContext(this);
   });
-
-  // console.log('setupApplicationTest called', hooks);
 }
 
 export default {
@@ -83,13 +83,3 @@ export default {
   setupRenderingTest,
   setupApplicationTest,
 };
-
-// import {
-//   renderComponent as glimmerRenderComponent,
-//   ComponentDefinition,
-//   RenderComponentOptions,
-//   didRender,
-// } from '@glimmerx/core';
-
-// // Re-export didRender for convenience
-// export { didRender };

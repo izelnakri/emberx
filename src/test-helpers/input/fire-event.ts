@@ -1,7 +1,7 @@
 import { isDocument, isElement } from './index';
 
 export type Lit = string | number | boolean | undefined | null | void | {};
-export default function tuple<T extends Lit[]>(...args: T) {
+export function tuple<T extends Lit[]>(...args: T) {
   return args;
 }
 

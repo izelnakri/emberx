@@ -1,8 +1,8 @@
-import './camelize.test';
-import './capitalize.test';
-import './classify.test';
-import './dasherize.test';
-import './decamelize.test';
-import './loc.test';
-import './underscore.test';
-import './w.test';
+import './camelize';
+import './capitalize';
+import './classify';
+import './dasherize';
+import './decamelize';
+import './loc';
+import './underscore';
+import './w';

@@ -1,4 +1,4 @@
-import { module, test } from 'qunit';
+import { module, test } from 'qunitx';
 import { dasherize } from '../../../src/string/index';
 
 module('emberx/string | classify', () => {

@@ -1,5 +1,5 @@
 import { decamelize } from '../../../src/string/index';
-import { module, test } from 'qunit';
+import { module, test } from 'qunitx';
 
 module('emberx/string | decamelize', () => {
   test('decamelizes strings', async (assert) => {

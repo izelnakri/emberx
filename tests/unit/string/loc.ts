@@ -1,6 +1,6 @@
 import { loc } from '../../../src/string/index';
 import { getStrings, setStrings } from '../../../src/string/lib/string-registry';
-import { module, test } from 'qunit';
+import { module, test } from 'qunitx';
 
 module('emberx/string | loc', (hooks) => {
   let oldString;

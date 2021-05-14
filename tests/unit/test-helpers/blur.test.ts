@@ -1,7 +1,8 @@
+// @ts-nocheck
 import { hbs } from '@glimmerx/component';
 import { on } from '@glimmerx/modifier';
 import { fn } from '@glimmerx/helper';
-import { module, test } from 'qunit';
+import { module, test } from 'qunitx';
 import { setupRenderingTest, render, blur, focus } from '../../../src/test-helpers';
 
 function setupEventStepListeners(assert, element) {

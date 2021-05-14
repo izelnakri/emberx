@@ -1,14 +1,21 @@
-import 'qunit/qunit/qunit.css';
+import setupDom from './setup-dom';
 
-import 'qunit';
-import 'qunit-dom/dist/qunit-dom';
+(async () => {
+  await setupDom();
 
-QUnit.start();
+  console.log('before qunitx import');
+  await import('qunit');
+  console.log('after qunitx import');
 
-Object.defineProperty(QUnit.assert.dom, 'rootElement', {
-  get: () => document.getElementById('ember-testing'),
-});
+  global.QUnit = global.window.QUnit;
+  window.scrollTo = () => {};
 
-import './e2e/index.ts';
-import './rendering/index.ts';
-import './unit/index.ts';
+  await import('qunit-dom/dist/qunit-dom');
+
+  console.log('after qunit-dom import');
+  // QUnit.start();
+
+  Object.defineProperty(QUnit.assert.dom, 'rootElement', {
+    get: () => document.getElementById('ember-testing'),
+  });
+})();

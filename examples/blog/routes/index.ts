@@ -1,14 +1,13 @@
 import Route from '../../../src/route'; // import Route from 'emberx/route';
-import { hbs, tracked } from '@glimmerx/component';
-import { service } from '@glimmerx/service';
-import { action, on } from '@glimmerx/modifier';
+import { tracked } from '@glimmer/tracking';
+import { action, on } from '@glimmer/modifier';
 import t from '../helpers/t';
 
 import LinkTo from '../../../src/link-to'; // import LinkTo from 'emberx/LinkTo';
 import Counter from '../components/Counter';
 
 export default class IndexRoute extends Route {
-  @service intl;
+  // @service intl;
 
   @tracked dynamicObject;
 
@@ -34,7 +33,7 @@ export default class IndexRoute extends Route {
     };
   }
 
-  static template = hbs`
+  static template = `
     <nav class="navbar navbar-light bg-light">
       <div class="container-fluid">
         <!-- Turn this to LinkTo -->

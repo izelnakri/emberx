@@ -1,7 +1,7 @@
-import { renderComponent } from '@glimmerx/core';
+import { renderComponent } from '@glimmer/core';
 import { getContext } from './context';
 import { setupTest, setupRenderingTest, setupApplicationTest } from './setup';
-import { tracked } from '@glimmerx/component';
+import { tracked } from '@glimmer/tracking';
 import Intl from '../../examples/blog/services/intl';
 import {
   blur,
@@ -19,7 +19,7 @@ import {
 } from './input';
 import { find, findAll } from './query';
 import { waitFor, waitUntil, settled } from './wait';
-import { service } from '@glimmerx/service';
+// import { service } from '@glimmerx/service';
 
 export function visit(path: string): Promise<void> {
   const context = getContext();

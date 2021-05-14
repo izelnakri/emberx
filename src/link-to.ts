@@ -1,6 +1,5 @@
-import Component, { hbs } from '@glimmerx/component';
-import { service } from '@glimmerx/service';
-import { on, action } from '@glimmerx/modifier';
+import Component from '@glimmer/component';
+import { on, action } from '@glimmer/modifier';
 
 interface FreeObject {
   [propName: string]: any;
@@ -42,7 +41,7 @@ export default class extends Component<{
   replace?: boolean;
   route: string;
 }> {
-  @service router;
+  // @service router;
 
   get tagName() {
     return this.args.tagName || 'a';
@@ -120,7 +119,7 @@ export default class extends Component<{
   }
 
   // TODO: add activeClass, loadingClass, disabledClass, 'ember-transitioning-in', 'ember-transitioning-out'
-  static template = hbs`
+  static template = `
     <a href="{{this.link}}" {{on "click" this.transition}} ...attributes>{{yield}}</a>
   `;
 

@@ -1,4 +1,4 @@
-import { tracked } from '@glimmerx/component';
+import { tracked } from '@glimmer/tracking';
 
 export default class Locale {
   @tracked currentLocale = 'en';

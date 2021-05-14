@@ -1,15 +1,18 @@
 import Router from './router';
-import { renderComponent } from '@glimmerx/core';
-import Component, { hbs } from '@glimmerx/component';
-import { action } from '@glimmerx/modifier';
-import { service } from '@glimmerx/service';
+import { renderComponent } from '@glimmer/core';
+import Component from '@glimmer/component';
+// import Component, { hbs } from '@glimmerx/component';
+import { on, action } from '@glimmer/modifier';
+// import { service } from '@glimmerx/service';
 
 interface FreeObject {
   [propName: string]: any;
 }
 
 export default class Route extends Component<{ model: object }> {
-  @service router;
+  // @service router;
+
+  static scope: {};
 
   get model(): any {
     return this.args.model;
@@ -39,6 +42,7 @@ export default class Route extends Component<{ model: object }> {
 
     containerElement.innerHTML = ''; // TODO: temporary solution, clear previously rendered route
 
+    debugger;
     renderComponent(this, {
       element: containerElement,
       args: { model: model || {} },
@@ -46,13 +50,13 @@ export default class Route extends Component<{ model: object }> {
     });
   }
 
-  static template = hbs`
+  static template = `
     <div id="intro">
       <h1>{{this.routeName}} ROUTE IS MISSING A TEMPLATE!</h1>
     </div>
   `;
 
   @action transitionTo(routeName: string, params: object, options: object): object {
-    return this.router.transitionTo(routeName, params, options);
+    // return this.router.transitionTo(routeName, params, options);
   }
 }

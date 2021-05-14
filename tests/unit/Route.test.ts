@@ -1,4 +1,4 @@
-import { module, test } from 'qunit';
+import { module, test } from 'qunitx';
 import Route from '../../src/route';
 
 module('Route Unit Test', () => {

@@ -13,49 +13,20 @@
     "dev": "parcel index.html tests/tests.html --no-cache",
     "test": "node_modules/.bin/qunitx tests/unit/string --browser",
     "test:debug": "node_modules/.bin/qunitx tests/unit/string --browser --debug",
-    "test:node": "node_modules/.bin/ava --verbose",
     "test:browsers": "parcel tests/index.html",
     "typecheck": "tsc --project tsconfig.json --noEmit --skipLibCheck",
-    "watch:node": "tsc --watch"
+    "ts:watch": "tsc --watch"
   },
   "dependencies": {
-    "@glimmer/runtime": "^0.73.1",
-    "@glimmerx/component": "^0.2.5",
-    "@glimmerx/core": "^0.2.5",
-    "@glimmerx/modifier": "^0.2.5",
-    "@glimmerx/service": "^0.2.5",
-    "jquery": "^3.6.0",
+    "@glimmer/babel-preset": "2.0.0-beta.16",
+    "@glimmer/component": "2.0.0-beta.16",
+    "@glimmer/core": "2.0.0-beta.16",
+    "@glimmer/interfaces": "0.79.1",
+    "@glimmer/modifier": "2.0.0-beta.16",
+    "@glimmer/tracking": "2.0.0-beta.16",
+    "bootstrap": "^5.0.1",
     "route-recognizer": "^0.3.4",
-    "router_js": "^7.1.1"
-  },
-  "devDependencies": {
-    "@babel/core": "^7.12.10",
-    "@babel/plugin-proposal-class-properties": "^7.12.1",
-    "@babel/plugin-proposal-decorators": "^7.12.12",
-    "@babel/preset-env": "^7.12.11",
-    "@babel/preset-typescript": "^7.12.7",
-    "@glimmer/babel-plugin-glimmer-env": "~2.0.0-beta.12",
-    "@glimmer/env": "^0.1.7",
-    "@glimmerx/babel-plugin-component-templates": "^0.2.5",
-    "@glimmerx/helper": "^0.2.5",
-    "@types/node": "^14.14.19",
-    "@types/qunit": "^2.11.1",
-    "@typescript-eslint/eslint-plugin": "^4.11.1",
-    "@typescript-eslint/parser": "^4.11.1",
-    "ava": "^3.15.0",
-    "bootstrap": "5.0.0-alpha2",
-    "eslint": "^7.17.0",
-    "eslint-config-prettier": "^7.1.0",
-    "eslint-plugin-prettier": "^3.3.0",
-    "npm-run-all": "^4.1.5",
-    "parcel": "^2.0.0-nightly.428",
-    "prettier": "^2.2.1",
-    "qunit": "^2.13.0",
-    "qunit-dom": "^1.1.0",
-    "qunitx": "^0.1.6",
-    "sass": "^1.32.0",
-    "testem": "^3.0.3",
-    "typescript": "~4.1.3"
+    "router_js": "^7.3.0"
   },
   "browserslist": {
     "production": [
@@ -73,13 +44,6 @@
   "babel": {
     "plugins": [
       [
-        "@glimmer/babel-plugin-glimmer-env",
-        {
-          "DEBUG": true
-        }
-      ],
-      "@glimmerx/babel-plugin-component-templates",
-      [
         "@babel/plugin-proposal-decorators",
         {
           "legacy": true
@@ -88,80 +52,21 @@
       "@babel/plugin-proposal-class-properties"
     ],
     "presets": [
-      "@babel/preset-env",
-      "@babel/preset-typescript"
+      "@glimmer/babel-preset",
+      "@babel/preset-typescript",
+      "@babel/preset-env"
     ]
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-decorators": "^7.14.2",
+    "@babel/preset-typescript": "^7.13.0",
+    "@parcel/transformer-sass": "2.0.0-beta.2",
+    "@parcel/transformer-typescript-tsc": "2.0.0-beta.2",
+    "parcel": "2.0.0-beta.2",
+    "qunitx": "^0.1.7"
   },
   "prettier": {
     "printWidth": 100,
     "singleQuote": true
-  },
-  "eslintConfig": {
-    "parser": "@typescript-eslint/parser",
-    "parserOptions": {
-      "ecmaVersion": 2019,
-      "sourceType": "module"
-    },
-    "env": {
-      "browser": true
-    },
-    "plugins": [
-      "@glimmerx",
-      "@typescript-eslint",
-      "prettier"
-    ],
-    "extends": [
-      "eslint:recommended",
-      "plugin:prettier/recommended"
-    ],
-    "ignorePatterns": [
-      "dist/",
-      "node_modules/",
-      "!.*"
-    ],
-    "rules": {
-      "@glimmerx/template-vars": "error",
-      "@typescript-eslint/no-explicit-any": "off"
-    },
-    "overrides": [
-      {
-        "files": [
-          "**/*.ts"
-        ],
-        "extends": [
-          "plugin:@typescript-eslint/eslint-recommended",
-          "plugin:@typescript-eslint/recommended",
-          "prettier/@typescript-eslint"
-        ],
-        "rules": {
-          "@typescript-eslint/no-explicit-any": "off",
-          "@typescript-eslint/ban-types": "off"
-        }
-      },
-      {
-        "files": [
-          "testem.js"
-        ],
-        "env": {
-          "node": true
-        }
-      }
-    ]
-  },
-  "ava": {
-    "files": [
-      "src/test/**/*",
-      "!src/test/test-helpers/**/*",
-      "!src/test/target-outputs/**/*"
-    ],
-    "extensions": [
-      "ts"
-    ],
-    "require": [
-      "ts-node/register"
-    ],
-    "timeout": "30000",
-    "cache": false,
-    "failFast": true
   }
 }

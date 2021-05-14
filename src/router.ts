@@ -1,5 +1,5 @@
 import Router, { Route } from 'router_js';
-import LocationBar from 'location-bar';
+import LocationBar from '../vendor/location-bar.js';
 import DefaultRoute from './route';
 
 interface FreeObject {

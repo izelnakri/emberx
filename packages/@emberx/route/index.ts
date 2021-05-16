@@ -1,4 +1,4 @@
-import Router from './router';
+import Router from '@emberx/router';
 import { renderComponent } from '@glimmer/core';
 import Component from '@glimmer/component';
 // import Component, { hbs } from '@glimmerx/component';

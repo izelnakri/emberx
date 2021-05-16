@@ -1,6 +1,6 @@
 import Router, { Route } from 'router_js';
-import LocationBar from '../vendor/location-bar.js';
-import DefaultRoute from './route';
+import LocationBar from './vendor/location-bar.js';
+import DefaultRoute from '@emberx/route';
 
 interface FreeObject {
   [propName: string]: any;

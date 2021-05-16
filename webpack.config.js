@@ -5,8 +5,11 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const commonConfig = {
+const librariesConfig = {
   mode: 'development',
+  experiments: {
+    outputModule: true
+  },
   externals: {
     fs: 'fs',
   },
@@ -18,20 +21,24 @@ const commonConfig = {
     ],
     extensions: ['.ts', '.js'],
   },
-  output: {
-    filename: '[name].bundle.js',
-    path: path.resolve(__dirname, 'dist'),
-  },
   devServer: {
     writeToDisk: true,
   },
-};
-
-const browserConfig = {
-  ...commonConfig,
   entry: {
-    app: './examples/basic/index.ts',
-    // tests: './test/index.ts'
+    '@emberx/component': './packages/@emberx/component/index.ts',
+    '@emberx/helper': './packages/@emberx/helper/index.ts',
+    '@emberx/link-to': './packages/@emberx/link-to/index.ts',
+    '@emberx/router': './packages/@emberx/router/index.ts',
+    '@emberx/route': './packages/@emberx/route/index.ts',
+    '@emberx/string': './packages/@emberx/string/index.ts',
+    '@emberx/test-helpers': './packages/@emberx/test-helpers/index.ts',
+  },
+  output: {
+    filename: (pathData) => {
+      return `packages/${pathData.chunk.name}/dist/index.js`;
+    },
+    path: __dirname,
+    libraryTarget: 'module',
   },
   module: {
     rules: [
@@ -39,10 +46,13 @@ const browserConfig = {
         test: /(\.ts|\.js)$/,
         use: {
           loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-env', '@babel/preset-typescript', '@glimmer/babel-preset']
+          }
         },
       },
     ],
   },
 };
 
-export default [browserConfig];
+export default [librariesConfig];

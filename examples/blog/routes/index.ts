@@ -1,9 +1,9 @@
-import Route from '../../../src/route'; // import Route from 'emberx/route';
+import Route from '@emberx/route'; // import Route from 'emberx/route';
 import { tracked } from '@glimmer/tracking';
 import { action, on } from '@glimmer/modifier';
 import t from '../helpers/t';
 
-import LinkTo from '../../../src/link-to'; // import LinkTo from 'emberx/LinkTo';
+import LinkTo from '@emberx/link-to'; // import LinkTo from 'emberx/LinkTo';
 import Counter from '../components/Counter';
 
 export default class IndexRoute extends Route {

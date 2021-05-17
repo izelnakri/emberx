@@ -1,4 +1,4 @@
-import Component from '@glimmer/component';
+import Component from '@emberx/component';
 import { tracked } from '@glimmer/tracking';
 import { on, action } from '@glimmer/modifier';
 

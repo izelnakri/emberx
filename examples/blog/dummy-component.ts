@@ -1,4 +1,4 @@
-import Component, { hbs } from '../../src/component';
+import Component, { hbs } from '@emberx/component';
 import { tracked } from '@glimmer/tracking';
 import { precompileTemplate, setComponentTemplate, templateOnlyComponent } from '@glimmer/core';
 import { on, action } from '@glimmer/modifier';

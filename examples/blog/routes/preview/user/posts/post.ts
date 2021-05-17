@@ -1,4 +1,4 @@
-import Route from '../../../../../../src/route'; // import Route from 'emberx/route';
+import Route from '@emberx/route'; // import Route from 'emberx/route';
 // import { service } from '@glimmerx/service';
 
 export default class PreviewUserPostsPostRoute extends Route {

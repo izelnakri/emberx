@@ -1,4 +1,4 @@
-import Route from '../../../../src/route'; // import Route from 'emberx/route';
+import Route from '@emberx/route'; // import Route from 'emberx/route';
 import { tracked } from '@glimmer/tracking';
 // import { hbs, tracked } from '@glimmerx/component';
 // import { service } from '@glimmerx/service';
@@ -6,7 +6,7 @@ import { action, on } from '@glimmer/modifier';
 import t from '../../helpers/t';
 
 import BlogHeader from '../../components/BlogHeader';
-import LinkTo from '../../../../src/link-to'; // import Route from 'emberx/route';
+import LinkTo from '@emberx/link-to'; // import Route from 'emberx/route';
 import Counter from '../../components/Counter';
 
 export default class PublicIndexRoute extends Route {

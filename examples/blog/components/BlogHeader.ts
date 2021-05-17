@@ -1,4 +1,4 @@
-import Component from '@glimmer/component';
+import Component from '@emberx/component';
 
 export default class AppHeader extends Component {
   static template = `

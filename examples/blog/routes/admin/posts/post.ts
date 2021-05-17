@@ -1,6 +1,6 @@
-import Route from '../../../../../src/route'; // import Route from 'emberx/route';
+import Route from '@emberx/route'; // import Route from 'emberx/route';
 
-import LinkTo from '../../../../../src/link-to'; // import LinkTo from 'emberx/link-to';
+import LinkTo from '@emberx/link-to'; // import LinkTo from 'emberx/link-to';
 
 export default class AdminPostsPostRoute extends Route {
   // @service intl;

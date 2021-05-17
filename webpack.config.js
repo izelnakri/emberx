@@ -30,8 +30,8 @@ const sharedConfig = {
   },
 }
 
-const librariesConfig = {
-  name: 'libraries',
+const buildConfig = {
+  name: 'build',
   ...sharedConfig,
   externals: {
     fs: 'fs',
@@ -57,8 +57,8 @@ const librariesConfig = {
   }
 };
 
-const appsConfig = {
-  name: 'examples',
+const devConfig = {
+  name: 'dev',
   ...sharedConfig,
   devServer: {
     hot: false,
@@ -81,7 +81,11 @@ const appsConfig = {
     extensions: ['.js', '.ts'],
     alias: {
       '@emberx/helper': path.resolve(__dirname, 'packages/@emberx/helper/index.ts'),
-      '@emberx/string': path.resolve(__dirname, 'packages/@emberx/string/index.ts')
+      '@emberx/string': path.resolve(__dirname, 'packages/@emberx/string/index.ts'),
+      '@emberx/link-to': path.resolve(__dirname, 'packages/@emberx/link-to/index.ts'),
+      '@emberx/router': path.resolve(__dirname, 'packages/@emberx/router/index.ts'),
+      '@emberx/route': path.resolve(__dirname, 'packages/@emberx/route/index.ts'),
+      '@emberx/test-helpers': path.resolve(__dirname, 'packages/@emberx/test-helpers/index.ts')
     }
   },
   output: {
@@ -90,4 +94,4 @@ const appsConfig = {
   },
 }
 
-export default [librariesConfig, appsConfig];
+export default [buildConfig, devConfig];

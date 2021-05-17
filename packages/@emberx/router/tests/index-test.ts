@@ -1,9 +1,9 @@
 // TODO: write test utility to query actual router_js registry of the Router and assert against objects
 import { module, test } from 'qunit';
-import Router from '../../src/router';
-import oldRouterMap from '../helpers/old-router-map';
-import targetRegistryForOldRouterMap from '../helpers/outputs/target-registry-for-old-router-map';
-import targetRouteJSArrayForOldRouterMap from '../helpers/outputs/target-route-js-array-for-old-router-map';
+import Router from '@emberx/router';
+import oldRouterMap from './helpers/old-router-map';
+import targetRegistryForOldRouterMap from './helpers/outputs/target-registry-for-old-router-map';
+import targetRouteJSArrayForOldRouterMap from './helpers/outputs/target-route-js-array-for-old-router-map';
 
 module('Router Unit Test', () => {
   test('Router.map creates route registry without Router.start()', async (assert) => {

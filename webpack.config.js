@@ -7,6 +7,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const sharedConfig = {
   mode: 'development',
+  externals: {
+    fs: 'fs',
+  },
   resolve: {
     plugins: [
       new TsconfigPathsPlugin({
@@ -22,7 +25,7 @@ const sharedConfig = {
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['@babel/preset-env', '@babel/preset-typescript', '@glimmer/babel-preset']
+            presets: ['@glimmer/babel-preset', '@babel/preset-typescript']
           }
         },
       },
@@ -30,18 +33,34 @@ const sharedConfig = {
   },
 }
 
+// TODO: when --prod passed minify/optimize everything for npm
+const glimmerBuildConfig = {
+  name: 'glimmer',
+  ...sharedConfig,
+  experiments: {
+    outputModule: true
+  },
+  entry: {
+    '@glimmer/core': './node_modules/@glimmer/core/index.ts',
+  },
+  output: {
+    filename: (pathData) => {
+      return `packages/@emberx/component/glimmer-core/index.ts`;
+    },
+    path: __dirname,
+    libraryTarget: 'module',
+  }
+};
+
 const buildConfig = {
   name: 'build',
   ...sharedConfig,
-  externals: {
-    fs: 'fs',
-  },
   experiments: {
     outputModule: true
   },
   entry: {
     '@emberx/component': './packages/@emberx/component/index.ts',
-    '@emberx/helper': './packages/@emberx/helper/index.ts',
+    // '@emberx/helper': './packages/@emberx/helper/index.ts',
     // '@emberx/link-to': './packages/@emberx/link-to/index.ts',
     // '@emberx/router': './packages/@emberx/router/index.ts',
     // '@emberx/route': './packages/@emberx/route/index.ts',
@@ -52,13 +71,13 @@ const buildConfig = {
     filename: (pathData) => {
       return `packages/${pathData.chunk.name}/dist/index.js`;
     },
-    path: path.resolve(__dirname, 'dist'),
+    path: __dirname,
     libraryTarget: 'module',
   }
 };
 
 const devConfig = {
-  name: 'dev',
+  name: 'devserver',
   ...sharedConfig,
   devServer: {
     hot: false,
@@ -94,4 +113,4 @@ const devConfig = {
   },
 }
 
-export default [buildConfig, devConfig];
+export default [glimmerBuildConfig, buildConfig, devConfig];

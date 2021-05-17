@@ -14,14 +14,15 @@
   ],
   "scripts": {
     "lint": "eslint . --ext=js,ts --cache",
-    "build": "node_modules/.bin/webpack build --config-name='build'",
-    "build:dev": "node_modules/.bin/webpack build --config-name='dev'",
+    "build": "npm run build:glimmer && node_modules/.bin/webpack build --config-name='build'",
+    "build:glimmer": "node_modules/.bin/webpack build --config-name='glimmer'",
+    "build:devserver": "node_modules/.bin/webpack build --config-name='devserver'",
     "build:all": "node_modules/.bin/webpack build",
-    "dev": "node_modules/.bin/webpack-dev-server --config=name='dev'",
+    "dev": "node_modules/.bin/webpack-dev-server --config=name='devserver'",
     "dev:build": "node_modules/.bin/webpack-dev-server --config-name='build'",
     "dev:all": "node_modules/.bin/webpack-dev-server",
     "test": "npm run build && node_modules/.bin/qunitx packages/**/tests/**/*-test.ts tests/**/*-test.ts --browser --debug",
-    "test:ci": "node_modules/.bin/qunitx packages/**/tests/**/*-test.ts tests/**/*-test.ts --browser --debug",
+    "test:ci": "node_modules/.bin/qunitx packages/@emberx/string/tests/**/*-test.ts tests/**/*-test.ts --browser --debug --failFast",
     "typecheck": "tsc --project tsconfig.json --noEmit --skipLibCheck",
     "ts:watch": "tsc --watch"
   },
@@ -35,6 +36,7 @@
     "router_js": "^7.3.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.14.2",
     "@babel/preset-typescript": "^7.13.0",
     "@glimmer/babel-preset": "2.0.0-beta.16",
     "babel-loader": "^8.2.2",
@@ -47,9 +49,16 @@
   },
   "babel": {
     "presets": [
-      "@babel/preset-env",
+      "@glimmer/babel-preset",
       "@babel/preset-typescript",
-      "@glimmer/babel-preset"
+      [
+        "@babel/preset-env",
+        {
+          "targets": {
+            "node": true
+          }
+        }
+      ]
     ]
   },
   "browserslist": {

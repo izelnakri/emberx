@@ -84,67 +84,6 @@ function _fmt(str: string, formats: any[]) {
 }
 
 /**
-  Formats the passed string, but first looks up the string in the localized
-  strings hash. This is a convenient way to localize text.
-
-  Note that it is traditional but not required to prefix localized string
-  keys with an underscore or other character so you can easily identify
-  localized strings.
-
-  ```javascript
-  import { loc } from '@ember/string';
-
-  Ember.STRINGS = {
-    '_Hello World': 'Bonjour le monde',
-    '_Hello %@ %@': 'Bonjour %@ %@'
-  };
-
-  loc("_Hello World");  // 'Bonjour le monde';
-  loc("_Hello %@ %@", ["John", "Smith"]);  // "Bonjour John Smith";
-  ```
-
-  @method loc
-  @param {String} str The string to format
-  @param {Array} formats Optional array of parameters to interpolate into string.
-  @return {String} formatted string
-  @public
-*/
-export function loc(str: string, formats: any[]): string {
-  if (!Array.isArray(formats) || arguments.length > 2) {
-    formats = Array.prototype.slice.call(arguments, 1);
-  }
-
-  str = getString(str) || str;
-  return _fmt(str, formats);
-}
-
-/**
-  Splits a string into separate units separated by spaces, eliminating any
-  empty strings in the process. This is a convenience method for split that
-  is mostly useful when applied to the `String.prototype`.
-
-  ```javascript
-  import { w } from '@ember/string';
-
-  w("alpha beta gamma").forEach(function(key) {
-    console.log(key);
-  });
-
-  // > alpha
-  // > beta
-  // > gamma
-  ```
-
-  @method w
-  @param {String} str The string to split
-  @return {Array} array containing the split strings
-  @public
-*/
-export function w(str: string): string[] {
-  return str.split(/\s+/);
-}
-
-/**
   Converts a camelized string into all lower case separated by underscores.
 
   ```javascript

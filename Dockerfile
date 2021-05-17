@@ -1,16 +1,18 @@
-FROM node:15.11
+FROM node:16.1.0
 
 RUN apt-get update && \
-  apt-get install -y lsof vim libgtk-3-0 libatk1.0-0 libx11-xcb1 libnss3 libxss1 libasound2
+  apt-get install -y vim chromium
 
 WORKDIR /code/
 
-ADD package-lock.json package.json /code/
+ADD tsconfig.json package.json package.json webpack.config.js /code/
 
 RUN npm install
 
-ADD src /code/src
-ADD tests /code/tests
-ADD . /code/
+ADD packages /code/packages
 
-ENTRYPOINT "/bin/bash"
+RUN npm install && npm run build
+
+ADD tests /code/tests
+
+ENTRYPOINT "/bin/sh"

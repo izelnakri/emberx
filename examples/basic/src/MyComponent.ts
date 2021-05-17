@@ -1,11 +1,11 @@
-import Component from '@glimmer/component';
+import Component from '@emberx/component';
 import { tracked } from '@glimmer/tracking';
 import {
   precompileTemplate,
   setComponentTemplate,
   getOwner,
   templateOnlyComponent,
-} from '@glimmer/core';
+} from '@emberx/component';
 import { helper } from '@emberx/helper';
 import OtherComponent from './OtherComponent';
 import { on, action } from '@glimmer/modifier';

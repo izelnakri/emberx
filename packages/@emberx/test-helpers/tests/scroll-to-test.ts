@@ -1,6 +1,6 @@
-import { hbs } from '@glimmerx/component';
-import { module, test } from 'qunit';
-import { setupRenderingTest, render, scrollTo } from '../../../src/test-helpers';
+import { hbs } from '@emberx/component';
+import { module, test } from 'qunitx';
+import { setupRenderingTest, render, scrollTo } from '@emberx/test-helpers';
 
 module('emberx/test-helpers | scrollTo', function (hooks) {
   setupRenderingTest(hooks);

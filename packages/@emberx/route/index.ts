@@ -1,9 +1,7 @@
-import Router from '@emberx/router';
-import { renderComponent } from '@glimmer/core';
-import Component from '@glimmer/component';
-// import Component, { hbs } from '@glimmerx/component';
+// import Router from '@emberx/router';
+import Component, { renderComponent } from '@emberx/component';
 import { on, action } from '@glimmer/modifier';
-// import { service } from '@glimmerx/service';
+// import { service } from '@emberx/service';
 
 interface FreeObject {
   [propName: string]: any;
@@ -29,10 +27,10 @@ export default class Route extends Component<{ model: object }> {
   // }
 
   static setup(model: object, transition: FreeObject): any {
-    if (Router.LOG_MODELS) {
-      console.log(`'${transition.targetName}' Route[model] is`, model);
-      console.log(`'${transition.targetName}' Route[transition] is`, transition);
-    }
+    // if (Router.LOG_MODELS) {
+    //   console.log(`'${transition.targetName}' Route[model] is`, model);
+    //   console.log(`'${transition.targetName}' Route[transition] is`, transition);
+    // }
 
     // TODO: add a throw here if containerElement doesnt exist
 
@@ -46,7 +44,7 @@ export default class Route extends Component<{ model: object }> {
     renderComponent(this, {
       element: containerElement,
       args: { model: model || {} },
-      services: Router.SERVICES,
+      // services: Router.SERVICES,
     });
   }
 

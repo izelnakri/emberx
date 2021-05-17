@@ -1,7 +1,6 @@
-import { hbs } from '@glimmerx/component';
-import { on } from '@glimmerx/modifier';
-import { module, test } from 'qunit';
-import { setupRenderingTest, render, doubleClick, find } from '../../../src/test-helpers';
+import { hbs } from '@emberx/component';
+import { module, test } from 'qunitx';
+import { setupRenderingTest, render, doubleClick, find } from '@emberx/test-helpers';
 
 function setupEventStepListeners(assert, input) {
   input.addEventListener('mousedown', () => assert.step('mousedown'));

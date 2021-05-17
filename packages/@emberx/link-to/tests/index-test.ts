@@ -1,10 +1,10 @@
-import { hbs } from '@glimmerx/component';
-import { module, test } from 'qunit';
-import { render, currentURL } from '../../src/test-helpers';
-import { setupRenderingTest } from '../../src/test-helpers/setup';
-import Application from '../../examples/blog/router';
+import { module, test } from 'qunitx';
+import { hbs } from '@emberx/component';
+import { render, currentURL } from '@emberx/test-helpers';
+import { setupRenderingTest } from '@emberx/test-helpers';
+import Application from '../../examples/blog/router'; // TODO: change this
 
-import LinkTo from '../../src/link-to';
+import LinkTo from '@emberx/link-to';
 
 // NOTE: in future also check against currentURL(), spy on this.router.recognizer.generate with right params
 // TODO: also test with different @tagName for td's

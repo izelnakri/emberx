@@ -1,6 +1,6 @@
-import { hbs } from '@glimmerx/component';
-import { module, test } from 'qunit';
-import { setupRenderingTest, render, focus } from '../../../src/test-helpers';
+import { hbs } from '@emberx/component';
+import { module, test } from 'qunitx';
+import { setupRenderingTest, render, focus } from '@emberx/test-helpers';
 
 function setupFocusEventStepListeners(assert, element) {
   ['focus', 'focusin'].forEach((eventName) => {
@@ -100,13 +100,19 @@ module('emberx/test-helpers | focus', function (hooks) {
 
       await focus('[data-test-some-test-input]');
 
-      assert.strictEqual(document.activeElement, document.querySelector('[data-test-some-test-input]'));
+      assert.strictEqual(
+        document.activeElement,
+        document.querySelector('[data-test-some-test-input]')
+      );
 
       assert.verifySteps(FOCUS_STEPS);
 
       await focus('[data-test-some-textarea]');
 
-      assert.strictEqual(document.activeElement, document.querySelector('[data-test-some-textarea]'));
+      assert.strictEqual(
+        document.activeElement,
+        document.querySelector('[data-test-some-textarea]')
+      );
       assert.verifySteps(BLUR_STEPS.concat(FOCUS_STEPS));
     });
 
@@ -131,7 +137,10 @@ module('emberx/test-helpers | focus', function (hooks) {
 
       await focus('[data-test-some-test-input]');
 
-      assert.strictEqual(document.activeElement, document.querySelector('[data-test-some-test-input]'));
+      assert.strictEqual(
+        document.activeElement,
+        document.querySelector('[data-test-some-test-input]')
+      );
       assert.verifySteps(FOCUS_STEPS);
     });
 

@@ -1,8 +1,7 @@
-import { renderComponent } from '@glimmer/core';
+import { renderComponent } from '@emberx/component';
 import { getContext } from './context';
 import { setupTest, setupRenderingTest, setupApplicationTest } from './setup';
-import { tracked } from '@glimmer/tracking';
-import Intl from '../../examples/blog/services/intl';
+// import { tracked } from '@glimmer/tracking';
 import {
   blur,
   click,
@@ -40,14 +39,17 @@ export function currentURL(): string {
   return context.router.path;
 }
 
+// TODO: also inject helper/template scope?
 export function render(template: any, services?: object | undefined): Promise<any> {
   const context = getContext();
-  const targetServices = context.services || services; // TODO: get resolver from QUnit.config object
+  // const targetServices = context.owner.services || services; // TODO: get resolver from QUnit.config object
 
   return renderComponent(template, {
     element: document.getElementById('ember-testing'),
     args: context,
-    services: context,
+    // owner: {
+    //   services: context,
+    // },
   });
 }
 

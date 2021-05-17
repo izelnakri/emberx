@@ -1,9 +1,8 @@
 // @ts-nocheck
-import { hbs } from '@glimmerx/component';
-import { on } from '@glimmerx/modifier';
-import { fn } from '@glimmerx/helper';
+import { hbs } from '@emberx/component';
+import { fn } from '@glimmer/helper';
 import { module, test } from 'qunitx';
-import { setupRenderingTest, render, blur, focus } from '../../../src/test-helpers';
+import { setupRenderingTest, render, blur, focus } from '@emberx/test-helpers';
 
 function setupEventStepListeners(assert, element) {
   ['focus', 'focusin', 'blur', 'focusout'].forEach((eventName) => {

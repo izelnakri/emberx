@@ -1,5 +1,5 @@
-import { module, test } from 'qunit';
-import { setupRenderingTest, waitUntil } from '../../../src/test-helpers';
+import { module, test } from 'qunitx';
+import { setupRenderingTest, waitUntil } from '@emberx/test-helpers';
 
 module('emberx/test-helpers | waitUntil', function (hooks) {
   setupRenderingTest(hooks);

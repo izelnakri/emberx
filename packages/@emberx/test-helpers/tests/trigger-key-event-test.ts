@@ -1,6 +1,6 @@
-import { hbs } from '@glimmerx/component';
-import { module, test } from 'qunit';
-import { setupRenderingTest, render, triggerKeyEvent } from '../../../src/test-helpers';
+import { hbs } from '@emberx/component';
+import { module, test } from 'qunitx';
+import { setupRenderingTest, render, triggerKeyEvent } from '@emberx/test-helpers';
 
 module('emberx/test-helpers | triggerKeyEvent', function (hooks) {
   setupRenderingTest(hooks);

@@ -1,8 +1,6 @@
-import { hbs } from '@glimmerx/component';
-import { on } from '@glimmerx/modifier';
-import { fn } from '@glimmerx/helper';
-import { module, test } from 'qunit';
-import { setupRenderingTest, render, click } from '../../../src/test-helpers';
+import { hbs } from '@emberx/component';
+import { module, test } from 'qunitx';
+import { setupRenderingTest, render } from '@emberx/test-helpers';
 
 function setupEventStepListeners(assert, element) {
   ['mousedown', 'focus', 'mouseup', 'click'].forEach((eventName) => {

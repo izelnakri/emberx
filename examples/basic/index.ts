@@ -1,4 +1,4 @@
-import { renderComponent } from '@glimmer/core';
+import { renderComponent } from '@emberx/component';
 import MyComponent from './src/MyComponent';
 import LocaleService from './src/services/LocaleService';
 

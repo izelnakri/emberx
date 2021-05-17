@@ -1,6 +1,6 @@
-import { hbs } from '@glimmerx/component';
-import { module, test } from 'qunit';
-import { setupRenderingTest, render, triggerEvent } from '../../../src/test-helpers';
+import { hbs } from '@emberx/component';
+import { module, test } from 'qunitx';
+import { setupRenderingTest, render, triggerEvent } from '@emberx/test-helpers';
 
 function setupEventStepListeners(assert, element, arrayOfEvents) {
   arrayOfEvents.forEach((eventName) => {

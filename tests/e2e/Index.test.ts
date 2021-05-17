@@ -1,4 +1,4 @@
-import { module, test } from 'qunit';
+import { module, test } from 'qunitx';
 import { visit, currentURL } from '../../src/test-helpers';
 import { setupApplicationTest } from '../../src/test-helpers/setup';
 import Application from '../../examples/blog/router';

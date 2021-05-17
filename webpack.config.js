@@ -25,7 +25,7 @@ const sharedConfig = {
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['@glimmer/babel-preset', '@babel/preset-typescript']
+            presets: ['@glimmer/babel-preset', '@babel/preset-typescript', '@babel/preset-env']
           }
         },
       },
@@ -33,7 +33,6 @@ const sharedConfig = {
   },
 }
 
-// TODO: when --prod passed minify/optimize everything for npm
 const glimmerBuildConfig = {
   name: 'glimmer',
   ...sharedConfig,
@@ -41,11 +40,11 @@ const glimmerBuildConfig = {
     outputModule: true
   },
   entry: {
-    '@glimmer/core': './node_modules/@glimmer/core/index.ts',
+    '@glimmer/core': 'packages/@emberx/component/glimmer.ts'
   },
   output: {
     filename: (pathData) => {
-      return `packages/@emberx/component/glimmer-core/index.ts`;
+      return `packages/@emberx/component/glimmer-core/index.js`;
     },
     path: __dirname,
     libraryTarget: 'module',
@@ -55,6 +54,7 @@ const glimmerBuildConfig = {
 const buildConfig = {
   name: 'build',
   ...sharedConfig,
+  mode: 'production',
   experiments: {
     outputModule: true
   },
@@ -91,20 +91,23 @@ const devConfig = {
     port: 1234
   },
   entry: {
-    'examples/basic': './examples/basic/index.ts',
-    'examples/blog': path.resolve(__dirname, './examples/blog/index.ts'),
+    // 'examples/basic': './examples/basic/index.ts',
+    // 'examples/blog': path.resolve(__dirname, './examples/blog/index.ts'),
     'tests/index': path.resolve(__dirname, './tests/index.ts')
   },
   resolve: {
     preferRelative: true,
     extensions: ['.js', '.ts'],
     alias: {
+      '@emberx/helper/tests': path.resolve(__dirname, 'packages/@emberx/helper/tests/index.ts'),
       '@emberx/helper': path.resolve(__dirname, 'packages/@emberx/helper/index.ts'),
+      '@emberx/test-helpers/tests': path.resolve(__dirname, 'packages/@emberx/test-helpers/tests/index.ts'),
+      '@emberx/test-helpers': path.resolve(__dirname, 'packages/@emberx/test-helpers/index.ts'),
+      '@emberx/string/tests': path.resolve(__dirname, 'packages/@emberx/string/tests/index.ts'),
       '@emberx/string': path.resolve(__dirname, 'packages/@emberx/string/index.ts'),
       '@emberx/link-to': path.resolve(__dirname, 'packages/@emberx/link-to/index.ts'),
       '@emberx/router': path.resolve(__dirname, 'packages/@emberx/router/index.ts'),
       '@emberx/route': path.resolve(__dirname, 'packages/@emberx/route/index.ts'),
-      '@emberx/test-helpers': path.resolve(__dirname, 'packages/@emberx/test-helpers/index.ts')
     }
   },
   output: {

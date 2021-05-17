@@ -1,5 +1,5 @@
 // TODO: write test utility to query actual router_js registry of the Router and assert against objects
-import { module, test } from 'qunit';
+import { module, test } from 'qunitx';
 import Router from '@emberx/router';
 import oldRouterMap from './helpers/old-router-map';
 import targetRegistryForOldRouterMap from './helpers/outputs/target-registry-for-old-router-map';

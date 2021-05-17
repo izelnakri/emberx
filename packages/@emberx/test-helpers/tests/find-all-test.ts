@@ -1,6 +1,6 @@
-import { hbs } from '@glimmerx/component';
-import { module, test } from 'qunit';
-import { setupRenderingTest, render, findAll } from '../../../src/test-helpers';
+import { hbs } from '@emberx/component';
+import { module, test } from 'qunitx';
+import { setupRenderingTest, render, findAll } from '@emberx/test-helpers';
 
 module('emberx/test-helpers | findAll', function (hooks) {
   setupRenderingTest(hooks);

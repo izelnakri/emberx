@@ -14,11 +14,12 @@
   ],
   "scripts": {
     "lint": "eslint . --ext=js,ts --cache",
-    "build": "npm run build:glimmer && node_modules/.bin/webpack build --config-name='build'",
+    "build": "npm run build:glimmer && npm run build:libraries",
     "build:glimmer": "node_modules/.bin/webpack build --config-name='glimmer'",
+    "build:libraries": "node_modules/.bin/webpack build --config-name='build'",
     "build:devserver": "node_modules/.bin/webpack build --config-name='devserver'",
     "build:all": "node_modules/.bin/webpack build",
-    "dev": "node_modules/.bin/webpack-dev-server --config=name='devserver'",
+    "dev": "node_modules/.bin/webpack-dev-server --config-name='devserver'",
     "dev:build": "node_modules/.bin/webpack-dev-server --config-name='build'",
     "dev:all": "node_modules/.bin/webpack-dev-server",
     "test": "npm run build && node_modules/.bin/qunitx packages/**/tests/**/*-test.ts tests/**/*-test.ts --browser --debug",
@@ -50,7 +51,8 @@
   "babel": {
     "presets": [
       "@glimmer/babel-preset",
-      "@babel/preset-typescript"
+      "@babel/preset-typescript",
+      "@babel/preset-env"
     ]
   },
   "browserslist": {

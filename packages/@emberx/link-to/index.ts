@@ -1,4 +1,4 @@
-import Component from '@glimmer/component';
+import Component from '@emberx/component';
 import { on, action } from '@glimmer/modifier';
 
 interface FreeObject {

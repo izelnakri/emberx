@@ -1,5 +1,6 @@
-import Component from '@glimmer/component';
-import {
+import Component, {
+  getOwner,
+  setOwner,
   renderComponent,
   precompileTemplate,
   setComponentTemplate,
@@ -12,8 +13,8 @@ export default class EmberXComponent<Args extends {} = {}> extends Component<Arg
   }
 }
 
-function hbs(sourceCode: string, scope: object, component: EmberXComponent) {
-  return { sourceCode, scope, component };
+function hbs(sourceCode: string, scope: object) {
+  return { sourceCode, scope };
   // TODO: this doesnt work due to babel linter error:
   // setComponentTemplate(
   //   precompileTemplate(``, {
@@ -26,4 +27,12 @@ function hbs(sourceCode: string, scope: object, component: EmberXComponent) {
   // );
 }
 
-export { renderComponent, precompileTemplate, setComponentTemplate, templateOnlyComponent, hbs };
+export {
+  renderComponent,
+  precompileTemplate,
+  setComponentTemplate,
+  templateOnlyComponent,
+  hbs,
+  getOwner,
+  setOwner,
+};

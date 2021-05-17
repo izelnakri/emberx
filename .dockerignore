@@ -1,9 +1,2 @@
-.git/
-.github/
-dist/
-examples/
-node_modules/
-public/
-tmp/
 packages/**/*/dist/
 glimmer-core

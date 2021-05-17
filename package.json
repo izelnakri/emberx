@@ -50,15 +50,7 @@
   "babel": {
     "presets": [
       "@glimmer/babel-preset",
-      "@babel/preset-typescript",
-      [
-        "@babel/preset-env",
-        {
-          "targets": {
-            "node": true
-          }
-        }
-      ]
+      "@babel/preset-typescript"
     ]
   },
   "browserslist": {

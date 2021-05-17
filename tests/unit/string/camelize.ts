@@ -1,5 +1,5 @@
 import { module, test } from 'qunitx';
-import { camelize } from '../../../src/string/index';
+import { camelize } from '@emberx/string';
 
 module('emberx/string | camelize', () => {
   test('camelizes strings', async (assert) => {

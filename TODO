@@ -1,0 +1,91 @@
+Ember.Application = boot, register services, reset state, viist, rootElement, unregister, resolver, lookup,
+autoboot: false
+
+
+
+test-helpers, this.owner, this.pauseTest()
+
+think about error and loading routes
+
+============
+API decisions
+============
+
+Ember.Router API:
+- willTransition()
+- didTransition()
+- willDestroy()
+- location:
+- rootURL:
+
+/* transitionTo(name, models, options) */
+/* do not use on */
+/* this.on('routeDidChange', () => { */
+/*   this.analytics.trackPage({ page: this.url, title: this.url }); */
+/* }); */
+
+/* location description: */
+history - use the browser's history API to make the URLs look just like any standard URL
+none - do not store the Ember URL in the actual browser URL (mainly used for testing)
+
+
+Ember.Route API:
+- activate: This hook is executed when the router enters the route. It is not executed when the model for the route changes.
+- beforeModel (transition) Any | Promise<any>
+- model(params, transition) both queryParams and params
+- afterModel(resolvedModel, transition) Any | Promise<any>
+- deactivate: This hook is executed when the router completely exits this route. It is not executed when the model for the route changes.
+- this.modelFor('');
+- this.paramsFor('');
+- queryParams = {
+    memberQp: { refreshModel: true }
+  } /* its not static
+- redirect(): aborts current transition
+redirect and afterModel behave very similarly and are called almost at the same time, but they have an important distinction
+when calling this.transitionTo to a child route of the current route.
+From afterModel, this new transition invalidates the current transition, causing beforeModel, model, and afterModel hooks to be called again.
+But the same transition started from redirect does not invalidate the current transition.
+In other words, by the time the redirect hook has been called, both the resolved model and the attempted entry into this route are considered fully validated.
+
+afterModel and then redirect() gets called
+* redirect does not invalidate the current transition, afterModel transitionTo does
+
+- this.refresh() : Transition calls a full refresh(of parent routes)
+- replaceWith(name, models, options): Transition  will replace the current history entry instead of adding a new one. Same as transitionTo otherwise
+- transitionTo (name, models, options) Transition
+  this.transitionTo('blogComment', aPost, aComment);
+  this.transitionTo('blogComment', 1, 13);
+  this.transitionTo('/');
+  this.transitionTo('/blog/post/1/comment/13');
+  this.transitionTo('/blog/posts?sort=title');
+  this.transitionTo('blogPost', 1, {
+    queryParams: { showComments: 'true' }
+  });
+
+  // if you just want to transition the query parameters without changing the route
+  this.transitionTo({ queryParams: { sort: 'date' } });
+
+- serialize(model, params) A hook you can implement to convert the route's model into parameters for the URL.
+  serialize(model) {
+    // this will make the URL `/posts/12`
+    return { post_id: model.id };
+  }
+
+- willDestroy() {
+ // NOTE: not needed most likely but maybe keep it for router
+}
+
+
+
+
+
+
+
+
+/* there is buildRouteInfoMetadata() to build <head> in future
+/* no need for destroy() and isDestroyed prop
+/* disconnectOutlet not needed
+/* !! intermediateTransitionTo called for error and loading handlers
+/* model (params, transition)
+/* - this.send() probably not needed
+/* resetController/ setupController

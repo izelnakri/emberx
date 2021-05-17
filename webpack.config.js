@@ -25,7 +25,7 @@ const sharedConfig = {
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['@glimmer/babel-preset', '@babel/preset-typescript', '@babel/preset-env']
+            presets: ['@glimmer/babel-preset', '@babel/preset-typescript']
           }
         },
       },
@@ -36,6 +36,7 @@ const sharedConfig = {
 const glimmerBuildConfig = {
   name: 'glimmer',
   ...sharedConfig,
+  mode: 'production',
   experiments: {
     outputModule: true
   },
@@ -60,12 +61,12 @@ const buildConfig = {
   },
   entry: {
     '@emberx/component': './packages/@emberx/component/index.ts',
-    // '@emberx/helper': './packages/@emberx/helper/index.ts',
-    // '@emberx/link-to': './packages/@emberx/link-to/index.ts',
-    // '@emberx/router': './packages/@emberx/router/index.ts',
-    // '@emberx/route': './packages/@emberx/route/index.ts',
-    // '@emberx/string': './packages/@emberx/string/index.ts',
-    // '@emberx/test-helpers': './packages/@emberx/test-helpers/index.ts',
+    '@emberx/helper': './packages/@emberx/helper/index.ts',
+    '@emberx/link-to': './packages/@emberx/link-to/index.ts',
+    '@emberx/router': './packages/@emberx/router/index.ts',
+    '@emberx/route': './packages/@emberx/route/index.ts',
+    '@emberx/string': './packages/@emberx/string/index.ts',
+    '@emberx/test-helpers': './packages/@emberx/test-helpers/index.ts',
   },
   output: {
     filename: (pathData) => {
@@ -91,14 +92,15 @@ const devConfig = {
     port: 1234
   },
   entry: {
-    // 'examples/basic': './examples/basic/index.ts',
-    // 'examples/blog': path.resolve(__dirname, './examples/blog/index.ts'),
+    'examples/basic': './examples/basic/index.ts',
+    'examples/blog': path.resolve(__dirname, './examples/blog/index.ts'),
     'tests/index': path.resolve(__dirname, './tests/index.ts')
   },
   resolve: {
     preferRelative: true,
     extensions: ['.js', '.ts'],
     alias: {
+      '@emberx/component': path.resolve(__dirname, 'packages/@emberx/component/index.ts'),
       '@emberx/helper/tests': path.resolve(__dirname, 'packages/@emberx/helper/tests/index.ts'),
       '@emberx/helper': path.resolve(__dirname, 'packages/@emberx/helper/index.ts'),
       '@emberx/test-helpers/tests': path.resolve(__dirname, 'packages/@emberx/test-helpers/tests/index.ts'),

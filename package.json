@@ -49,11 +49,7 @@
     "webpack-dev-server": "^4.0.0-beta.3"
   },
   "babel": {
-    "presets": [
-      "@glimmer/babel-preset",
-      "@babel/preset-typescript",
-      "@babel/preset-env"
-    ]
+    "presets": ["@babel/preset-typescript", "@glimmer/babel-preset"]
   },
   "browserslist": {
     "production": [

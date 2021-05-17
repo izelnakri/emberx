@@ -1,4 +1,4 @@
-import { tracked } from '@glimmer/tracking';
+import { tracked } from '@emberx/component';
 
 export default class LocaleService {
   @tracked _currentLocale: string;

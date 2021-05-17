@@ -1,7 +1,7 @@
 {
   "name": "@emberx/route",
   "type": "module",
-  "version": "1.1.0",
+  "version": "0.0.1",
   "author": "Izel Nakri",
   "description": "",
   "main": "dist/index.js",

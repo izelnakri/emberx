@@ -1,4 +1,5 @@
-import Component, { precompileTemplate, setComponentTemplate } from '@emberx/component';
+import Component, { setComponentTemplate } from '@emberx/component';
+import { precompileTemplate } from '@glimmer/core';
 
 export default class OtherComponent extends Component {}
 

@@ -40,49 +40,29 @@ const sharedConfig = {
   },
 }
 
-const glimmerBuildConfig = {
-  name: 'glimmer',
-  ...sharedConfig,
-  mode: 'production',
-  experiments: {
-    outputModule: true
-  },
-  entry: {
-    '@glimmer/core': 'packages/@emberx/component/glimmer.ts'
-  },
-  output: {
-    filename: (pathData) => {
-      return `packages/@emberx/component/glimmer-core/index.js`;
-    },
-    path: __dirname,
-    libraryTarget: 'module',
-  }
-};
-
-const buildConfig = {
-  name: 'build',
-  ...sharedConfig,
-  mode: 'production',
-  experiments: {
-    outputModule: true
-  },
-  entry: {
-    '@emberx/component': './packages/@emberx/component/index.ts',
-    '@emberx/helper': './packages/@emberx/helper/index.ts',
-    '@emberx/link-to': './packages/@emberx/link-to/index.ts',
-    '@emberx/router': './packages/@emberx/router/index.ts',
-    '@emberx/route': './packages/@emberx/route/index.ts',
-    '@emberx/string': './packages/@emberx/string/index.ts',
-    '@emberx/test-helpers': './packages/@emberx/test-helpers/index.ts',
-  },
-  output: {
-    filename: (pathData) => {
-      return `packages/${pathData.chunk.name}/dist/index.js`;
-    },
-    path: __dirname,
-    libraryTarget: 'module',
-  }
-};
+// const buildConfig = {
+//   name: 'build',
+//   ...sharedConfig,
+//   experiments: {
+//     outputModule: true
+//   },
+//   entry: {
+//     // '@emberx/component': './packages/@emberx/component/index.ts',
+//     // '@emberx/helper': './packages/@emberx/helper/index.ts',
+//     // '@emberx/link-to': './packages/@emberx/link-to/index.ts',
+//     // '@emberx/router': './packages/@emberx/router/index.ts',
+//     // '@emberx/route': './packages/@emberx/route/index.ts',
+//     '@emberx/string': './packages/@emberx/string/index.ts',
+//     // '@emberx/test-helpers': './packages/@emberx/test-helpers/index.ts',
+//   },
+//   output: {
+//     filename: (pathData) => {
+//       return `packages/${pathData.chunk.name}/dist/index.js`;
+//     },
+//     path: __dirname,
+//     libraryTarget: 'module',
+//   }
+// };
 
 const devConfig = {
   name: 'devserver',
@@ -91,7 +71,7 @@ const devConfig = {
     hot: false,
     static: [
       path.resolve(process.cwd(), 'public'),
-      path.resolve(process.cwd(), 'node_modules/qunitx/vendor'),
+      path.resolve(process.cwd(), 'node_modules/qunitx/vendor'), // NOTE: make this work with qunitx in future
     ],
     devMiddleware: {
       writeToDisk: true
@@ -100,7 +80,7 @@ const devConfig = {
   },
   entry: {
     'examples/basic': './examples/basic/index.ts',
-    'examples/blog': path.resolve(__dirname, './examples/blog/index.ts'),
+    // 'examples/blog': path.resolve(__dirname, './examples/blog/index.ts'),
     'tests/index': path.resolve(__dirname, './tests/index.ts')
   },
   resolve: {
@@ -129,4 +109,4 @@ const devConfig = {
   },
 }
 
-export default [glimmerBuildConfig, buildConfig, devConfig];
+export default [devConfig];

@@ -1,55 +1,21 @@
+// TODO: Only thing missing is actual registration on ProgramSymbolTable: @glimmer/syntax/dist/modules/es2017/lib/v2-a/normalize.js
 import Component from '@glimmer/component';
-import {
-  getOwner,
-  setOwner,
-  renderComponent,
-  createTemplateFactory,
-  // precompileTemplate,
-  setComponentTemplate,
-  templateOnlyComponent,
-} from '@glimmer/core';
-import { tracked } from '@glimmer/tracking';
-import { on, action } from '@glimmer/modifier';
-// import Component, {
-//   getOwner,
-//   setOwner,
-//   renderComponent,
-//   precompileTemplate,
-//   setComponentTemplate,
-//   templateOnlyComponent,
-//   tracked,
-//   on,
-//   action,
-// } from './glimmer';
+import { setComponentTemplate, getOwner, templateOnlyComponent } from '@glimmer/core';
+import createTemplate from './create-template';
 
 export default class EmberXComponent<Args extends {} = {}> extends Component<Args> {
+  static setTemplate(sourceCode) {
+    let scope = this.includes || {};
+    let opCode = createTemplate(sourceCode || ``, { strictMode: true }, scope);
+
+    setComponentTemplate(opCode, this);
+
+    return opCode;
+  }
+
   constructor(owner: object, args: Args) {
     super(owner, args);
   }
 }
 
-function hbs(sourceCode: string, scope: object, component: EmberXComponent) {
-  // return { sourceCode, scope };
-  // TODO: this doesnt work due to babel linter error:
-  // setComponentTemplate(
-  //   precompileTemplate(`<p>ok</p>`, {
-  //     strictMode: true,
-  //     scope: {},
-  //   }),
-  //   component
-  // );
-}
-
-export {
-  renderComponent,
-  createTemplateFactory,
-  // precompileTemplate,
-  setComponentTemplate,
-  templateOnlyComponent,
-  hbs,
-  getOwner,
-  setOwner,
-  tracked,
-  on,
-  action,
-};
+export { setComponentTemplate, getOwner, templateOnlyComponent };

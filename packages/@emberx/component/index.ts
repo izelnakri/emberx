@@ -3,6 +3,7 @@ import {
   getOwner,
   setOwner,
   renderComponent,
+  createTemplateFactory,
   // precompileTemplate,
   setComponentTemplate,
   templateOnlyComponent,
@@ -41,6 +42,7 @@ function hbs(sourceCode: string, scope: object, component: EmberXComponent) {
 
 export {
   renderComponent,
+  createTemplateFactory,
   // precompileTemplate,
   setComponentTemplate,
   templateOnlyComponent,

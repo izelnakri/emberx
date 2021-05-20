@@ -1,9 +1,10 @@
+import { templateFactory } from '@glimmer/opcode-compiler';
 import Component, { setComponentTemplate } from '@emberx/component';
-import { precompileTemplate } from '@glimmer/core';
+import { precompile } from '@glimmer/compiler';
 
 export default class OtherComponent extends Component {}
 
 setComponentTemplate(
-  precompileTemplate(`<b>Counter Val: {{@count}}</b>`, { strictMode: true }),
+  templateFactory(JSON.parse(precompile(`<b>Counter Val: {{@count}}</b>`, { strictMode: true }))),
   OtherComponent
 );

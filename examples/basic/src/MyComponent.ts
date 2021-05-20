@@ -1,36 +1,38 @@
+// TODO: Only thing missing is actual registration on ProgramSymbolTable: @glimmer/syntax/dist/modules/es2017/lib/v2-a/normalize.js
+import { templateFactory } from '@glimmer/opcode-compiler';
 import Component, {
   tracked,
-  setComponentTemplate,
   getOwner,
+  setComponentTemplate,
   templateOnlyComponent,
   on,
   action,
 } from '@emberx/component';
-import { helper } from '@emberx/helper';
-import OtherComponent from './OtherComponent';
+// import { helper } from '@emberx/helper';
+// import OtherComponent from './OtherComponent';
 // import { Owner } from '../index';
-import { precompileTemplate } from '@glimmer/core';
+import { precompile } from '@glimmer/compiler';
 
-const myHelper = helper(function ([name], { greeting }) {
-  return `Helper: ${greeting} ${name}`;
-});
+// const myHelper = helper(function ([name], { greeting }) {
+//   return `Helper: ${greeting} ${name}`;
+// });
 
-const isCJK = helper(function (_args, _hash, services) {
-  const localeService = services.locale as LocaleService;
+// const isCJK = helper(function (_args, _hash, services) {
+//   const localeService = services.locale as LocaleService;
 
-  return (
-    localeService.currentLocale === 'zh_CN' ||
-    localeService.currentLocale === 'ko_KO' ||
-    localeService.currentLocale === 'ja_JP'
-  );
-});
+//   return (
+//     localeService.currentLocale === 'zh_CN' ||
+//     localeService.currentLocale === 'ko_KO' ||
+//     localeService.currentLocale === 'ja_JP'
+//   );
+// });
 
-let lol = precompileTemplate(`<h1>I am rendered by a template only component: {{@name}}</h1>`, {
+let lol = precompile(`<h1>I am rendered by a template only component: {{@name}}</h1>`, {
   strictMode: true,
 });
 console.log(lol.toString());
 window.lol = lol;
-const TemplateOnlyComponent = setComponentTemplate(lol, templateOnlyComponent());
+// const TemplateOnlyComponent = setComponentTemplate(lol, templateOnlyComponent());
 
 class MyComponent extends Component {
   message = 'hello world';
@@ -54,27 +56,33 @@ class MyComponent extends Component {
       : LocaleService.setLocale('zh_CN');
   }
 }
-let another = precompileTemplate(
+// TODO: template imports is the only thing that doesnt work. Need to register basic events on globalContext
+let output = precompile(
   `
   <h1>Hello {{this.message}}</h1> <br/>
-  {{myHelper "foo" greeting="Hello"}}
   <p>Current locale: {{this.currentLocale}}</p>
-  {{#if (isCJK)}}
-    <p>Component is in a CJK locale</p>
-  {{else}}
-    <p>Component is not in a CJK locale</p>
-  {{/if}}
-  <OtherComponent @count={{this.count}} /> <br/>
-  <button {{on "click" this.increment}}>Increment</button>
-  <button {{on "click" this.changeLocale}}>Change Locale</button>
-  <TemplateOnlyComponent @name="For Glimmer"/>
-`,
-  { strictMode: true, scope: { OtherComponent, TemplateOnlyComponent, myHelper, isCJK, on } }
+  `,
+  //   `
+  //   <h1>Hello {{this.message}}</h1> <br/>
+  //   {{myHelper "foo" greeting="Hello"}}
+  //   <p>Current locale: {{this.currentLocale}}</p>
+  //   {{#if (isCJK)}}
+  //     <p>Component is in a CJK locale</p>
+  //   {{else}}
+  //     <p>Component is not in a CJK locale</p>
+  //   {{/if}}
+  //   <button {{on "click" this.increment}}>Increment</button>
+  //   <button {{on "click" this.changeLocale}}>Change Locale</button>
+  // `,
+  { strictMode: true, scope: {} }
 );
+console.log(precompile.toString());
+window.output = output;
 
-console.log(another.toString());
-window.another = another;
-setComponentTemplate(another, MyComponent);
+setComponentTemplate(templateFactory(JSON.parse(output)), MyComponent);
+// createTemplateFactory(another);
+
+// setComponentTemplate(createTemplateFactory(another), MyComponent);
 
 window.com = MyComponent;
 export default MyComponent;

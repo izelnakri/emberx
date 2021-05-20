@@ -25,7 +25,14 @@ const sharedConfig = {
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['@glimmer/babel-preset', '@babel/preset-typescript']
+            presets: [
+              '@babel/preset-typescript',
+            ],
+            plugins: [
+              ['module:@babel/plugin-proposal-decorators', { legacy: true }],
+              'module:@babel/plugin-proposal-class-properties',
+              'module:@babel/plugin-proposal-private-methods'
+            ],
           }
         },
       },
@@ -112,6 +119,10 @@ const devConfig = {
       '@emberx/route': path.resolve(__dirname, 'packages/@emberx/route/index.ts'),
     }
   },
+  // externals: {
+  //   // Remove once we have new glimmer-vm version published. The duplicate version is from linking issues
+  //   '@glimmer/validator': 'commonjs @glimmer/validator'
+  // },
   output: {
     filename: '[name].bundle.js',
     path: path.resolve(__dirname, 'dist'),

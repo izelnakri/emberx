@@ -1,4 +1,3 @@
-// TODO: Only thing missing is actual registration on ProgramSymbolTable: @glimmer/syntax/dist/modules/es2017/lib/v2-a/normalize.js
 import Component from '@glimmer/component';
 import {
   setComponentTemplate,
@@ -23,7 +22,6 @@ export default class EmberXComponent<Args extends {} = {}> extends Component<Arg
 
   constructor(owner: object, args: Args) {
     super(owner, args);
-    // this can mutate for service
   }
 }
 
@@ -49,12 +47,11 @@ async function renderComponent(
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function service(...args) {
-  debugger;
-  const [target, key, descriptor] = args;
+  const [target, key] = args;
 
-  if (!key || !descriptor) {
+  if (!target || !key) {
     throw new Error(
-      `You attempted to use @service with an argument, you can only use it with the owners exact service name. Example: @tracked locale`
+      `You attempted to use @service with an argument, you can only use it with the owners exact service name. Example: @service locale`
     );
   }
 
@@ -78,8 +75,6 @@ function hbs(sourceCode: string) {
   return sourceCode[0];
 }
 
-export { setComponentTemplate, getOwner, templateOnlyComponent, renderComponent, hbs, service };
-
 function traverseAndCompileAllComponents(ComponentClass: EmberXComponent) {
   if ('compiled' in ComponentClass && !ComponentClass.compiled) {
     ComponentClass.setTemplate(ComponentClass.template);
@@ -90,3 +85,13 @@ function traverseAndCompileAllComponents(ComponentClass: EmberXComponent) {
     );
   }
 }
+
+export {
+  setComponentTemplate,
+  getOwner,
+  templateOnlyComponent,
+  renderComponent,
+  hbs,
+  service,
+  traverseAndCompileAllComponents,
+};

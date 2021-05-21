@@ -17,7 +17,8 @@ let targetPackages = providedPkgs.length > 0 ? providedPkgs : [
   // '@emberx/route',
   // '@emberx/router',
   '@emberx/string',
-  // '@emberx/test-helpers'
+  // '@emberx/test-helpers',
+  '@emberx/ssr'
 ];
 // let packages = await fs.readdir('./packages/@emberx');
 
@@ -32,7 +33,8 @@ await targetPackages.reduce(async (lastCompile, packageName) => {
 async function buildPackage(packageName) {
   let targetFolder = `${process.cwd()}/packages/${packageName}`;
 
+  await fs.rm(`${targetFolder}/dist`, { recursive: true, force: true });
   await fs.mkdir(`${targetFolder}/dist`, { recursive: true });
 
-  return shell(`node_modules/.bin/esbuild ${targetFolder}/index.ts --format=cjs --platform=node > ${targetFolder}/dist/index.js`);
+  return shell(`node_modules/.bin/esbuild ${targetFolder}/*.ts --format=esm --platform=node --outdir=${targetFolder}/dist`);
 }

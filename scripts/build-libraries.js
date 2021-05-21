@@ -34,5 +34,5 @@ async function buildPackage(packageName) {
 
   await fs.mkdir(`${targetFolder}/dist`, { recursive: true });
 
-  return shell(`node_modules/.bin/esbuild ${targetFolder}/index.ts --bundle --platform=node > ${targetFolder}/dist/index.js`);
+  return shell(`node_modules/.bin/esbuild ${targetFolder}/index.ts --format=cjs --platform=node > ${targetFolder}/dist/index.js`);
 }

@@ -1,9 +1,9 @@
-import Component from '@emberx/component';
+import Component, { hbs } from '@emberx/component';
 
-class OtherComponent extends Component {}
-
-OtherComponent.setTemplate(`
-  <b>Counter Val: {{@count}}</b>
-`);
+class OtherComponent extends Component {
+  static template = hbs`
+    <b>Counter Val: {{@count}}</b>
+  `;
+}
 
 export default OtherComponent;

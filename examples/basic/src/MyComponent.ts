@@ -1,4 +1,4 @@
-import Component, { getOwner } from '@emberx/component';
+import Component, { getOwner, hbs } from '@emberx/component';
 import { tracked } from '@glimmer/tracking';
 import { on, action } from '@glimmer/modifier';
 import { helper } from '@emberx/helper';
@@ -21,6 +21,19 @@ class MyComponent extends Component {
     localeIsEnUS,
     on,
   };
+  static template = hbs`
+    {{#let "hello" "world" as |hello world|}}<p>{{hello}} {{world}}</p>{{/let}}
+    {{myHelper "foo" greeting="Hello"}}
+    <p>Current locale: {{this.currentLocale}}</p>
+    {{#if (localeIsEnUS)}}
+      <p>Component is in a US locale</p>
+    {{else}}
+      <p>Component is not in a US locale</p>
+    {{/if}}
+      <OtherComponent @count={{this.count}} />
+    <button {{on "click" this.increment}}>Increment</button>
+    <button {{on "click" this.changeLocale}}>Change Locale</button>
+  `;
 
   message = 'hello world';
   @tracked count = 55;
@@ -43,19 +56,5 @@ class MyComponent extends Component {
       : LocaleService.setLocale('zh_CN');
   }
 }
-
-MyComponent.setTemplate(`
-  {{#let "hello" "world" as |hello world|}}<p>{{hello}} {{world}}</p>{{/let}}
-  {{myHelper "foo" greeting="Hello"}}
-  <p>Current locale: {{this.currentLocale}}</p>
-  {{#if (localeIsEnUS)}}
-    <p>Component is in a US locale</p>
-  {{else}}
-    <p>Component is not in a US locale</p>
-  {{/if}}
-  <OtherComponent @count={{this.count}} />
-  <button {{on "click" this.increment}}>Increment</button>
-  <button {{on "click" this.changeLocale}}>Change Locale</button>
-`);
 
 export default MyComponent;

@@ -12,7 +12,7 @@ const providedPkgs = process.argv.slice(2).reduce((result, arg) => {
 
 let targetPackages = providedPkgs.length > 0 ? providedPkgs : [
   '@emberx/component',
-  // '@emberx/helper',
+  '@emberx/helper',
   // '@emberx/link-to',
   // '@emberx/route',
   // '@emberx/router',

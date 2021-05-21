@@ -1,4 +1,4 @@
-import Component, { getOwner, hbs } from '@emberx/component';
+import Component, { getOwner, hbs, service } from '@emberx/component';
 import { tracked } from '@glimmer/tracking';
 import { on, action } from '@glimmer/modifier';
 import { helper } from '@emberx/helper';
@@ -15,6 +15,8 @@ const localeIsEnUS = helper(function (_args, _hash, services) {
 });
 
 class MyComponent extends Component {
+  @service locale;
+
   static includes = {
     OtherComponent,
     myHelper,
@@ -24,7 +26,7 @@ class MyComponent extends Component {
   static template = hbs`
     {{#let "hello" "world" as |hello world|}}<p>{{hello}} {{world}}</p>{{/let}}
     {{myHelper "foo" greeting="Hello"}}
-    <p>Current locale: {{this.currentLocale}}</p>
+    <p>Current locale: {{this.locale.currentLocale}}</p>
     {{#if (localeIsEnUS)}}
       <p>Component is in a US locale</p>
     {{else}}
@@ -38,10 +40,6 @@ class MyComponent extends Component {
   message = 'hello world';
   @tracked count = 55;
 
-  get currentLocale(): string {
-    return getOwner(this).services.locale.currentLocale;
-  }
-
   @action
   increment(): void {
     this.count++;
@@ -49,11 +47,9 @@ class MyComponent extends Component {
 
   @action
   changeLocale(): void {
-    let LocaleService = getOwner<Owner>(this).services.locale;
-
-    LocaleService.currentLocale === 'zh_CN'
-      ? LocaleService.setLocale('en_US')
-      : LocaleService.setLocale('zh_CN');
+    this.locale.currentLocale === 'zh_CN'
+      ? this.locale.setLocale('en_US')
+      : this.locale.setLocale('zh_CN');
   }
 }
 

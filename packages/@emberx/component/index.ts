@@ -23,6 +23,7 @@ export default class EmberXComponent<Args extends {} = {}> extends Component<Arg
 
   constructor(owner: object, args: Args) {
     super(owner, args);
+    // this can mutate for service
   }
 }
 
@@ -46,11 +47,38 @@ async function renderComponent(
   return glimmerRenderComponent(ComponentClass, options);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function service(...args) {
+  debugger;
+  const [target, key, descriptor] = args;
+
+  if (!key || !descriptor) {
+    throw new Error(
+      `You attempted to use @service with an argument, you can only use it with the owners exact service name. Example: @tracked locale`
+    );
+  }
+
+  Object.defineProperty(target, key, {
+    enumerable: true,
+    configurable: false,
+    get() {
+      let owner = getOwner(this);
+      if (owner && owner.services) {
+        return owner.services[key];
+      }
+
+      return {};
+    },
+  });
+
+  return target[key];
+}
+
 function hbs(sourceCode: string) {
   return sourceCode[0];
 }
 
-export { setComponentTemplate, getOwner, templateOnlyComponent, renderComponent, hbs };
+export { setComponentTemplate, getOwner, templateOnlyComponent, renderComponent, hbs, service };
 
 function traverseAndCompileAllComponents(ComponentClass: EmberXComponent) {
   if ('compiled' in ComponentClass && !ComponentClass.compiled) {

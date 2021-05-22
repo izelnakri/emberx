@@ -1,7 +1,7 @@
 import { renderComponent } from '@emberx/component';
 import { getContext } from './context';
 import { setupTest, setupRenderingTest, setupApplicationTest } from './setup';
-// import { tracked } from '@glimmer/tracking';
+import { fn, hash, array, get, concat, on } from '@glimmer/runtime';
 import {
   blur,
   click,
@@ -18,7 +18,8 @@ import {
 } from './input';
 import { find, findAll } from './query';
 import { waitFor, waitUntil, settled } from './wait';
-// import { service } from '@glimmerx/service';
+
+import Component from '@emberx/component';
 
 export function visit(path: string): Promise<void> {
   const context = getContext();
@@ -39,17 +40,35 @@ export function currentURL(): string {
   return context.router.path;
 }
 
-// TODO: also inject helper/template scope?
-export function render(template: any, services?: object | undefined): Promise<any> {
-  const context = getContext();
-  // const targetServices = context.owner.services || services; // TODO: get resolver from QUnit.config object
+export function render(templateString: string, includes: object = {}): Promise<void> {
+  let context = getContext();
+  let targetServices = context.owner ? context.owner.services : {}; // TODO: probably improve this: get resolver from QUnit.config object
 
-  return renderComponent(template, {
+  class TemplateOnlyComponent extends Component {
+    static includes = Object.assign(includes, {
+      fn,
+      hash,
+      array,
+      get,
+      concat,
+      on,
+    });
+
+    constructor(owner, args) {
+      super(owner, args);
+      Object.keys(context).forEach((key) => {
+        this[key] = context[key];
+      }); // NOTE: this isnt ideal for performance in testing, but backwards compatible with existing ember testing
+    }
+  }
+
+  TemplateOnlyComponent.setTemplate(templateString);
+
+  return renderComponent(TemplateOnlyComponent, {
     element: document.getElementById('ember-testing'),
-    args: context,
-    // owner: {
-    //   services: context,
-    // },
+    owner: {
+      services: targetServices,
+    },
   });
 }
 

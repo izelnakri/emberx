@@ -13,11 +13,11 @@ export default class EmberXComponent<Args extends {} = {}> extends Component<Arg
   static includes = {};
   static setTemplate(sourceCode: string) {
     let scope = this.includes || {};
-    let opCode: any = createTemplate(sourceCode || ``, { strictMode: true }, scope);
+    let templateFactory: any = createTemplate(sourceCode || ``, { strictMode: true }, scope);
 
-    setComponentTemplate(opCode, this);
+    setComponentTemplate(templateFactory, this);
 
-    return opCode;
+    return templateFactory;
   }
 
   constructor(owner: object, args: Args) {
@@ -77,7 +77,9 @@ function hbs(sourceCode: string) {
 
 function traverseAndCompileAllComponents(ComponentClass: EmberXComponent) {
   if ('compiled' in ComponentClass && !ComponentClass.compiled) {
-    ComponentClass.setTemplate(ComponentClass.template);
+    if (ComponentClass.template) {
+      ComponentClass.setTemplate(ComponentClass.template);
+    }
     ComponentClass.compiled = true;
 
     Object.entries(ComponentClass.includes).forEach(([key, value]) =>

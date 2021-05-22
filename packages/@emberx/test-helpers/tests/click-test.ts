@@ -1,6 +1,6 @@
 import { hbs } from '@emberx/component';
 import { module, test } from 'qunitx';
-import { setupRenderingTest, render } from '@emberx/test-helpers';
+import { setupRenderingTest, click, render } from '@emberx/test-helpers';
 
 function setupEventStepListeners(assert, element) {
   ['mousedown', 'focus', 'mouseup', 'click'].forEach((eventName) => {
@@ -18,7 +18,7 @@ module('emberx/test-helpers | click', function (hooks) {
     this.assertTrue = (param) => assert.equal(param, 'some title');
 
     await render(hbs`
-      <button type="button" {{on "click" (fn @assertTrue @title)}} data-test-some-button>
+      <button type="button" {{on "click" (fn this.assertTrue this.title)}} data-test-some-button>
         Something
       </button>
     `);

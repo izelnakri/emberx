@@ -1,4 +1,4 @@
-import { getElement, isFormControl, nodeQuery, isFocusable } from './index.ts';
+import { getElement, isFormControl, nodeQuery, isFocusable } from './index';
 import { __focus__ } from './focus';
 import fireEvent from './fire-event';
 

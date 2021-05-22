@@ -1,6 +1,6 @@
-import fireEvent from './fire-event.ts';
-import { __blur__ } from './blur.ts';
-import { isFocusable, getElement } from './index.ts';
+import fireEvent from './fire-event';
+import { __blur__ } from './blur';
+import { isFocusable, getElement } from './index';
 
 export function __focus__(element: HTMLElement | Element | Document | SVGElement): void {
   debugger;

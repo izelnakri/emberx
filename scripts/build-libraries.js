@@ -6,11 +6,7 @@ import './make-glimmer-compiler-universal.js';
 
 const shell = promisify(exec);
 
-const providedPkgs = process.argv.slice(2).reduce((result, arg) => {
-  return result.concat(arg);
-}, []);
-
-let targetPackages = providedPkgs.length > 0 ? providedPkgs : [
+let targetPackages = [
   '@emberx/component',
   '@emberx/helper',
   // '@emberx/link-to',

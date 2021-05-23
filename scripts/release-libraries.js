@@ -1,3 +1,4 @@
+import "./build-libraries.js";
 import fs from 'fs/promises';
 import { promisify } from 'util';
 import { exec } from 'child_process';
@@ -38,9 +39,9 @@ async function bumpVersion(libraryName, version, allLibrariesToUpgrade) {
 
   oldJSON.version = version;
 
-  let oldDependencies = Object.keys(oldJSON.dependencies || {});
+  let oldDependencies = oldJSON.dependencies || {};
 
-  oldJSON.dependencies = oldDependencies.reduce((result, dependency) => {
+  oldJSON.dependencies = Object.keys(oldDependencies).reduce((result, dependency) => {
     if (TARGET_LIBRARIES.includes(dependency)) {
       return { ...result, [dependency]: version };
     }
@@ -50,3 +51,12 @@ async function bumpVersion(libraryName, version, allLibrariesToUpgrade) {
 
   await fs.writeFile(`packages/${libraryName}/package.json`, JSON.stringify(oldJSON, null, 2));
 }
+
+let packageJSON = await fs.readFile('package.json');
+let oldJSON = JSON.parse(packageJSON.toString());
+
+oldJSON.version = version;
+
+await fs.writeFile('package.json', JSON.stringify(oldJSON, null, 2));
+
+console.log(`Released emberx v${version} successfully`);

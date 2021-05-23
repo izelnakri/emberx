@@ -22,7 +22,14 @@ const TARGET_LIBRARIES = [
 ]
 
 await Promise.all(TARGET_LIBRARIES.map((libraryName) => bumpVersion(libraryName, version, TARGET_LIBRARIES)));
+
+console.log(`Bumped these packages to v${version}`, TARGET_LIBRARIES);
+
 await Promise.all(TARGET_LIBRARIES.map((libraryName) => shell(`npm publish --workspace=${libraryName} --access public`)));
+
+TARGET_LIBRARIES.forEach((libraryName) => {
+  console.log(`Released v${version} of ${libraryName} on npm!`);
+});
 
 async function bumpVersion(libraryName, version, allLibrariesToUpgrade) {
   let packageJSON = await fs.readFile(`packages/${libraryName}/package.json`);

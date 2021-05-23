@@ -1,6 +1,6 @@
 {
   "name": "@emberx/test-helpers",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "author": "Izel Nakri",
   "description": "",
   "files": [
@@ -12,7 +12,7 @@
   },
   "license": "ISC",
   "dependencies": {
-    "@emberx/component": "0.0.8",
+    "@emberx/component": "0.0.10",
     "@glimmer/runtime": "0.79.2"
   }
 }

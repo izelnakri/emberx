@@ -1,6 +1,6 @@
 {
   "name": "@emberx/link-to",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "author": "Izel Nakri",
   "description": "",
   "files": [
@@ -12,7 +12,7 @@
   },
   "license": "ISC",
   "dependencies": {
-    "@emberx/component": "0.0.8",
+    "@emberx/component": "0.0.10",
     "@glimmer/modifier": "2.0.0-beta.16"
   }
 }

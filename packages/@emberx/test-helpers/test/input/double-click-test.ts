@@ -1,6 +1,7 @@
 import { hbs } from '@emberx/component';
 import { module, test } from 'qunitx';
-import { setupRenderingTest, render, doubleClick, find } from '@emberx/test-helpers';
+import { render, doubleClick, find } from '@emberx/test-helpers';
+import { setupRenderingTest } from '../helpers';
 
 function setupEventStepListeners(assert, input) {
   input.addEventListener('mousedown', () => assert.step('mousedown'));
@@ -22,7 +23,7 @@ module('emberx/test-helpers | doubleClick', function (hooks) {
       this.doubleClick = () => assert.ok(true, 'doubleClick called');
 
       await render(hbs`
-        <div data-test-some-div {{on "click" @fireClick}} {{on "dblclick" @doubleClick}}>
+        <div data-test-some-div {{on "click" this.fireClick}} {{on "dblclick" this.doubleClick}}>
           Something
         </div>
       `);
@@ -49,7 +50,7 @@ module('emberx/test-helpers | doubleClick', function (hooks) {
       this.doubleClick = () => assert.ok(true, 'doubleClick called');
 
       await render(hbs`
-        <div data-test-some-div {{on "click" @fireClick}} {{on "dblclick" @doubleClick}}>
+        <div data-test-some-div {{on "click" this.fireClick}} {{on "dblclick" this.doubleClick}}>
           Something
         </div>
       `);

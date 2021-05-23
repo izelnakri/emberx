@@ -1,6 +1,7 @@
 import { hbs } from '@emberx/component';
 import { module, test } from 'qunitx';
-import { setupRenderingTest, render, fillIn } from '@emberx/test-helpers';
+import { render, fillIn } from '@emberx/test-helpers';
+import { setupRenderingTest } from '../helpers';
 
 function setupEventStepListeners(assert, element) {
   ['focus', 'focusin', 'input', 'change'].forEach((eventName) => {
@@ -92,9 +93,9 @@ module('emberx/test-helpers | fillIn', function (hooks) {
       this.assertTrue = (param) => assert.equal(param, 'some title');
 
       await render(hbs`
-        <textarea data-test-some-test-textarea {{on "focus" (fn @assertTrue @param)}}
-          {{on "focusin" (fn @assertTrue @param)}} {{on "change" (fn @assertTrue @param)}}
-          {{on "focus" (fn @assertTrue @param)}}/>
+        <textarea data-test-some-test-textarea {{on "focus" (fn this.assertTrue this.param)}}
+          {{on "focusin" (fn this.assertTrue this.param)}} {{on "change" (fn this.assertTrue this.param)}}
+          {{on "focus" (fn this.assertTrue this.param)}}/>
       `);
 
       const element = document.querySelector('[data-test-some-test-textarea]');
@@ -129,9 +130,9 @@ module('emberx/test-helpers | fillIn', function (hooks) {
       this.assertTrue = (param) => assert.equal(param, 'some title');
 
       await render(hbs`
-        <input data-test-some-test-input {{on "focus" (fn @assertTrue @param)}}
-          {{on "focusin" (fn @assertTrue @param)}} {{on "change" (fn @assertTrue @param)}}
-          {{on "focus" (fn @assertTrue @param)}}/>
+        <input data-test-some-test-input {{on "focus" (fn this.assertTrue this.param)}}
+          {{on "focusin" (fn this.assertTrue this.param)}} {{on "change" (fn this.assertTrue this.param)}}
+          {{on "focus" (fn this.assertTrue this.param)}}/>
       `);
 
       const element = document.querySelector('[data-test-some-test-input]');

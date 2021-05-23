@@ -73,7 +73,7 @@
     "failFast": false,
     "port": 1234,
     "htmlPaths": [
-      "tests/index.html"
+      "test/index.html"
     ]
   }
 }

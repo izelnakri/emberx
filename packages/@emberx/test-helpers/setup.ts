@@ -37,6 +37,8 @@ export function setupTest(hooks: QUnitHooks): void {
   });
 
   hooks.beforeEach(async function () {
+    setContext(this);
+
     const container = document.createElement('div');
     const containerPage = document.createElement('div');
 
@@ -45,8 +47,6 @@ export function setupTest(hooks: QUnitHooks): void {
 
     document.getElementById('qunit-fixture').after(container);
     container.appendChild(containerPage);
-
-    // setContext(this);
   });
 
   hooks.afterEach(function () {
@@ -58,12 +58,8 @@ export function setupRenderingTest(hooks: QUnitHooks, Application?: any | undefi
   setupTest(hooks);
 
   hooks.beforeEach(async function () {
-    // TODO: implement owner lookup for services
     this.router = Application;
-
     this.services = { router: this.router };
-
-    setContext(this);
   });
 }
 
@@ -74,7 +70,6 @@ export function setupApplicationTest(hooks: QUnitHooks, Application?: any | unde
   hooks.beforeEach(async function () {
     // TODO: implement owner lookup for services
     this.router = Application;
-    setContext(this);
   });
 }
 

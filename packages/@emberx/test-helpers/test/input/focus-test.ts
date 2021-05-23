@@ -1,6 +1,7 @@
 import { hbs } from '@emberx/component';
 import { module, test } from 'qunitx';
-import { setupRenderingTest, render, focus } from '@emberx/test-helpers';
+import { render, focus } from '@emberx/test-helpers';
+import { setupRenderingTest } from '../helpers';
 
 function setupFocusEventStepListeners(assert, element) {
   ['focus', 'focusin'].forEach((eventName) => {

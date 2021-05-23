@@ -1,6 +1,7 @@
 import { hbs } from '@emberx/component';
 import { module, test } from 'qunitx';
-import { setupRenderingTest, render, tap } from '@emberx/test-helpers';
+import { render, tap } from '@emberx/test-helpers';
+import { setupRenderingTest } from '../helpers';
 
 function setupEventStepListeners(assert, element, options?) {
   ['touchstart', 'touchend', 'mousedown', 'mouseup', 'click'].forEach((eventName) => {

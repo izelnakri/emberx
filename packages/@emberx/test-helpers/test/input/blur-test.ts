@@ -2,7 +2,8 @@
 import { hbs } from '@emberx/component';
 import { fn } from '@glimmer/helper';
 import { module, test } from 'qunitx';
-import { setupRenderingTest, render, blur, focus } from '@emberx/test-helpers';
+import { render, blur, focus } from '@emberx/test-helpers';
+import { setupRenderingTest } from '../helpers';
 
 function setupEventStepListeners(assert, element) {
   ['focus', 'focusin', 'blur', 'focusout'].forEach((eventName) => {
@@ -23,7 +24,7 @@ module('emberx/test-helpers | blur', function (hooks) {
 
     await render(hbs`
       <form>
-        <input {{on "blur" (fn @assertTrue @title)}} value="Something" data-test-some-input/>
+        <input {{on "blur" (fn this.assertTrue this.title)}} value="Something" data-test-some-input/>
       </form>
     `);
 

@@ -1,6 +1,5 @@
 {
   "name": "@emberx/router",
-  "type": "module",
   "version": "0.0.8",
   "author": "Izel Nakri",
   "description": "",

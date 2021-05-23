@@ -1,7 +1,7 @@
 {
   "name": "@emberx/helper",
   "type": "module",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "author": "Izel Nakri",
   "description": "",
   "files": [
@@ -15,6 +15,7 @@
   "dependencies": {
     "0": "@glimmer/core",
     "1": "@glimmer/core",
+    "2": "@glimmer/core",
     "@glimmer/core": "^2.0.0-beta.16"
   }
 }

@@ -9,10 +9,10 @@ ADD tsconfig.json package.json package.json webpack.config.js /code/
 
 RUN npm install
 
-ADD packages /code/packages
+ADD scripts /code/scripts/
+ADD packages /code/packages/
+ADD test /code/test
 
-RUN npm install && npm run build
-
-ADD tests /code/tests
+RUN npm install && npm run build # registers workspaces
 
 ENTRYPOINT "/bin/sh"

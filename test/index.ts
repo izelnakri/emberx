@@ -1,4 +1,4 @@
-// import '@emberx/string/test';
+import '@emberx/string/test';
 import '@emberx/test-helpers/test';
 // import '@emberx/router/test';
 // import '@emberx/route/test';

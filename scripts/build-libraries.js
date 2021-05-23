@@ -17,7 +17,7 @@ let targetPackages = providedPkgs.length > 0 ? providedPkgs : [
   // '@emberx/route',
   // '@emberx/router',
   '@emberx/string',
-  // '@emberx/test-helpers',
+  '@emberx/test-helpers',
   '@emberx/ssr'
 ];
 // let packages = await fs.readdir('./packages/@emberx');
@@ -36,5 +36,5 @@ async function buildPackage(packageName) {
   await fs.rm(`${targetFolder}/dist`, { recursive: true, force: true });
   await fs.mkdir(`${targetFolder}/dist`, { recursive: true });
 
-  return shell(`node_modules/.bin/esbuild ${targetFolder}/*.ts --format=esm --platform=node --outdir=${targetFolder}/dist`);
+  return shell(`node_modules/.bin/esbuild $(find 'packages/${packageName}/lib' -type f) --format=esm --platform=node --outdir="./packages/${packageName}/dist"`);
 }

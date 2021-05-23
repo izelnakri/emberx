@@ -14,12 +14,12 @@
   ],
   "scripts": {
     "lint": "eslint . --ext=js,ts --cache",
-    "build": "npm run libs:build && webpack build",
+    "build": "npm run libs:build",
     "libs:build": "npm run libs:clean && node scripts/build-libraries.js",
     "libs:clean": "node scripts/clean-libraries.js",
     "dev": "webpack-dev-server",
-    "test": "npm run build && node_modules/.bin/qunitx packages/**/tests/**/*-test.ts tests/**/*-test.ts --browser --debug",
-    "test:ci": "node_modules/.bin/qunitx packages/@emberx/string/tests/**/*-test.ts tests/**/*-test.ts --browser --debug --failFast",
+    "test": "npm run build && node_modules/.bin/qunitx packages --browser --debug",
+    "test:ci": "node_modules/.bin/qunitx test/index.ts --browser --debug --failFast",
     "typecheck": "tsc --project tsconfig.json --noEmit --skipLibCheck"
   },
   "dependencies": {
@@ -30,12 +30,12 @@
     "@glimmer/modifier": "2.0.0-beta.16",
     "@glimmer/opcode-compiler": "^0.79.2",
     "@glimmer/tracking": "2.0.0-beta.16",
+    "@glimmer/ssr": "^2.0.0-beta.16",
     "route-recognizer": "^0.3.4",
     "router_js": "^7.3.0"
   },
   "devDependencies": {
     "@babel/preset-typescript": "^7.13.0",
-    "@glimmer/ssr": "^2.0.0-beta.16",
     "babel-loader": "^8.2.2",
     "bootstrap": "^5.0.1",
     "qunit-dom": "^1.6.0",

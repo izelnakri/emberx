@@ -2,10 +2,10 @@
 @module @ember/string
 */
 
-import { getString } from './lib/string-registry';
-export { getStrings as _getStrings, setStrings as _setStrings } from './lib/string-registry';
+import { getString } from './string-registry';
+export { getStrings as _getStrings, setStrings as _setStrings } from './string-registry';
 
-import Cache from './lib/cache';
+import Cache from './cache';
 
 const STRING_DASHERIZE_REGEXP = /[ _]/g;
 

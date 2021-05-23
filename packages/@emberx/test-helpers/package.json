@@ -1,6 +1,7 @@
 {
   "name": "@emberx/test-helpers",
-  "version": "0.0.1",
+  "type": "module",
+  "version": "0.0.5",
   "author": "Izel Nakri",
   "description": "",
   "files": [

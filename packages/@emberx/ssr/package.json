@@ -15,9 +15,6 @@
   },
   "description": "",
   "dependencies": {
-    "0": "@glimmer/ssr",
-    "1": "@glimmer/ssr",
-    "2": "@glimmer/ssr",
     "@glimmer/ssr": "^2.0.0-beta.16"
   }
 }

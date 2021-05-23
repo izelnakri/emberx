@@ -32,6 +32,7 @@ TARGET_LIBRARIES.forEach((libraryName) => {
   console.log(`Released v${version} of ${libraryName} on npm!`);
 });
 
+// TODO: move projectPackageJSON dependency version to the packages versions
 async function bumpVersion(libraryName, version, allLibrariesToUpgrade) {
   let packageJSON = await fs.readFile(`packages/${libraryName}/package.json`);
 

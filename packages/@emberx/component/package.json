@@ -14,5 +14,10 @@
     "test": "tests"
   },
   "description": "",
-  "dependencies": []
+  "dependencies": {
+    "@glimmer/opcode-compiler": "0.79.2",
+    "@glimmer/compiler": "0.79.2",
+    "@glimmer/component": "2.0.0-beta.16",
+    "@glimmer/core": "2.0.0-beta.16"
+  }
 }

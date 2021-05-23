@@ -13,6 +13,7 @@
   },
   "license": "ISC",
   "dependencies": {
+    "0": "@glimmer/core",
     "@glimmer/core": "^2.0.0-beta.16"
   }
 }

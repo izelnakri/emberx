@@ -9,7 +9,6 @@ class MyComponent extends Component {
 
   @action
   increment(): void {
-    debugger;
     this.count++;
   }
 }

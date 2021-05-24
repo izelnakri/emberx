@@ -88,7 +88,6 @@ export default class extends Component<{
   get link() {
     const targetModel = this.buildModel();
 
-    debugger;
     return this.router.recognizer.generate(this.args.route, targetModel); // TODO: append queryParams
   }
 

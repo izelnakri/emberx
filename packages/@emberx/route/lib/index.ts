@@ -40,7 +40,6 @@ export default class Route extends Component<{ model: object }> {
 
     containerElement.innerHTML = ''; // TODO: temporary solution, clear previously rendered route
 
-    debugger;
     renderComponent(this, {
       element: containerElement,
       args: { model: model || {} },

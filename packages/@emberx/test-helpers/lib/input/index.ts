@@ -57,7 +57,6 @@ export function isContentEditable(element: Element): element is HTMLElementConte
 const FORM_CONTROL_TAGS = ['INPUT', 'BUTTON', 'SELECT', 'TEXTAREA'];
 
 export function isFormControl(element: Element | Document): element is FormControl {
-  debugger;
   return (
     !isDocument(element) &&
     FORM_CONTROL_TAGS.indexOf(element.tagName) > -1 &&

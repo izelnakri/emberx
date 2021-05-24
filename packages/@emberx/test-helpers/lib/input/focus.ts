@@ -3,7 +3,6 @@ import { __blur__ } from './blur';
 import { isFocusable, getElement } from './index';
 
 export function __focus__(element: HTMLElement | Element | Document | SVGElement): void {
-  debugger;
   if (!isFocusable(element)) {
     throw new Error(`${element} is not focusable`);
   }

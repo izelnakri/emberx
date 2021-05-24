@@ -13,13 +13,11 @@ export default async function fillIn(target: Target, text: string): Promise<void
   }
 
   const element = getElement(target) as Element | HTMLElement;
-  debugger;
   if (!element) {
     throw new Error(`Element not found when calling \`fillIn('${target}')\`.`);
   } else if (typeof text === 'undefined' || text === null) {
     throw new Error('Must provide `text` when calling `fillIn`.');
   } else if (isFormControl(element)) {
-    debugger;
     if (element.disabled) {
       throw new Error(`Can not \`fillIn\` disabled '${target}'.`);
     }
@@ -28,19 +26,16 @@ export default async function fillIn(target: Target, text: string): Promise<void
       throw new Error(`Can not \`fillIn\` readonly '${target}'.`);
     }
 
-    debugger;
     guardForMaxlength(element, text, 'fillIn');
 
     __focus__(element);
 
     element.value = text;
   } else if (isContentEditable(element)) {
-    debugger;
     __focus__(element);
 
     element.innerHTML = text;
   } else {
-    debugger;
     throw new Error('`fillIn` is only usable on form controls or contenteditable elements.');
   }
 

@@ -3,7 +3,17 @@ import fs from 'fs/promises';
 let TARGET_PACKAGES = [
   '@glimmer/ssr',
   '@glimmer/node',
-  '@glimmer/core'
+  '@glimmer/core',
+  '@glimmer/component',
+  '@glimmer/destroyable',
+  '@glimmer/runtime',
+  '@glimmer/reference',
+  '@glimmer/manager',
+  '@glimmer/modifier',
+  '@glimmer/opcode-compiler',
+  '@glimmer/owner',
+  '@glimmer/program',
+  '@glimmer/tracking',
 ];
 
 await Promise.all(TARGET_PACKAGES.map(async (pkgName) => {

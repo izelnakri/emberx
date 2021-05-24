@@ -40,30 +40,6 @@ const sharedConfig = {
   },
 }
 
-// const buildConfig = {
-//   name: 'build',
-//   ...sharedConfig,
-//   experiments: {
-//     outputModule: true
-//   },
-//   entry: {
-//     // '@emberx/component': './packages/@emberx/component/index.ts',
-//     // '@emberx/helper': './packages/@emberx/helper/index.ts',
-//     // '@emberx/link-to': './packages/@emberx/link-to/index.ts',
-//     // '@emberx/router': './packages/@emberx/router/index.ts',
-//     // '@emberx/route': './packages/@emberx/route/index.ts',
-//     '@emberx/string': './packages/@emberx/string/index.ts',
-//     // '@emberx/test-helpers': './packages/@emberx/test-helpers/index.ts',
-//   },
-//   output: {
-//     filename: (pathData) => {
-//       return `packages/${pathData.chunk.name}/dist/index.js`;
-//     },
-//     path: __dirname,
-//     libraryTarget: 'module',
-//   }
-// };
-
 const devConfig = {
   name: 'devserver',
   ...sharedConfig,
@@ -79,24 +55,28 @@ const devConfig = {
     port: 1234
   },
   entry: {
-    'examples/basic': './examples/basic/index.ts',
+    // 'examples/basic': './examples/basic/index.ts',
     // 'examples/blog': path.resolve(__dirname, './examples/blog/index.ts'),
-    'tests/index': path.resolve(__dirname, './tests/index.ts')
+    'test/index': path.resolve(__dirname, './test/index.ts')
   },
   resolve: {
     preferRelative: true,
     extensions: ['.js', '.ts'],
     alias: {
-      '@emberx/component': path.resolve(__dirname, 'packages/@emberx/component/index.ts'),
-      '@emberx/helper/tests': path.resolve(__dirname, 'packages/@emberx/helper/tests/index.ts'),
-      '@emberx/helper': path.resolve(__dirname, 'packages/@emberx/helper/index.ts'),
-      '@emberx/test-helpers/tests': path.resolve(__dirname, 'packages/@emberx/test-helpers/tests/index.ts'),
-      '@emberx/test-helpers': path.resolve(__dirname, 'packages/@emberx/test-helpers/index.ts'),
-      '@emberx/string/tests': path.resolve(__dirname, 'packages/@emberx/string/tests/index.ts'),
-      '@emberx/string': path.resolve(__dirname, 'packages/@emberx/string/index.ts'),
-      '@emberx/link-to': path.resolve(__dirname, 'packages/@emberx/link-to/index.ts'),
-      '@emberx/router': path.resolve(__dirname, 'packages/@emberx/router/index.ts'),
-      '@emberx/route': path.resolve(__dirname, 'packages/@emberx/route/index.ts'),
+      '@emberx/component/test': path.resolve(__dirname, 'packages/@emberx/component/test/index.ts'),
+      '@emberx/component': path.resolve(__dirname, 'packages/@emberx/component/lib/index.ts'),
+      '@emberx/helper/test': path.resolve(__dirname, 'packages/@emberx/helper/test/index.ts'),
+      '@emberx/helper': path.resolve(__dirname, 'packages/@emberx/helper/lib/index.ts'),
+      '@emberx/test-helpers/test': path.resolve(__dirname, 'packages/@emberx/test-helpers/test/index.ts'),
+      '@emberx/test-helpers': path.resolve(__dirname, 'packages/@emberx/test-helpers/lib/index.ts'),
+      '@emberx/string/test': path.resolve(__dirname, 'packages/@emberx/string/test/index.ts'),
+      '@emberx/string': path.resolve(__dirname, 'packages/@emberx/string/lib/index.ts'),
+      '@emberx/link-to/test': path.resolve(__dirname, 'packages/@emberx/link-to/test/index.ts'),
+      '@emberx/link-to': path.resolve(__dirname, 'packages/@emberx/link-to/lib/index.ts'),
+      '@emberx/router/test': path.resolve(__dirname, 'packages/@emberx/router/test/index.ts'),
+      '@emberx/router': path.resolve(__dirname, 'packages/@emberx/router/lib/index.ts'),
+      '@emberx/route/test': path.resolve(__dirname, 'packages/@emberx/route/test/index.ts'),
+      '@emberx/route': path.resolve(__dirname, 'packages/@emberx/route/lib/index.ts'),
     }
   },
   // externals: {

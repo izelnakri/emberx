@@ -1,3 +1,4 @@
+import '@emberx/component/test';
 import '@emberx/string/test';
 import '@emberx/test-helpers/test';
 // import '@emberx/router/test';

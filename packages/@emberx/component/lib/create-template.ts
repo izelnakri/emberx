@@ -1,13 +1,20 @@
 import { templateFactory } from '@glimmer/opcode-compiler';
-import { precompileJSON } from '@glimmer/compiler';
+import { precompileJSON, PrecompileOptions } from '@glimmer/compiler';
+
+interface ScopeValues {
+  [key: string]: any;
+}
 
 let templateId = 0;
-export default function createTemplate(templateSource, options, scopeValues = {}) {
+export default function createTemplate(
+  templateSource: string,
+  options: PrecompileOptions,
+  scopeValues: ScopeValues = {}
+) {
   options.locals = options.locals ?? Object.keys(scopeValues ?? {});
-  debugger;
-  let [block, usedLocals] = precompileJSON(templateSource, options);
-  let reifiedScopeValues = usedLocals.map((key) => scopeValues[key]);
 
+  let [block, usedLocals]: [any, any] = precompileJSON(templateSource, options);
+  let reifiedScopeValues = usedLocals.map((key: string) => scopeValues[key]);
   let templateBlock = {
     id: String(templateId++),
     block: JSON.stringify(block),
@@ -16,7 +23,5 @@ export default function createTemplate(templateSource, options, scopeValues = {}
     isStrictMode: options.strictMode ?? false,
   };
 
-  debugger;
   return templateFactory(templateBlock);
 }
-

@@ -1,4 +1,4 @@
-import { renderComponent } from '@emberx/component';
+import Component, { renderComponent } from '@emberx/component';
 import { getContext } from './context';
 import { setupTest, setupRenderingTest, setupApplicationTest } from './setup';
 import { fn, hash, array, get, concat, on } from '@glimmer/runtime';
@@ -19,8 +19,6 @@ import {
 import { find, findAll } from './query';
 import { waitFor, waitUntil, settled } from './wait';
 
-import Component from '@emberx/component';
-
 export function visit(path: string): Promise<void> {
   const context = getContext();
 
@@ -40,7 +38,10 @@ export function currentURL(): string {
   return context.router.path;
 }
 
-export function render(templateString: string, includes: object = {}): Promise<void> {
+export function render(
+  templateString: string | typeof Component,
+  includes: object = {}
+): Promise<void> {
   let context = getContext();
   let targetServices = context.owner ? context.owner.services : {}; // TODO: probably improve this: get resolver from QUnit.config object
 

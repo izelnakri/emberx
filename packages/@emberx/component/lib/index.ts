@@ -6,13 +6,26 @@ import {
   renderComponent as glimmerRenderComponent,
   RenderComponentOptions,
 } from '@glimmer/core';
+import { fn, hash, array, get, concat, on } from '@glimmer/runtime';
 import createTemplate from './create-template';
+
+interface Owner {
+  [key: string]: any;
+}
 
 export default class EmberXComponent<Args extends {} = {}> extends Component<Args> {
   static compiled = false;
   static includes = {};
+  static template?: string;
   static setTemplate(sourceCode: string) {
-    let scope = this.includes || {};
+    let scope = Object.assign(this.includes, {
+      fn,
+      hash,
+      array,
+      get,
+      concat,
+      on,
+    });
     let templateFactory: any = createTemplate(sourceCode || ``, { strictMode: true }, scope);
 
     setComponentTemplate(templateFactory, this);
@@ -26,15 +39,15 @@ export default class EmberXComponent<Args extends {} = {}> extends Component<Arg
 }
 
 async function renderComponent(
-  ComponentClass: EmberXComponent,
+  ComponentClass: typeof EmberXComponent,
   options: RenderComponentOptions
 ): Promise<void>;
 async function renderComponent(
-  ComponentClass: EmberXComponent,
+  ComponentClass: typeof EmberXComponent,
   element: HTMLElement
 ): Promise<void>;
 async function renderComponent(
-  ComponentClass: EmberXComponent,
+  ComponentClass: typeof EmberXComponent,
   optionsOrElement: RenderComponentOptions | HTMLElement
 ): Promise<void> {
   const options: RenderComponentOptions =
@@ -45,8 +58,7 @@ async function renderComponent(
   return glimmerRenderComponent(ComponentClass, options);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function service(...args) {
+function service(...args: any[]) {
   const [target, key] = args;
 
   if (!target || !key) {
@@ -59,7 +71,7 @@ function service(...args) {
     enumerable: true,
     configurable: false,
     get() {
-      let owner = getOwner(this);
+      let owner = getOwner(this) as Owner;
       if (owner && owner.services) {
         return owner.services[key];
       }
@@ -75,14 +87,14 @@ function hbs(sourceCode: string) {
   return sourceCode[0];
 }
 
-function traverseAndCompileAllComponents(ComponentClass: EmberXComponent) {
+function traverseAndCompileAllComponents(ComponentClass: typeof EmberXComponent) {
   if ('compiled' in ComponentClass && !ComponentClass.compiled) {
     if (ComponentClass.template) {
       ComponentClass.setTemplate(ComponentClass.template);
     }
     ComponentClass.compiled = true;
 
-    Object.entries(ComponentClass.includes).forEach(([key, value]) =>
+    Object.entries(ComponentClass.includes).forEach(([_key, value]: [string, any]) =>
       traverseAndCompileAllComponents(value)
     );
   }

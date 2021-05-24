@@ -1,6 +1,6 @@
 {
   "name": "@emberx/router",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "author": "Izel Nakri",
   "description": "",
   "files": [
@@ -12,7 +12,7 @@
   },
   "license": "ISC",
   "dependencies": {
-    "@emberx/route": "0.0.10",
+    "@emberx/route": "0.0.11",
     "router_js": "^7.3.0"
   }
 }

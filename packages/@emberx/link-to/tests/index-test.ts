@@ -1,7 +1,6 @@
 import { module, test } from 'qunitx';
 import { hbs } from '@emberx/component';
-import { render, currentURL } from '@emberx/test-helpers';
-import { setupRenderingTest } from '@emberx/test-helpers';
+import { render, currentURL, setupRenderingTest } from '@emberx/test-helpers';
 import Application from '../../examples/blog/router'; // TODO: change this
 
 import LinkTo from '@emberx/link-to';

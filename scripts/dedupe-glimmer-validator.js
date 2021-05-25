@@ -5,6 +5,7 @@ let TARGET_PACKAGES = [
   '@glimmer/node',
   '@glimmer/core',
   '@glimmer/component',
+  '@glimmer/compiler',
   '@glimmer/destroyable',
   '@glimmer/runtime',
   '@glimmer/reference',

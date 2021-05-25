@@ -43,7 +43,8 @@
     "@glimmer/opcode-compiler": "^0.79.2",
     "@glimmer/ssr": "^2.0.0-beta.16",
     "route-recognizer": "^0.3.4",
-    "router_js": "^7.3.0"
+    "router_js": "^7.3.0",
+    "qunit-action": "0.1.2"
   },
   "devDependencies": {
     "@glimmer/tracking": "2.0.0-beta.16",

@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "@emberx/component": "0.0.11",
-    "@glimmer/runtime": "0.79.2"
+    "@glimmer/runtime": "0.79.2",
+    "qunit-action": "^0.1.2"
   }
 }

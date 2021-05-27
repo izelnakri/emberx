@@ -41,6 +41,7 @@
     "@glimmer/interfaces": "^0.79.2",
     "@glimmer/modifier": "2.0.0-beta.16",
     "@glimmer/opcode-compiler": "^0.79.2",
+    "@glimmer/runtime": "^0.79.2",
     "@glimmer/ssr": "^2.0.0-beta.16",
     "browser-inputs": "1.0.1",
     "route-recognizer": "^0.3.4",

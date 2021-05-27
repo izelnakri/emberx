@@ -92,6 +92,6 @@ module('emberx/test-helpers | scrollTo', function (hooks) {
 
   test('It throws an error if the target is not an element', async function (assert) {
     assert.rejects(scrollTo(document, 0, 0), /"target" must be an element/);
-    assert.rejects(scrollTo(window, 0, 0), /Element not found /);
+    assert.rejects(scrollTo(window, 0, 0), /Error: Must use an element or a selector string/);
   });
 });

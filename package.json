@@ -42,9 +42,9 @@
     "@glimmer/modifier": "2.0.0-beta.16",
     "@glimmer/opcode-compiler": "^0.79.2",
     "@glimmer/ssr": "^2.0.0-beta.16",
+    "browser-inputs": "1.0.1",
     "route-recognizer": "^0.3.4",
-    "router_js": "^7.3.0",
-    "qunit-action": "0.1.2"
+    "router_js": "^7.3.0"
   },
   "devDependencies": {
     "@glimmer/tracking": "2.0.0-beta.16",

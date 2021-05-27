@@ -1,5 +1,5 @@
 import Component from '@emberx/component';
-import createTemplate from '../lib/create-template';
+import createTemplate from '../src/create-template';
 import { module, test } from 'qunitx';
 
 module('@emberx/component | createTemplate', function (hooks) {

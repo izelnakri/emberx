@@ -32,5 +32,10 @@ async function buildPackage(packageName) {
   await fs.rm(`${targetFolder}/dist`, { recursive: true, force: true });
   await fs.mkdir(`${targetFolder}/dist`, { recursive: true });
 
-  return shell(`node_modules/.bin/esbuild $(find 'packages/${packageName}/src' -type f) --format=cjs --platform=node --outdir="./packages/${packageName}/dist"`);
+  try {
+    // await shell(`node_modules/.bin/esbuild $(find 'packages/${packageName}/src' -type f)  --outdir="./packages/${packageName}/dist"`);
+    await shell(`node_modules/.bin/tsc $(find 'packages/${packageName}/src' -type f) --outDir packages/${packageName}/dist --target ES2018 --moduleResolution node -d`);
+  } catch (error) {
+    console.error(error);
+  }
 }

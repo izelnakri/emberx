@@ -1,6 +1,5 @@
-import Router, { Route } from 'router_js';
-import LocationBar from './vendor/location-bar.js';
-import DefaultRoute from '@emberx/route';
+import RouterJSRouter from './services/router';
+import EmberXRoute from '@emberx/route';
 
 interface FreeObject {
   [propName: string]: any;
@@ -8,9 +7,9 @@ interface FreeObject {
 
 interface RouteDefinition {
   path: string;
-  route: DefaultRoute;
+  route: EmberXRoute;
   routeName: string;
-  indexRoute?: DefaultRoute;
+  indexRoute?: EmberXRoute;
 }
 
 interface RouteRegistry {
@@ -19,89 +18,9 @@ interface RouteRegistry {
 
 interface routerJSRouteDefinition {
   path: string;
-  route: DefaultRoute;
+  route: EmberXRoute;
   routeName: string;
   nestedRoutes: [routerJSRouteDefinition];
-}
-
-export class RouterJSRouter extends Router<Route> {
-  IS_TESTING = false;
-  locationBar: any;
-  path: string;
-
-  constructor() {
-    super();
-
-    this.locationBar = new LocationBar();
-    this.locationBar.start({ pushState: true });
-  }
-
-  triggerEvent(): void {
-    return;
-  }
-  willTransition(): void {
-    return;
-  }
-  didTransition(): void {
-    return;
-  }
-  transitionDidError(error: any, transition: any): void {
-    if (error.wasAborted || transition.isAborted) {
-      // return logAbort(transition);
-    } else {
-      transition.trigger(false, 'error', error.error, this, error.route);
-      transition.abort();
-      return error.error;
-    }
-  }
-  replaceURL(): void {
-    return;
-  }
-  routeWillChange(): void {
-    return;
-  }
-  routeDidChange(): void {
-    return;
-  }
-  getSerializer(): any {
-    return;
-  }
-  getRoute(name: string): any {
-    if (EmberXRouter.LOG_ROUTES) {
-      console.log(name);
-    }
-
-    return EmberXRouter._ROUTE_REGISTRY[name].route || DefaultRoute;
-  }
-
-  updateURL(url: string): void {
-    this.path = url;
-
-    if (!globalThis.QUnit) {
-      this.locationBar.update(url);
-    }
-  }
-
-  async visit(path: string): Promise<void> {
-    const targetHandlers = this.recognizer.recognize(path);
-
-    if (targetHandlers) {
-      const targetHandler: FreeObject = targetHandlers[targetHandlers.length - 1];
-      const params = Object.keys(targetHandler.params);
-
-      if (params.length > 0) {
-        const handler: string = targetHandler.handler;
-        // TODO: params is an object but it needs just the value it needs
-        await this.transitionTo(
-          ...[handler].concat(params.map((key) => targetHandler.params[key]))
-        );
-      } else {
-        await this.transitionTo(targetHandler.handler);
-      }
-    } else {
-      console.log('NO ROUTE FOUND');
-    }
-  }
 }
 
 // NOTE: check Route.toReadOnlyRouteInfo
@@ -119,9 +38,9 @@ export default class EmberXRouter {
   static _parentRoute: string | null = null;
   static routerjs: RouterJSRouter = null;
 
-  static IS_TESTING() {
-    return !!globalThis.QUnit;
-  }
+  // static IS_TESTING() {
+  //   return !!globalThis.QUnit;
+  // }
 
   static convertToRouterJSRouteArray(
     routerRegistry: RouteRegistry
@@ -304,7 +223,7 @@ function returnOptionsAsSubRouteIfFunction(options) {
   return typeof options === 'function' ? options : undefined;
 }
 
-export function createRouteNameFromRouteClass(routeClass: DefaultRoute | void): string | void {
+export function createRouteNameFromRouteClass(routeClass: EmberXRoute | void): string | void {
   if (routeClass) {
     return routeClass.constructor.name
       .replace(/Route$/g, '')

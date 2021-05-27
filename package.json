@@ -48,15 +48,16 @@
     "router_js": "^7.3.0"
   },
   "devDependencies": {
-    "@glimmer/tracking": "2.0.0-beta.16",
     "@babel/preset-typescript": "^7.13.0",
+    "@glimmer/tracking": "2.0.0-beta.16",
     "auto-changelog": "^2.2.1",
     "babel-loader": "^8.2.2",
     "bootstrap": "^5.0.1",
-    "release-it": "^14.6.2",
     "qunit-dom": "^1.6.0",
     "qunitx": "^0.1.10",
+    "release-it": "^14.6.2",
     "tsconfig-paths-webpack-plugin": "^3.5.1",
+    "typescript": "^4.3.2",
     "webpack": "^5.37.0",
     "webpack-cli": "^4.7.0",
     "webpack-dev-server": "^4.0.0-beta.3"

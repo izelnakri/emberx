@@ -38,14 +38,14 @@ export default class EmberXComponent<Args extends {} = {}> extends Component<Arg
   }
 }
 
-async function renderComponent(
-  ComponentClass: typeof EmberXComponent,
-  options: RenderComponentOptions
-): Promise<void>;
-async function renderComponent(
-  ComponentClass: typeof EmberXComponent,
-  element: HTMLElement
-): Promise<void>;
+// async function renderComponent(
+//   ComponentClass: typeof EmberXComponent,
+//   options: RenderComponentOptions
+// ): Promise<void>;
+// async function renderComponent(
+//   ComponentClass: typeof EmberXComponent,
+//   element: HTMLElement
+// ): Promise<void>;
 async function renderComponent(
   ComponentClass: typeof EmberXComponent,
   optionsOrElement: RenderComponentOptions | HTMLElement

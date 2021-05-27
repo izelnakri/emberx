@@ -1,8 +1,8 @@
-export function find(queryString: string): Element | void {
-  return document.querySelector(queryString);
+export function find(queryString: string): HTMLElement | void {
+  return document.querySelector(queryString) as HTMLElement;
 }
 
-export function findAll(queryString: string): NodeListOf<Element> | void {
+export function findAll(queryString: string): Array<HTMLElement> | void {
   return Array.from(document.querySelectorAll(queryString));
 }
 

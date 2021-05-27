@@ -85,7 +85,7 @@ export function waitFor(selector: string, options: Options = {}): Promise<Elemen
     let callback: () => Element | Element[] | void | null;
     if (count !== null) {
       callback = () => {
-        const elements = findAll(selector);
+        const elements = findAll(selector) as Array<HTMLElement>;
         if (elements.length === count) {
           return Array.from(elements);
         }

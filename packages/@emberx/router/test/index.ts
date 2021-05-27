@@ -5,7 +5,7 @@ import oldRouterMap from './helpers/old-router-map';
 import targetRegistryForOldRouterMap from './helpers/outputs/target-registry-for-old-router-map';
 import targetRouteJSArrayForOldRouterMap from './helpers/outputs/target-route-js-array-for-old-router-map';
 
-module('Router Unit Test', () => {
+module('@emberx/router Public API', () => {
   test('Router.map creates route registry without Router.start()', async (assert) => {
     Router._ROUTE_REGISTRY = {};
 

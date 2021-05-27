@@ -38,14 +38,18 @@ export function currentURL(): string {
   return context.router.path;
 }
 
+interface FreeObject {
+  [propName: string]: any;
+}
+
 export function render(
-  templateString: string | typeof Component,
+  templateString: string,
   includes: object = {}
 ): Promise<void> {
   let context = getContext();
   let targetServices = context.owner ? context.owner.services : {}; // TODO: probably improve this: get resolver from QUnit.config object
 
-  class TemplateOnlyComponent extends Component {
+  class TemplateOnlyComponent<Args extends FreeObject = {}> extends Component<Args> {
     static includes = Object.assign(includes, {
       fn,
       hash,
@@ -55,9 +59,10 @@ export function render(
       on,
     });
 
-    constructor(owner, args) {
+    constructor(owner: object, args: Args) {
       super(owner, args);
-      Object.keys(context).forEach((key) => {
+      Object.keys(context).forEach((key: string) => {
+        // @ts-ignore
         this[key] = context[key];
       }); // NOTE: this isnt ideal for performance in testing, but backwards compatible with existing ember testing
     }
@@ -66,7 +71,7 @@ export function render(
   TemplateOnlyComponent.setTemplate(templateString);
 
   return renderComponent(TemplateOnlyComponent, {
-    element: document.getElementById('ember-testing'),
+    element: document.getElementById('ember-testing') as HTMLElement,
     owner: {
       services: targetServices,
     },

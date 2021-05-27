@@ -1,4 +1,5 @@
-import actions from 'qunit-action';
+import type { KeyboardEventType } from './fire-event';
+import inputs, { Target } from 'browser-inputs';
 
 export interface KeyModifiers {
   ctrlKey?: boolean;
@@ -20,7 +21,7 @@ export default async function triggerKeyEvent(
   key: number | string,
   modifiers: KeyModifiers = DEFAULT_MODIFIERS
 ): Promise<void> {
-  return await actions.triggerKeyEvent(target, eventType, key, modifiers);
+  return await inputs.triggerKeyEvent(target, eventType, key, modifiers);
 
   // return settled();
 }

@@ -1,10 +1,10 @@
-import actions from 'qunit-action';
+import inputs, { Target } from 'browser-inputs';
 
 export default async function doubleClick(
   target: Target,
   _options: MouseEventInit = {}
 ): Promise<void> {
-  return await actions.doubleClick(target, _options);
+  return await inputs.doubleClick(target, _options);
 
   // return settled();
 }

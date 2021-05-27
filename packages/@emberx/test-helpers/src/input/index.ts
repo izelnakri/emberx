@@ -10,17 +10,7 @@ import tap from './tap';
 import triggerEvent from './trigger-event';
 import triggerKeyEvent from './trigger-key-event';
 import typeIn from './type-in';
-
-export type nodeQuery = string | HTMLElement;
-export type FocusableElement = HTMLAnchorElement;
-export type FormControl =
-  | HTMLInputElement
-  | HTMLButtonElement
-  | HTMLSelectElement
-  | HTMLTextAreaElement;
-export interface HTMLElementContentEditable extends HTMLElement {
-  isContentEditable: true;
-}
+import { Target, FocusableElement, FormControl, HTMLElementContentEditable } from 'browser-inputs';
 
 export {
   blur,
@@ -35,6 +25,10 @@ export {
   triggerEvent,
   triggerKeyEvent,
   typeIn,
+  Target,
+  FocusableElement,
+  FormControl,
+  HTMLElementContentEditable,
 };
 
 export default {

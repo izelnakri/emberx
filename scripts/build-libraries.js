@@ -32,5 +32,5 @@ async function buildPackage(packageName) {
   await fs.rm(`${targetFolder}/dist`, { recursive: true, force: true });
   await fs.mkdir(`${targetFolder}/dist`, { recursive: true });
 
-  return shell(`node_modules/.bin/esbuild $(find 'packages/${packageName}/lib' -type f) --format=cjs --platform=node --outdir="./packages/${packageName}/dist"`);
+  return shell(`node_modules/.bin/esbuild $(find 'packages/${packageName}/src' -type f) --format=cjs --platform=node --outdir="./packages/${packageName}/dist"`);
 }

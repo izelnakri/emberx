@@ -28,7 +28,6 @@ export interface routerJSRouteDefinition {
 
 // NOTE: check Route.toReadOnlyRouteInfo
 // NOTE: there is this.recognizer.add (when recognizer is an instance via new RouteRecognizer())
-
 // TODO: { path: '/' } resets the path, by default route($segment) is { path: /$segment }, also people can use '/:dynamic' or ':dynamic';
 export default class EmberXRouter {
   static LOG_ROUTES = true;
@@ -136,8 +135,8 @@ export default class EmberXRouter {
 
   static map(routerDefinition: () => {}): RouteRegistry {
     this.ROUTE_REGISTRY = {};
-
     RouteMapContext.ROUTE_REGISTRY = this.ROUTE_REGISTRY;
+
     routerDefinition.apply(RouteMapContext); // routerDefinition.apply(this); // TODO: this uses this.route
 
     return this.ROUTE_REGISTRY;

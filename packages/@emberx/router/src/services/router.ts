@@ -4,9 +4,26 @@ import DefaultRoute from '../route';
 import LocationBar from '../vendor/location-bar';
 
 export default class RouterJSRouter extends Router<Route> {
-  // IS_TESTING = false;
+  IS_TESTING = !!globalThis.QUnit;
   locationBar: any;
   path: string;
+
+  // currentRoute
+  // currentRouteName
+  // currentURL
+  // isDestroyed
+  // isDestroying
+  // location
+  // mergedProperties
+  // rootURL
+
+  // routeDidChange
+  // routeWillChange
+
+  // recognize
+  // replaceWith
+  // transitionTo
+  // urlFor
 
   constructor() {
     super();
@@ -72,9 +89,7 @@ export default class RouterJSRouter extends Router<Route> {
       if (params.length > 0) {
         const handler: string = targetHandler.handler;
         // TODO: params is an object but it needs just the value it needs
-        await this.transitionTo(
-          ...[handler].concat(params.map((key) => targetHandler.params[key]))
-        );
+        await this.transitionTo(...[handler].concat(params.map((key) => targetHandler.params[key])));
       } else {
         await this.transitionTo(targetHandler.handler);
       }
@@ -87,20 +102,3 @@ export default class RouterJSRouter extends Router<Route> {
   //   return this.router.transitionTo(routeName, params, options);
   // }
 }
-
-// currentRoute
-// currentRouteName
-// currentURL
-// isDestroyed
-// isDestroying
-// location
-// mergedProperties
-// rootURL
-
-// routeDidChange
-// routeWillChange
-
-// recognize
-// replaceWith
-// transitionTo
-// urlFor

@@ -7,11 +7,11 @@ import targetRouterJSArray from './helpers/outputs/target-router-js-array';
 
 module('@emberx/router Public API', () => {
   test('Router.map creates route registry without Router.start()', async (assert) => {
-    Router._ROUTE_REGISTRY = {};
+    Router.ROUTE_REGISTRY = {};
 
     assert.true(Router.LOG_ROUTES);
     assert.true(Router.LOG_MODELS);
-    assert.deepEqual(Router._ROUTE_REGISTRY, {});
+    assert.deepEqual(Router.ROUTE_REGISTRY, {});
     assert.deepEqual(Router.SERVICES, {});
 
     assert.ok(Router.map);
@@ -19,14 +19,14 @@ module('@emberx/router Public API', () => {
 
     let routeRegistry = Router.map(oldRouterMap);
 
-    assert.deepEqual(Router._ROUTE_REGISTRY, targetFlatRegistry);
+    assert.deepEqual(Router.ROUTE_REGISTRY, targetFlatRegistry);
     assert.deepEqual(routeRegistry, targetFlatRegistry);
   });
 
   test('Router.start with only map create route registry correctly', async (assert) => {
     let router = Router.start([], oldRouterMap);
 
-    assert.deepEqual(Router._ROUTE_REGISTRY, targetFlatRegistry);
+    assert.deepEqual(Router.ROUTE_REGISTRY, targetFlatRegistry);
     assert.ok(router);
     assert.deepEqual(Object.keys(router), [
       '_lastQueryParams',
@@ -61,7 +61,7 @@ module('@emberx/router Public API', () => {
 
     delete targetFlatRegistry['admin.posts'].options.resetNamespace;
 
-    assert.deepEqual(Router._ROUTE_REGISTRY, targetFlatRegistry);
+    assert.deepEqual(Router.ROUTE_REGISTRY, targetFlatRegistry);
     assert.ok(router);
 
     targetFlatRegistry['admin.posts'].options = oldOptions; // NOTE: resets targetRegistry
@@ -81,7 +81,7 @@ module('@emberx/router Public API', () => {
       oldRouterMap
     );
 
-    assert.deepEqual(Router._ROUTE_REGISTRY, targetFlatRegistry);
+    assert.deepEqual(Router.ROUTE_REGISTRY, targetFlatRegistry);
     assert.ok(router);
   });
 

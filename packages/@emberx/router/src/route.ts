@@ -1,4 +1,4 @@
-import Router from '@emberx/router';
+import Router from './index';
 import Component, { renderComponent, service } from '@emberx/component';
 import { on, action } from '@glimmer/modifier';
 

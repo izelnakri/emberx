@@ -1,6 +1,6 @@
 import Router, { Route } from 'router_js';
 import EmberXRouter from '../index';
-import DefaultRoute from '@emberx/route';
+import DefaultRoute from '../route';
 import LocationBar from '../vendor/location-bar';
 
 export default class RouterJSRouter extends Router<Route> {
@@ -25,9 +25,6 @@ export default class RouterJSRouter extends Router<Route> {
     return;
   }
 
-  // @action transitionTo(routeName: string, params: object, options: object): object {
-  //   return this.router.transitionTo(routeName, params, options);
-  // }
   transitionDidError(error: any, transition: any): void {
     if (error.wasAborted || transition.isAborted) {
       // return logAbort(transition);
@@ -85,6 +82,10 @@ export default class RouterJSRouter extends Router<Route> {
       console.log('NO ROUTE FOUND');
     }
   }
+
+  // transitionTo(routeName: string, params: object, options: object): object {
+  //   return this.router.transitionTo(routeName, params, options);
+  // }
 }
 
 // currentRoute

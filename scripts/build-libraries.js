@@ -9,9 +9,7 @@ const shell = promisify(exec);
 let targetPackages = [
   '@emberx/component',
   '@emberx/helper',
-  // '@emberx/link-to',
-  // '@emberx/route',
-  // '@emberx/router',
+  '@emberx/router',
   '@emberx/string',
   '@emberx/test-helpers',
   '@emberx/ssr'
@@ -34,7 +32,7 @@ async function buildPackage(packageName) {
 
   try {
     // await shell(`node_modules/.bin/esbuild $(find 'packages/${packageName}/src' -type f)  --outdir="./packages/${packageName}/dist"`);
-    await shell(`node_modules/.bin/tsc $(find 'packages/${packageName}/src' -type f) --outDir packages/${packageName}/dist --target ES2018 --moduleResolution node -d`);
+    await shell(`node_modules/.bin/tsc $(find 'packages/${packageName}/src' -type f) --outDir packages/${packageName}/dist --target ES2018 --moduleResolution node -d --allowJs`);
   } catch (error) {
     console.error(error);
   }

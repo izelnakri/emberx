@@ -3,7 +3,7 @@ import EmberXRouter from '../index';
 import DefaultRoute from '@emberx/route';
 import LocationBar from '../vendor/location-bar';
 
-export class RouterJSRouter extends Router<Route> {
+export default class RouterJSRouter extends Router<Route> {
   // IS_TESTING = false;
   locationBar: any;
   path: string;
@@ -24,6 +24,10 @@ export class RouterJSRouter extends Router<Route> {
   didTransition(): void {
     return;
   }
+
+  // @action transitionTo(routeName: string, params: object, options: object): object {
+  //   return this.router.transitionTo(routeName, params, options);
+  // }
   transitionDidError(error: any, transition: any): void {
     if (error.wasAborted || transition.isAborted) {
       // return logAbort(transition);
@@ -82,3 +86,20 @@ export class RouterJSRouter extends Router<Route> {
     }
   }
 }
+
+// currentRoute
+// currentRouteName
+// currentURL
+// isDestroyed
+// isDestroying
+// location
+// mergedProperties
+// rootURL
+
+// routeDidChange
+// routeWillChange
+
+// recognize
+// replaceWith
+// transitionTo
+// urlFor

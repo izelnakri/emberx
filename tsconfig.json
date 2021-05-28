@@ -36,6 +36,9 @@
       "node"
     ]
   },
+  "include": [
+    "packages/@emberx/**/*.ts"
+  ],
   "exclude": [
     "node_modules",
     "tmp",

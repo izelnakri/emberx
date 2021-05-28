@@ -24,11 +24,8 @@ interface routerJSRouteDefinition {
 }
 
 // NOTE: check Route.toReadOnlyRouteInfo
-// NOTE: router.map() esentially calls this.recognizer.map(callback, fun(recognizer routes))
 // NOTE: there is this.recognizer.add (when recognizer is an instance via new RouteRecognizer())
-// NOTE: what is router-recognizer handler is exactly? model hook? one object with beforeModel, model?
 
-// NOTE: all about receiving route definitions and generating the registry
 // TODO: { path: '/' } resets the path, by default route($segment) is { path: /$segment }, also people can use '/:dynamic' or ':dynamic';
 export default class EmberXRouter {
   static LOG_ROUTES = true;
@@ -41,6 +38,82 @@ export default class EmberXRouter {
   // static IS_TESTING() {
   //   return !!globalThis.QUnit;
   // }
+
+  static start(
+    arrayOfRouteDefinitions: Array<RouteDefinition> = [],
+    routeMap: any = undefined
+  ): RouterJSRouter {
+    this._ROUTE_REGISTRY = {};
+
+    if (routeMap) {
+      this.map(routeMap); // move this to super.map since it just mutates the module
+    }
+
+    let routeMapRegistry = routeMap ? this.map(routeMap) : {};
+    let registry = this.definitionsToRegistry(arrayOfRouteDefinitions);
+    let routerJSRouteArray = this.convertToRouterJSRouteArray(
+      Object.assign(routeMapRegistry, registry)
+    );
+    let runRegistryMap = this.runRegistryMap;
+
+    this.routerjs = new RouterJSRouter();
+    this.routerjs.map(function (match) {
+      runRegistryMap(runRegistryMap, match, routerJSRouteArray);
+    });
+    this.SERVICES.router = this.routerjs;
+
+    return this.routerjs;
+  }
+
+  static definitionsToRegistry(
+    arrayOfRouteDefinitions: Array<RouteDefinition> = []
+  ): RouteRegistry {
+    arrayOfRouteDefinitions.forEach((routeElement) => {
+      const routeName =
+        routeElement.routeName ||
+        createRouteNameFromRouteClass(routeElement.route) ||
+        createRouteNameFromPath(routeElement.path); // NOTE: when /create-user type of paths are defined create a better routeName guess, should I replace order?
+      const routeNameSegments = routeName.split('.');
+      const normalizedPath = routeElement.path.startsWith('/')
+        ? routeElement.path.slice(1)
+        : routeElement.path;
+      const routePathSegments = normalizedPath.split('/');
+
+      routeNameSegments.reduce((currentSegment, routeSegment, index) => {
+        const targetSegmentName = currentSegment
+          ? `${currentSegment}.${routeSegment}`
+          : routeSegment;
+        const targetIndex =
+          index >= routePathSegments.length ? routePathSegments.length - 1 : index;
+
+        checkInRouteRegistryOrCreateRoute(this._ROUTE_REGISTRY, {
+          routeName: targetSegmentName,
+          options: { path: `/${routePathSegments[targetIndex]}` },
+          route: index === routeNameSegments.length - 1 ? routeElement.route : undefined,
+        });
+
+        if (currentSegment && !this._ROUTE_REGISTRY[`${currentSegment}.index`]) {
+          this._ROUTE_REGISTRY[`${currentSegment}.index`] = {
+            routeName: `${currentSegment}.index`,
+            options: { path: '/' },
+            route: undefined,
+          };
+        }
+
+        return targetSegmentName;
+      }, null);
+
+      if (routeElement.indexRoute && routeName !== 'index') {
+        this._ROUTE_REGISTRY[`${routeName}.index`] = {
+          routeName: `${routeName}.index`,
+          options: { path: '/' },
+          route: routeElement.indexRoute,
+        };
+      }
+    });
+
+    return this._ROUTE_REGISTRY;
+  }
 
   static convertToRouterJSRouteArray(
     routerRegistry: RouteRegistry
@@ -138,85 +211,8 @@ export default class EmberXRouter {
     return this._ROUTE_REGISTRY;
   }
 
-  static definitionsToRegistry(
-    arrayOfRouteDefinitions: Array<RouteDefinition> = []
-  ): RouteRegistry {
-    arrayOfRouteDefinitions.forEach((routeElement) => {
-      const routeName =
-        routeElement.routeName ||
-        createRouteNameFromRouteClass(routeElement.route) ||
-        createRouteNameFromPath(routeElement.path); // NOTE: when /create-user type of paths are defined create a better routeName guess, should I replace order?
-      const routeNameSegments = routeName.split('.');
-      const normalizedPath = routeElement.path.startsWith('/')
-        ? routeElement.path.slice(1)
-        : routeElement.path;
-      const routePathSegments = normalizedPath.split('/');
-
-      routeNameSegments.reduce((currentSegment, routeSegment, index) => {
-        const targetSegmentName = currentSegment
-          ? `${currentSegment}.${routeSegment}`
-          : routeSegment;
-        const targetIndex =
-          index >= routePathSegments.length ? routePathSegments.length - 1 : index;
-
-        checkInRouteRegistryOrCreateRoute(this._ROUTE_REGISTRY, {
-          routeName: targetSegmentName,
-          options: { path: `/${routePathSegments[targetIndex]}` },
-          route: index === routeNameSegments.length - 1 ? routeElement.route : undefined,
-        });
-
-        if (currentSegment && !this._ROUTE_REGISTRY[`${currentSegment}.index`]) {
-          this._ROUTE_REGISTRY[`${currentSegment}.index`] = {
-            routeName: `${currentSegment}.index`,
-            options: { path: '/' },
-            route: undefined,
-          };
-        }
-
-        return targetSegmentName;
-      }, null);
-
-      if (routeElement.indexRoute && routeName !== 'index') {
-        this._ROUTE_REGISTRY[`${routeName}.index`] = {
-          routeName: `${routeName}.index`,
-          options: { path: '/' },
-          route: routeElement.indexRoute,
-        };
-      }
-    });
-
-    return this._ROUTE_REGISTRY;
-  }
-
-  // add to registry by demand
-  // add to actual router by demand
-
-  static start(
-    arrayOfRouteDefinitions: Array<RouteDefinition> = [],
-    routeMap = undefined
-  ): RouterJSRouter {
-    this._ROUTE_REGISTRY = {};
-
-    if (routeMap) {
-      this.map(routeMap); // move this to super.map since it just mutates the module
-    }
-
-    const routeMapRegistry = routeMap ? this.map(routeMap) : {};
-    const registry = this.definitionsToRegistry(arrayOfRouteDefinitions);
-    const routerJSRouteArray = this.convertToRouterJSRouteArray(
-      Object.assign(routeMapRegistry, registry)
-    );
-
-    const runRegistryMap = this.runRegistryMap;
-
-    this.routerjs = new RouterJSRouter();
-    this.routerjs.map(function (match) {
-      runRegistryMap(runRegistryMap, match, routerJSRouteArray);
-    });
-    this.SERVICES.router = this.routerjs;
-
-    return this.routerjs;
-  }
+  // NOTE: add to registry by demand
+  // NOTE: add to actual router by demand
 }
 
 function returnOptionsAsSubRouteIfFunction(options) {

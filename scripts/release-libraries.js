@@ -14,8 +14,6 @@ if (!version) {
 const TARGET_LIBRARIES = [
   '@emberx/component',
   '@emberx/helper',
-  '@emberx/link-to',
-  '@emberx/route',
   '@emberx/router',
   '@emberx/ssr',
   '@emberx/string',

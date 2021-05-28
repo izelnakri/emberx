@@ -71,12 +71,8 @@ const devConfig = {
       '@emberx/test-helpers': path.resolve(__dirname, 'packages/@emberx/test-helpers/src/index.ts'),
       '@emberx/string/test': path.resolve(__dirname, 'packages/@emberx/string/test/index.ts'),
       '@emberx/string': path.resolve(__dirname, 'packages/@emberx/string/src/index.ts'),
-      '@emberx/link-to/test': path.resolve(__dirname, 'packages/@emberx/link-to/test/index.ts'),
-      '@emberx/link-to': path.resolve(__dirname, 'packages/@emberx/link-to/src/index.ts'),
       '@emberx/router/test': path.resolve(__dirname, 'packages/@emberx/router/test/index.ts'),
-      '@emberx/router': path.resolve(__dirname, 'packages/@emberx/router/src/index.ts'),
-      '@emberx/route/test': path.resolve(__dirname, 'packages/@emberx/route/test/index.ts'),
-      '@emberx/route': path.resolve(__dirname, 'packages/@emberx/route/src/index.ts'),
+      '@emberx/router': path.resolve(__dirname, 'packages/@emberx/router/src/index.ts')
     }
   },
   // externals: {

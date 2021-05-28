@@ -24,8 +24,6 @@ await Promise.all(TARGET_DEPENDENCIES.map(async (pkgName) => {
 let TARGET_PACKAGES = [
   '@emberx/component',
   '@emberx/helper',
-  '@emberx/link-to',
-  '@emberx/route',
   '@emberx/router',
   '@emberx/ssr',
   '@emberx/string',

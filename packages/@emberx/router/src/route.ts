@@ -1,14 +1,15 @@
+import RouterService from './services/router';
 import Router from './index';
-import Component, { renderComponent, service } from '@emberx/component';
-import { on, action } from '@glimmer/modifier';
+import EmberXComponent, { renderComponent, service } from '@emberx/component';
+// import { on, action } from '@glimmer/modifier';
 
 interface FreeObject {
   [propName: string]: any;
 }
 
 // NOTE: what is router-recognizer handler is exactly? model hook? one object with beforeModel, model?
-export default class Route extends Component<{ model: object }> {
-  @service router;
+export default class Route<Args extends FreeObject = {}> extends EmberXComponent<Args> {
+  @service router: RouterService;
 
   static includes: {};
 
@@ -33,15 +34,15 @@ export default class Route extends Component<{ model: object }> {
     // containerElement.innerHTML = ''; // TODO: temporary solution, clear previously rendered route
 
     renderComponent(this, {
-      element: document.getElementById('app'), // containerElement,
+      element: document.getElementById('app') as HTMLElement, // containerElement,
       args: { model: model || {} },
-      services: Router.SERVICES,
+      owner: { services: Router.SERVICES },
     });
   }
 
-  constructor(owner, args) {
-    return super(owner, args);
-  }
+  // constructor(owner, args) {
+  //   return super(owner, args);
+  // }
 
   get model(): any {
     return this.args.model;
@@ -50,6 +51,7 @@ export default class Route extends Component<{ model: object }> {
   get routeName(): string {
     const routeNames = this.router.recognizer.recognize(document.location.pathname);
 
-    return routeNames ? routeNames[routeNames.length - 1].handler : 'not-found';
+    // @ts-ignore
+    return routeNames ? (routeNames[routeNames.length - 1].handler as string) : 'not-found';
   }
 }

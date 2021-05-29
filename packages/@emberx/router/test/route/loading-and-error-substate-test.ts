@@ -1,3 +1,4 @@
+// Builtin events: willTransition, error, loading(?), didTransition(?)
 // https://guides.emberjs.com/release/routing/loading-and-error-substates/
 
 // TODO: test class changes on loading, error

@@ -1,6 +1,4 @@
-import Component, { hbs, service, renderComponent } from '@emberx/component';
-import { tracked } from '@glimmer/tracking';
-import { action } from '@glimmer/modifier';
+import Component, { hbs, service, renderComponent, action, tracked } from '@emberx/component';
 import { module, test } from 'qunitx';
 import { click } from '@emberx/test-helpers';
 import { setupRenderingTest } from './helpers/index';
@@ -151,9 +149,7 @@ module('@emberx/component | Public API', function (hooks) {
       assert.dom('#another #another-component #message').hasText('Current message: hello world');
       assert.dom('#locale-info').hasText('Component gets rendered. Current locale is en');
       assert.dom('#another #another-component span').hasText('Count is 55');
-      assert
-        .dom('#another #another-component #received-arg')
-        .hasText('Received argument is hello world');
+      assert.dom('#another #another-component #received-arg').hasText('Received argument is hello world');
       assert.dom('#another #another-component #increment-button').hasText('Increment');
       assert.dom('#another #another-component #another-message-button').hasText('Change message');
       assert.dom('#another #another-component #change-locale-button').hasText('Change locale');
@@ -172,9 +168,7 @@ module('@emberx/component | Public API', function (hooks) {
       assert.dom('#locale-info').hasText('Component gets rendered. Current locale is en');
       assert.dom('#main-component-message').hasText('message changed');
       assert.dom('#main-component-formatted-message').hasText('MESSAGE CHANGED');
-      assert
-        .dom('#another #another-component #received-arg')
-        .hasText('Received argument is message changed');
+      assert.dom('#another #another-component #received-arg').hasText('Received argument is message changed');
 
       await click('#change-locale-button');
       await new Promise((resolve) => setTimeout(() => resolve(), 100)); // TODO: remove this with test waiters
@@ -182,9 +176,7 @@ module('@emberx/component | Public API', function (hooks) {
       assert.dom('#locale-info').hasText('Component gets rendered. Current locale is tr');
       assert.dom('#main-component-message').hasText('message changed');
       assert.dom('#main-component-formatted-message').hasText('MESSAGE CHANGED');
-      assert
-        .dom('#another #another-component #received-arg')
-        .hasText('Received argument is message changed');
+      assert.dom('#another #another-component #received-arg').hasText('Received argument is message changed');
     });
   });
 });

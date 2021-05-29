@@ -9,11 +9,18 @@ import {
 import { fn, hash, array, get, concat, on } from '@glimmer/runtime';
 import createTemplate from './create-template';
 
+export { tracked } from '@glimmer/tracking';
+export { action } from '@glimmer/modifier';
+
 interface Owner {
   [key: string]: any;
 }
 
-export default class EmberXComponent<Args extends {} = {}> extends Component<Args> {
+interface FreeObject {
+  [propName: string]: any;
+}
+
+export default class EmberXComponent<Args extends FreeObject = {}> extends Component<Args> {
   static compiled = false;
   static includes = {};
   static template?: string;
@@ -33,9 +40,9 @@ export default class EmberXComponent<Args extends {} = {}> extends Component<Arg
     return templateFactory;
   }
 
-  constructor(owner: object, args: Args) {
-    super(owner, args);
-  }
+  // constructor(owner: object, args: Args) {
+  //   super(owner, args);
+  // }
 }
 
 // async function renderComponent(
@@ -83,7 +90,7 @@ function service(...args: any[]) {
   return target[key];
 }
 
-function hbs(sourceCode: string) {
+function hbs(sourceCode: TemplateStringsArray): string {
   return sourceCode[0];
 }
 

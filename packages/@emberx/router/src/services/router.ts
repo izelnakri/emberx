@@ -3,8 +3,13 @@ import EmberXRouter from '../index';
 import DefaultRoute from '../route';
 import LocationBar from '../vendor/location-bar';
 
+interface FreeObject {
+  [propName: string]: any;
+}
+
 export default class RouterJSRouter extends Router<Route> {
-  IS_TESTING = !!globalThis.QUnit;
+  // @ts-ignore
+  testing: boolean = !!globalThis.QUnit;
   locationBar: any;
   path: string;
 
@@ -42,7 +47,7 @@ export default class RouterJSRouter extends Router<Route> {
     return;
   }
 
-  transitionDidError(error: any, transition: any): void {
+  transitionDidError(error: any, transition: any) {
     if (error.wasAborted || transition.isAborted) {
       // return logAbort(transition);
     } else {
@@ -51,6 +56,7 @@ export default class RouterJSRouter extends Router<Route> {
       return error.error;
     }
   }
+
   replaceURL(): void {
     return;
   }
@@ -68,13 +74,13 @@ export default class RouterJSRouter extends Router<Route> {
       console.log(name);
     }
 
-    return EmberXRouter._ROUTE_REGISTRY[name].route || DefaultRoute;
+    return EmberXRouter.ROUTE_REGISTRY[name].route || DefaultRoute;
   }
 
   updateURL(url: string): void {
     this.path = url;
 
-    if (!globalThis.QUnit) {
+    if (!this.testing) {
       this.locationBar.update(url);
     }
   }
@@ -83,13 +89,16 @@ export default class RouterJSRouter extends Router<Route> {
     const targetHandlers = this.recognizer.recognize(path);
 
     if (targetHandlers) {
-      const targetHandler: FreeObject = targetHandlers[targetHandlers.length - 1];
+      const targetHandler: FreeObject = targetHandlers[targetHandlers.length - 1] as FreeObject;
       const params = Object.keys(targetHandler.params);
 
       if (params.length > 0) {
         const handler: string = targetHandler.handler;
         // TODO: params is an object but it needs just the value it needs
-        await this.transitionTo(...[handler].concat(params.map((key) => targetHandler.params[key])));
+        let targetParams = [handler].concat(params.map((key) => targetHandler.params[key]));
+
+        // @ts-ignore
+        await this.transitionTo(...targetParams);
       } else {
         await this.transitionTo(targetHandler.handler);
       }

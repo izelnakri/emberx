@@ -1,4 +1,4 @@
-import type { RouteRegistry, routerJSRouteDefinition } from './index';
+import type { RouteRegistry, routerJSRouteDefinition } from './router';
 interface FreeObject {
   [propName: string]: any;
 }

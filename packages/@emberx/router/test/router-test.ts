@@ -44,6 +44,7 @@ module('@emberx/router Public API', () => {
       'currentSequence',
       'log',
       'recognizer',
+      'testing',
       'locationBar',
       'path',
     ]);

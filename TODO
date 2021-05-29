@@ -1,3 +1,9 @@
+- avoid running model hooks
+- Avoid running model hooks when redirecting in the middle of another transition.
+- Handle two different approaches to transitions:
+ - 1: url based or with params passed in
+ - 2: route name with full model object passed in
+
 Ember.Application = boot, register services, reset state, viist, rootElement, unregister, resolver, lookup,
 autoboot: false
 

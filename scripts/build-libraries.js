@@ -32,7 +32,7 @@ async function buildPackage(packageName) {
 
   try {
     // await shell(`node_modules/.bin/esbuild $(find 'packages/${packageName}/src' -type f)  --outdir="./packages/${packageName}/dist"`);
-    await shell(`node_modules/.bin/tsc $(find 'packages/${packageName}/src' -type f) --outDir packages/${packageName}/dist --target ES2018 --moduleResolution node -d --allowJs`);
+    await shell(`node_modules/.bin/tsc $(find 'packages/${packageName}/src' -type f) --outDir packages/${packageName}/dist --target ES2018 --moduleResolution node --experimentalDecorators true -d --allowJs`);
   } catch (error) {
     console.error(error);
   }

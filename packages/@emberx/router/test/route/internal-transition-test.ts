@@ -1,3 +1,6 @@
+// HandlerInfo - contains model and params, handlers are routes in ember
+// UnresolvedHandlerInfoByParam has the params before resolution(resolves itself through the beforeModel/afterModel
+
 // beforeModel(transition)
 // redirect(model, transition)
 // afterModel(model, transition)

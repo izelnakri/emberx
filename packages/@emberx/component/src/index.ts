@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import {
+  didRender,
   setComponentTemplate,
   getOwner,
   templateOnlyComponent,
@@ -108,6 +109,7 @@ function traverseAndCompileAllComponents(ComponentClass: typeof EmberXComponent)
 }
 
 export {
+  didRender,
   setComponentTemplate,
   getOwner,
   templateOnlyComponent,

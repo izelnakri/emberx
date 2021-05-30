@@ -1,5 +1,5 @@
 import { module, test } from 'qunitx';
-import Route from '@emberx/route';
+import { Route } from '@emberx/router';
 
 module('Route Unit Test', () => {
   test('Route has the right actions', async (assert) => {

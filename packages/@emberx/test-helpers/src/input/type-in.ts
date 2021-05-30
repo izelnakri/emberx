@@ -1,3 +1,4 @@
+import { didRender } from '@emberx/component';
 import inputs, { Target } from 'browser-inputs';
 
 interface TypeInOptions {
@@ -9,7 +10,8 @@ export default async function typeIn(
   text: string,
   options: TypeInOptions = {}
 ): Promise<void | Event> {
-  return await inputs.typeIn(target, text, options);
+  await inputs.typeIn(target, text, options);
+  await didRender();
 
   // .then(settled)
 }

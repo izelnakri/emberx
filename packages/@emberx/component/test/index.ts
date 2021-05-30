@@ -157,13 +157,11 @@ module('@emberx/component | Public API', function (hooks) {
 
       await click('#another-message-button');
       await click('#increment-button');
-      await new Promise((resolve) => setTimeout(() => resolve(), 100)); // TODO: remove this with test waiters
 
       assert.dom('#another #another-component span').hasText('Count is 56');
       assert.dom('#another #another-component #message').hasText('Current message: hello world');
 
       await click('#message-button');
-      await new Promise((resolve) => setTimeout(() => resolve(), 100)); // TODO: remove this with test waiters
 
       assert.dom('#locale-info').hasText('Component gets rendered. Current locale is en');
       assert.dom('#main-component-message').hasText('message changed');
@@ -171,7 +169,6 @@ module('@emberx/component | Public API', function (hooks) {
       assert.dom('#another #another-component #received-arg').hasText('Received argument is message changed');
 
       await click('#change-locale-button');
-      await new Promise((resolve) => setTimeout(() => resolve(), 100)); // TODO: remove this with test waiters
 
       assert.dom('#locale-info').hasText('Component gets rendered. Current locale is tr');
       assert.dom('#main-component-message').hasText('message changed');

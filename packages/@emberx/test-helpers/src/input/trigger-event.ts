@@ -1,3 +1,4 @@
+import { didRender } from '@emberx/component';
 import inputs, { Target } from 'browser-inputs';
 
 export default async function triggerEvent(
@@ -5,7 +6,8 @@ export default async function triggerEvent(
   eventType: string,
   options?: object
 ): Promise<void> {
-  return await inputs.triggerEvent(target, eventType, options);
+  await inputs.triggerEvent(target, eventType, options);
+  await didRender();
 
   // return settled();
 }

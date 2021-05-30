@@ -1,7 +1,9 @@
+import { didRender } from '@emberx/component';
 import inputs, { Target } from 'browser-inputs';
 
 export default async function focus(target: Target): Promise<void> {
-  return await inputs.focus(target);
+  await inputs.focus(target);
+  await didRender();
 
   // return settled();
 }

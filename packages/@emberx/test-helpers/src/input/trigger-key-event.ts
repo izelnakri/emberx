@@ -1,5 +1,6 @@
-import type { KeyboardEventType } from './fire-event';
+import { didRender } from '@emberx/component';
 import inputs, { Target } from 'browser-inputs';
+import type { KeyboardEventType } from './fire-event';
 
 export interface KeyModifiers {
   ctrlKey?: boolean;
@@ -21,7 +22,8 @@ export default async function triggerKeyEvent(
   key: number | string,
   modifiers: KeyModifiers = DEFAULT_MODIFIERS
 ): Promise<void> {
-  return await inputs.triggerKeyEvent(target, eventType, key, modifiers);
+  await inputs.triggerKeyEvent(target, eventType, key, modifiers);
+  await didRender();
 
   // return settled();
 }

@@ -42,7 +42,6 @@ module('@emberx/helper | Public API', function (hooks) {
     assert.dom('#change-msg-button').hasText('Change message');
 
     await click('#change-msg-button');
-    await new Promise((resolve) => setTimeout(() => resolve(), 100)); // TODO: remove this with test waiters
 
     assert.dom('#target-title').hasText('something else - SOMETHING ELSE');
     assert.dom('#target-text').hasText('something else');
@@ -124,7 +123,6 @@ module('@emberx/helper | Public API', function (hooks) {
     assert.dom('#change-msg-button').hasText('Change message');
 
     await click('#change-msg-button');
-    await new Promise((resolve) => setTimeout(() => resolve(), 100)); // TODO: remove this with test waiters
 
     assert
       .dom('#target-title')
@@ -135,7 +133,6 @@ module('@emberx/helper | Public API', function (hooks) {
     assert.dom('#change-msg-button').hasText('Change message');
 
     await click('#change-locale-button');
-    await new Promise((resolve) => setTimeout(() => resolve(), 100)); // TODO: remove this with test waiters
 
     assert
       .dom('#target-title')

@@ -19,8 +19,9 @@ const TARGET_LIBRARIES = [
   '@emberx/string',
   '@emberx/test-helpers'
 ]
+let PROJECT_JSON = JSON.parse((await fs.readFile(`package.json`)).toString());
 
-await Promise.all(TARGET_LIBRARIES.map((libraryName) => bumpVersion(libraryName, version, TARGET_LIBRARIES)));
+await Promise.all(TARGET_LIBRARIES.map((libraryName) => bumpVersion(libraryName, version, PROJECT_JSON.dependencies)));
 
 console.log(`Bumped these packages to v${version}`, TARGET_LIBRARIES);
 
@@ -30,8 +31,7 @@ TARGET_LIBRARIES.forEach((libraryName) => {
   console.log(`Released v${version} of ${libraryName} on npm!`);
 });
 
-// TODO: move projectPackageJSON dependency version to the packages versions
-async function bumpVersion(libraryName, version, allLibrariesToUpgrade) {
+async function bumpVersion(libraryName, version, projectJSONDependencies) {
   let packageJSON = await fs.readFile(`packages/${libraryName}/package.json`);
 
   let oldJSON = JSON.parse(packageJSON.toString());
@@ -39,10 +39,13 @@ async function bumpVersion(libraryName, version, allLibrariesToUpgrade) {
   oldJSON.version = version;
 
   let oldDependencies = oldJSON.dependencies || {};
+  let projectJSONDependencyKeys = Object.keys(projectJSONDependencies);
 
   oldJSON.dependencies = Object.keys(oldDependencies).reduce((result, dependency) => {
     if (TARGET_LIBRARIES.includes(dependency)) {
       return { ...result, [dependency]: version };
+    } else if (projectJSONDependencyKeys.includes(dependency)) {
+      return { ...result, [dependency]: projectJSONDependencies[dependency] };
     }
 
     return { ...result, [dependency]: oldJSON.dependencies[dependency] };
@@ -51,11 +54,8 @@ async function bumpVersion(libraryName, version, allLibrariesToUpgrade) {
   await fs.writeFile(`packages/${libraryName}/package.json`, JSON.stringify(oldJSON, null, 2));
 }
 
-let packageJSON = await fs.readFile('package.json');
-let oldJSON = JSON.parse(packageJSON.toString());
+PROJECT_JSON.version = version;
 
-oldJSON.version = version;
-
-await fs.writeFile('package.json', JSON.stringify(oldJSON, null, 2));
+await fs.writeFile('package.json', JSON.stringify(PROJECT_JSON, null, 2));
 
 console.log(`Released emberx v${version} successfully`);

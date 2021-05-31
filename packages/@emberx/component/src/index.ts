@@ -11,7 +11,7 @@ import { fn, hash, array, get, concat, on } from '@glimmer/runtime';
 import createTemplate from './create-template';
 
 export { tracked } from '@glimmer/tracking';
-export { action } from '@glimmer/modifier';
+import { action as glimmerAction } from '@glimmer/modifier';
 
 interface Owner {
   [key: string]: any;
@@ -40,10 +40,39 @@ export default class EmberXComponent<Args extends FreeObject = {}> extends Compo
 
     return templateFactory;
   }
+}
 
-  // constructor(owner: object, args: Args) {
-  //   super(owner, args);
-  // }
+const AsyncFunction = (async () => {}).constructor;
+const ASYNC_ACTIONS_PROMISE_QUEUE = new Set();
+
+export function getPromiseQueue() {
+  return ASYNC_ACTIONS_PROMISE_QUEUE;
+}
+
+// @ts-ignore
+export function action(context, value, descriptor) {
+  if (descriptor) {
+    let actionFunction = descriptor.value;
+    Object.assign(descriptor, {
+      value() {
+        if (actionFunction instanceof AsyncFunction) {
+          // @ts-ignore NOTE: this hack allows @emberx/test-helper input helpers to listen the finish of async
+          let promise = actionFunction.apply(this, arguments);
+
+          ASYNC_ACTIONS_PROMISE_QUEUE.add(promise);
+          promise.finally(() => ASYNC_ACTIONS_PROMISE_QUEUE.delete(promise));
+
+          return promise;
+        }
+
+        return actionFunction.apply(this, arguments);
+      },
+    });
+
+    return glimmerAction(context, descriptor.value, descriptor);
+  }
+
+  return glimmerAction(context, value, descriptor);
 }
 
 // async function renderComponent(

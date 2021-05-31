@@ -17,7 +17,7 @@ import {
 import render from './render';
 import { find, findAll } from './query';
 import { currentRouteName, currentURL, visit } from './url';
-import { waitFor, waitUntil, settled } from './wait';
+import { wait, waitFor, waitUntil, settled } from './wait';
 
 export {
   blur,
@@ -42,6 +42,7 @@ export {
   setupTest,
   setupRenderingTest,
   setupApplicationTest,
+  wait,
   waitFor,
   waitUntil,
   visit,
@@ -70,6 +71,7 @@ export default {
   setupTest,
   setupRenderingTest,
   setupApplicationTest,
+  wait,
   waitFor,
   waitUntil,
   visit,

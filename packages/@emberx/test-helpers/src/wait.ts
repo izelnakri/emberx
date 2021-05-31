@@ -1,3 +1,4 @@
+import { didRender, getAsyncActionsQueue } from '@emberx/component';
 import { find, findAll } from './query';
 
 const TIMEOUTS = [0, 1, 2, 5, 7];
@@ -21,8 +22,7 @@ export interface Options {
 */
 export function waitUntil<T>(callback: () => T | void | Falsy, options: Options = {}): Promise<T> {
   const timeout = 'timeout' in options ? (options.timeout as number) : 1000;
-  const timeoutMessage =
-    'timeoutMessage' in options ? options.timeoutMessage : 'waitUntil timed out';
+  const timeoutMessage = 'timeoutMessage' in options ? options.timeoutMessage : 'waitUntil timed out';
 
   // creating this error eagerly so it has the proper invocation stack
   const waitUntilTimedOut = new Error(timeoutMessage);
@@ -101,8 +101,15 @@ export function waitFor(selector: string, options: Options = {}): Promise<Elemen
 }
 
 // NOTE: build a new waiting system? (Should only have route transition and request waiting?
-export function settled() {
-  return;
+export async function settled() {
+  await Promise.all(getAsyncActionsQueue());
+  await didRender();
+}
+
+export async function wait(timeout: number = 500): Promise<void> {
+  await new Promise((resolve) => {
+    setTimeout(() => resolve(null), timeout);
+  });
 }
 
 // export function isSettled() {

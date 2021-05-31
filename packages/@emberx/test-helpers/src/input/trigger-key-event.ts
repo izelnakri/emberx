@@ -1,6 +1,7 @@
 import { didRender } from '@emberx/component';
 import inputs, { Target } from 'browser-inputs';
 import type { KeyboardEventType } from './fire-event';
+import { settled } from '../wait';
 
 export interface KeyModifiers {
   ctrlKey?: boolean;
@@ -25,5 +26,5 @@ export default async function triggerKeyEvent(
   await inputs.triggerKeyEvent(target, eventType, key, modifiers);
   await didRender();
 
-  // return settled();
+  await settled();
 }

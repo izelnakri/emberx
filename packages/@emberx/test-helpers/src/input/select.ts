@@ -1,5 +1,6 @@
 import { didRender } from '@emberx/component';
 import inputs, { Target } from 'browser-inputs';
+import { settled } from '../wait';
 
 export default async function select(
   target: Target,
@@ -9,5 +10,5 @@ export default async function select(
   await inputs.select(target, options, keepPreviouslySelected);
   await didRender();
 
-  // return settled();
+  await settled();
 }

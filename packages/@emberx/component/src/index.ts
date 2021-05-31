@@ -45,7 +45,7 @@ export default class EmberXComponent<Args extends FreeObject = {}> extends Compo
 const AsyncFunction = (async () => {}).constructor;
 const ASYNC_ACTIONS_PROMISE_QUEUE = new Set();
 
-export function getPromiseQueue() {
+export function getAsyncActionsQueue() {
   return ASYNC_ACTIONS_PROMISE_QUEUE;
 }
 

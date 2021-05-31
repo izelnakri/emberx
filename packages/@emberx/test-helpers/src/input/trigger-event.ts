@@ -1,5 +1,6 @@
 import { didRender } from '@emberx/component';
 import inputs, { Target } from 'browser-inputs';
+import { settled } from '../wait';
 
 export default async function triggerEvent(
   target: Target,
@@ -9,5 +10,5 @@ export default async function triggerEvent(
   await inputs.triggerEvent(target, eventType, options);
   await didRender();
 
-  // return settled();
+  await settled();
 }

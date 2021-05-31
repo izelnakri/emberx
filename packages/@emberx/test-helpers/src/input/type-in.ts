@@ -1,5 +1,6 @@
 import { didRender } from '@emberx/component';
 import inputs, { Target } from 'browser-inputs';
+import { settled } from '../wait';
 
 interface TypeInOptions {
   delay?: number;
@@ -13,5 +14,5 @@ export default async function typeIn(
   await inputs.typeIn(target, text, options);
   await didRender();
 
-  // .then(settled)
+  await settled();
 }

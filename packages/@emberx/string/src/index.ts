@@ -2,7 +2,7 @@
 @module @ember/string
 */
 
-import { getString } from './string-registry';
+import { getString } from './string-registry.js';
 export { getStrings as _getStrings, setStrings as _setStrings } from './string-registry';
 
 import Cache from './cache';
@@ -27,8 +27,7 @@ const STRING_CLASSIFY_REGEXP_2 = /(.)(-|_|\.|\s)+(.)?/g;
 const STRING_CLASSIFY_REGEXP_3 = /(^|\/|\.)([a-z])/g;
 
 const CLASSIFY_CACHE = new Cache<string, string>(1000, (str) => {
-  const replace1 = (_match: string, _separator: string, chr: string) =>
-    chr ? `_${chr.toUpperCase()}` : '';
+  const replace1 = (_match: string, _separator: string, chr: string) => (chr ? `_${chr.toUpperCase()}` : '');
   const replace2 = (_match: string, initialChar: string, _separator: string, chr: string) =>
     initialChar + (chr ? chr.toUpperCase() : '');
   const parts = str.split('/');
@@ -46,10 +45,7 @@ const STRING_UNDERSCORE_REGEXP_1 = /([a-z\d])([A-Z]+)/g;
 const STRING_UNDERSCORE_REGEXP_2 = /-|\s+/g;
 
 const UNDERSCORE_CACHE = new Cache<string, string>(1000, (str) =>
-  str
-    .replace(STRING_UNDERSCORE_REGEXP_1, '$1_$2')
-    .replace(STRING_UNDERSCORE_REGEXP_2, '_')
-    .toLowerCase()
+  str.replace(STRING_UNDERSCORE_REGEXP_1, '$1_$2').replace(STRING_UNDERSCORE_REGEXP_2, '_').toLowerCase()
 );
 
 const STRING_CAPITALIZE_REGEXP = /(^|\/)([a-z\u00C0-\u024F])/g;

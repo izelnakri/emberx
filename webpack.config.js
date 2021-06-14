@@ -16,6 +16,8 @@ const sharedConfig = {
         mainFields: ['module', 'main'],
       }),
     ],
+    enforceExtension: false,
+    enforceModuleExtension: false,
     extensions: ['.ts', '.js'],
   },
   module: {
@@ -55,8 +57,8 @@ const devConfig = {
     port: 1234
   },
   entry: {
-    // 'examples/basic': './examples/basic/index.ts',
-    // 'examples/blog': path.resolve(__dirname, './examples/blog/index.ts'),
+    'examples/basic': './examples/basic/index.ts',
+    'examples/blog': path.resolve(__dirname, './examples/blog/index.ts'),
     'test/index': path.resolve(__dirname, './test/index.ts')
   },
   resolve: {

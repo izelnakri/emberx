@@ -48,7 +48,6 @@ module('@emberx/helper | Public API', function (hooks) {
     assert.dom('#change-msg-button').hasText('Change message');
   });
 
-  // TODO: add position params + hash
   test('Complex embedded helper with service works, incl. on mutation', async function (assert) {
     const myHelper = helper(function ([text], options, services) {
       let locale = services.locale.currentLocale;

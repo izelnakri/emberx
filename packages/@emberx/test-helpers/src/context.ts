@@ -1,3 +1,5 @@
+// TODO: expose owner that can be changed? maybe limit with Object.defineProperty(this, 'owner'
+// also this.element maybe
 interface FreeObject {
   [propName: string]: any;
 }

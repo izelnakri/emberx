@@ -25,7 +25,6 @@ export default class RouteMapContext {
   }
 
   static route(routeName: string, options: FreeObject, subRoute?: () => {}): any {
-    console.log('called', routeName);
     this._parentRoute = this._parentRoute ? `${this._parentRoute}.${routeName}` : routeName;
 
     let targetOptions =

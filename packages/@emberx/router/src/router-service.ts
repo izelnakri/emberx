@@ -1,7 +1,7 @@
 import Router, { Route } from 'router_js';
-import EmberXRouter from '../index';
-import DefaultRoute from '../route';
-import LocationBar from '../vendor/location-bar';
+import EmberXRouter from './index';
+import DefaultRoute from './route';
+import LocationBar from './vendor/location-bar';
 
 interface FreeObject {
   [propName: string]: any;
@@ -60,10 +60,12 @@ export default class RouterJSRouter extends Router<Route> {
   replaceURL(): void {
     return;
   }
-  routeWillChange(): void {
+  routeWillChange(abc): void {
+    // console.log('routeWillChange call for', abc);
     return;
   }
-  routeDidChange(): void {
+  routeDidChange(abc): void {
+    // console.log('routeDidChange call for', abc);
     return;
   }
   getSerializer(): any {
@@ -71,9 +73,12 @@ export default class RouterJSRouter extends Router<Route> {
   }
   getRoute(name: string): any {
     if (EmberXRouter.LOG_ROUTES) {
-      console.log(name);
+      console.log('iz debug', name);
     }
 
+    // console.log('ZZZZZZZZ target route is', EmberXRouter.ROUTE_REGISTRY[name].route || DefaultRoute);
+    // console.log(EmberXRouter.ROUTE_REGISTRY);
+    debugger;
     return EmberXRouter.ROUTE_REGISTRY[name].route || DefaultRoute;
   }
 
@@ -88,6 +93,7 @@ export default class RouterJSRouter extends Router<Route> {
   async visit(path: string): Promise<void> {
     const targetHandlers = this.recognizer.recognize(path);
 
+    // TODO: this logic is wrong
     if (targetHandlers) {
       const targetHandler: FreeObject = targetHandlers[targetHandlers.length - 1] as FreeObject;
       const params = Object.keys(targetHandler.params);
@@ -98,8 +104,11 @@ export default class RouterJSRouter extends Router<Route> {
         let targetParams = [handler].concat(params.map((key) => targetHandler.params[key]));
 
         // @ts-ignore
-        await this.transitionTo(...targetParams);
+        console.log('targetParams', targetParams);
+        let lol = await this.transitionTo(...targetParams);
+        debugger;
       } else {
+        console.log('targetHandler', targetHandler);
         await this.transitionTo(targetHandler.handler);
       }
     } else {

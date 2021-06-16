@@ -14,3 +14,4 @@ import './query/find-all-test';
 import './query/find-test';
 import './wait/wait-for-test';
 import './wait/wait-until-test';
+import './url-test';

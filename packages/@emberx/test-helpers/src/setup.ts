@@ -54,7 +54,7 @@ export function setupTest(hooks: QUnitHooks): void {
   });
 }
 
-export function setupRenderingTest(hooks: QUnitHooks, Application?: any | undefined): void {
+export function setupRenderingTest(hooks: QUnitHooks, Application?: any): void {
   setupTest(hooks);
 
   hooks.beforeEach(async function () {
@@ -64,7 +64,7 @@ export function setupRenderingTest(hooks: QUnitHooks, Application?: any | undefi
 }
 
 // TODO: also set this.owner, this.owner.lookup
-export function setupApplicationTest(hooks: QUnitHooks, Application?: any | undefined): void {
+export function setupApplicationTest(hooks: QUnitHooks, Application?: any): void {
   setupTest(hooks);
 
   hooks.beforeEach(async function () {

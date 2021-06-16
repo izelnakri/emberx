@@ -1,6 +1,6 @@
 export { hbs } from '@emberx/component';
-import RouterJSRouter from './services/router';
-import EmberXRoute from './route';
+import RouterService from './router-service';
+import Route from './route';
 import RouteMapContext from './route-map-context';
 
 export interface FreeObject {
@@ -9,10 +9,10 @@ export interface FreeObject {
 
 export interface RouteDefinition {
   path?: string;
-  route: EmberXRoute | undefined;
+  route: Route | undefined;
   routeName: string;
   options?: FreeObject;
-  indexRoute?: EmberXRoute;
+  indexRoute?: Route;
 }
 
 export interface RouteRegistry {
@@ -21,7 +21,7 @@ export interface RouteRegistry {
 
 export interface routerJSRouteDefinition {
   path?: string;
-  route: EmberXRoute | undefined;
+  route: Route | undefined;
   options?: FreeObject;
   routeName: string;
   nestedRoutes?: [routerJSRouteDefinition?];
@@ -30,12 +30,12 @@ export interface routerJSRouteDefinition {
 // NOTE: check Route.toReadOnlyRouteInfo
 // NOTE: there is this.recognizer.add (when recognizer is an instance via new RouteRecognizer())
 // TODO: { path: '/' } resets the path, by default route($segment) is { path: /$segment }, also people can use '/:dynamic' or ':dynamic';
-export default class EmberXRouter {
+export default class Router {
   static LOG_ROUTES = true;
   static LOG_MODELS = true;
   static SERVICES: FreeObject = {};
   static ROUTE_REGISTRY: RouteRegistry = {};
-  static routerjs: RouterJSRouter | null = null;
+  static ROUTER_SERVICE: RouterService | null = null;
 
   // static IS_TESTING() {
   //   return !!globalThis.QUnit;
@@ -44,34 +44,36 @@ export default class EmberXRouter {
   static start(
     arrayOfRouteDefinitions: Array<RouteDefinition> = [],
     routeMap: any = undefined
-  ): RouterJSRouter {
+  ): RouterService {
     this.ROUTE_REGISTRY = {};
 
     let routeMapRegistry = routeMap ? this.map(routeMap) : {}; // move this to super.map since it just mutates the module
     let registry = this.definitionsToRegistry(arrayOfRouteDefinitions);
     let routerJSRouteArray = this.convertToRouterJSRouteArray(Object.assign(routeMapRegistry, registry));
 
-    this.routerjs = new RouterJSRouter();
-    this.routerjs.map(function (match) {
+    this.ROUTER_SERVICE = new RouterService();
+    this.ROUTER_SERVICE.map(function (match) {
       RouteMapContext.map(RouteMapContext.map, match, routerJSRouteArray);
     });
-    this.SERVICES.router = this.routerjs;
+    this.SERVICES.router = this.ROUTER_SERVICE;
 
-    return this.routerjs;
+    return this.ROUTER_SERVICE;
   }
 
   static definitionsToRegistry(arrayOfRouteDefinitions: Array<RouteDefinition> = []): RouteRegistry {
-    arrayOfRouteDefinitions.forEach((routeElement: RouteDefinition) => {
-      if (!routeElement.path) {
-        throw new Error('One of the error definitions on Router.start(definitions[]) misses "path" key');
+    arrayOfRouteDefinitions.forEach((routeDefinition: RouteDefinition) => {
+      if (!routeDefinition.path) {
+        throw new Error('One of the RouteDefinition on Router.start(RouteDefinition[]) misses "path" key');
+      } else if (!routeDefinition.name) {
+        throw new Error('One of the RouteDefinition on Router.start(RouteDefinition[]) misses "name" key');
       }
 
-      let routeName =
-        routeElement.routeName ||
-        createRouteNameFromRouteClass(routeElement.route) ||
-        createRouteNameFromPath(routeElement.path as string); // NOTE: when /create-user type of paths are defined create a better routeName guess, should I replace order?
+      let routeName = routeDefinition.name; // || createRouteNameFromRouteClass(routeDefinition.route); // || createRouteNameFromPath(routeDefinition.path as string); // NOTE: when /create-user type of paths are defined create a better routeName guess, should I replace order?
       let routeNameSegments = routeName.split('.');
-      let normalizedPath = routeElement.path.startsWith('/') ? routeElement.path.slice(1) : routeElement.path;
+
+      let normalizedPath = routeDefinition.path.startsWith('/')
+        ? routeDefinition.path.slice(1)
+        : routeDefinition.path;
       let routePathSegments = normalizedPath.split('/');
 
       routeNameSegments.reduce((currentSegment, routeSegment, index) => {
@@ -81,7 +83,7 @@ export default class EmberXRouter {
         checkInRouteRegistryOrCreateRoute(this.ROUTE_REGISTRY, {
           routeName: targetSegmentName,
           options: { path: `/${routePathSegments[targetIndex]}` },
-          route: index === routeNameSegments.length - 1 ? routeElement.route : undefined,
+          route: index === routeNameSegments.length - 1 ? routeDefinition.route : undefined,
         } as routerJSRouteDefinition);
 
         if (currentSegment && !this.ROUTE_REGISTRY[`${currentSegment}.index`]) {
@@ -95,14 +97,22 @@ export default class EmberXRouter {
         return targetSegmentName;
       }, null);
 
-      if (routeElement.indexRoute && routeName !== 'index') {
+      if (routeDefinition.indexRoute && routeName !== 'index') {
         this.ROUTE_REGISTRY[`${routeName}.index`] = {
           routeName: `${routeName}.index`,
           options: { path: '/' },
-          route: routeElement.indexRoute,
+          route: routeDefinition.indexRoute,
         };
       }
     });
+
+    if (!arrayOfRouteDefinitions.find((routeDefinition) => routeDefinition.path.startsWith('/*'))) {
+      this.ROUTE_REGISTRY['not-found'] = {
+        routeName: 'not-found',
+        options: { path: '/*slug' },
+        route: class NotFoundRoute extends Route {},
+      };
+    }
 
     return this.ROUTE_REGISTRY;
   }
@@ -147,9 +157,9 @@ export default class EmberXRouter {
   // NOTE: add to actual router by demand
 }
 
-export function createRouteNameFromRouteClass(routeClass: EmberXRoute | void): string | void {
+export function createRouteNameFromRouteClass(routeClass: Route | void): string | void {
   if (routeClass) {
-    return routeClass.constructor.name
+    return routeClass.name
       .replace(/Route$/g, '')
       .split('')
       .reduce((result, character, index) => {
@@ -201,3 +211,5 @@ function findNestedRoute(routerJSRouteArray: Array<routerJSRouteDefinition>, rou
     return target.find((routeObject: routerJSRouteDefinition) => routeObject.routeName === targetRouteName);
   }, {} as FreeObject);
 }
+
+window.Router = Router;

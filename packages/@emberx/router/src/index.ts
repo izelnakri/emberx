@@ -1,6 +1,6 @@
 import Route from './route';
 import Router from './router';
-import RouterService from './services/router';
+import RouterService from './router-service';
 
 export { hbs } from '@emberx/component';
 export { tracked } from '@glimmer/tracking';

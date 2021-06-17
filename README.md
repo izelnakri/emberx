@@ -1,14 +1,18 @@
-# glimmerx-router
+# EmberX: Explicitly resolvable & node.js friendly Ember.js
 
 [Working example/E2E Test](http://emberx-router.surge.sh/tests/tests.html?testId=906afba6)
 
-Experimental router for glimmerx, will ship as `emberx/router` & `emberx/route` & `emberx/link-to`
-& `emberx/test-helpers` and `emberx/string`
+Experimental router for glimmer, will ship as `@emberx/router` & `@emberx/component` & `@emberx/helper` &
+`@emberx/test-helpers` and `@emberx/string`.
 
-`src/index.js` is the public API developers will interact with and `src/routes/index.ts` built as an example.
+This project allows you to import your routes, components and helpers in node.js. Thus removes need for any ember
+specific build system. You can run your tests by using [QunitX](https://github.com/izelnakri/qunitx) and `@emberx/test-helpers`.
+
+When stable, check examples folder for the documentation.
 
 ```
-npm install && parcel index.html
+# will change:
+npm install && parcel examples/blog/index.html
 ```
 
 ### API Design
@@ -17,8 +21,9 @@ What if `@ember/routing/router` & `@ember/routing/route` were a tiny and explici
 Flexible and simple API below can be progressively backward-compatible and support current ember router definitions!
 
 ```ts
-import Router from 'emberx/router';
+// in ./router.js
 
+import Router from '@emberx/router';
 import IndexRoute from './routes/index/route.ts';
 import PostsRoute from './routes/posts/route.ts';
 import PostsIndexRoute from './routes/posts/index/route.ts';
@@ -56,7 +61,7 @@ This API also will allow custom resolvers that can resolve current ember routers
 #### Backward-compatible API suggestion:
 
 ```ts
-import Router from 'emberx/router';
+import Router from '@emberx/router';
 import SomeCustomResolver from './custom-resolver';
 
 Router.resolver = SomeCustomResolver;
@@ -92,15 +97,10 @@ export default router;
 
 This experiment is also a sketch/request for a new ember edition.
 
-#### Familiar emberx/route:
+#### Familiar @emberx/route:
 
 ```ts
-import { hbs, tracked } from '@glimmerx/component';
-import { service } from '@glimmerx/service';
-import { action, on } from '@glimmerx/modifier';
-
-import Route from 'emberx/route';
-import LinkTo from 'emberx/link-to';
+import { Route, LinkTo, hbs, tracked, service, action, on } from '@emberx/router';
 
 import t from '../helpers/t';
 import Counter from '../components/Counter';
@@ -119,6 +119,10 @@ export default class IndexRoute extends Route {
       };
     }, 200);
   }
+
+  static includes = {
+    Counter
+  };
 
   static model(): object {
     return {
@@ -154,6 +158,97 @@ export default class IndexRoute extends Route {
   }
 }
 ```
+
+#### Familiar @emberx/component:
+
+```ts
+import Component, { service, tracked, action, renderComponent } from '@emberx/component';
+
+class LocaleService {
+  @tracked currentLocale: string;
+
+  constructor(currentLocale: string) {
+    this.currentLocale = currentLocale;
+  }
+
+  get currentLocale(): string {
+    return this.currentLocale;
+  }
+
+  @action
+  setLocale(locale) {
+    this.currentLocale = locale;
+  }
+}
+
+class AnotherComponent extends Component {
+  @service locale;
+
+  message = 'hello world';
+  @tracked count = 55;
+
+  static template = hbs`
+    <div id="another-component">
+      <p id="message">Current message: {{this.message}}</p>
+      <p id="locale-info">Component gets rendered. Current locale is {{this.locale.currentLocale}}</p>
+      <span>Count is {{this.count}}</span>
+      <p id="received-arg">Received argument is {{@notice}}</p>
+      <button {{on "click" this.increment}} id="increment-button">Increment</button>
+      <button {{on "click" this.changeMessage}} id="another-message-button">Change message</button>
+      <button {{on "click" (fn this.locale.setLocale "tr")}} id="change-locale-button">Change locale</button>
+    </div>
+  `;
+
+  @action
+  increment(): void {
+    this.count++;
+  }
+
+  @action
+  changeMessage(): void {
+    this.message = 'message changed';
+  }
+}
+
+class MainComponent extends Component {
+  @service locale;
+  @tracked mainMessage = 'hello world';
+
+  get formattedMessage() {
+    return this.mainMessage.toUpperCase();
+  }
+
+  // This is how you can do template imports
+  static includes = {
+    AnotherComponent,
+  };
+  static template = hbs`
+    <p id="main-component-message">{{this.mainMessage}}</p>
+    <p id="main-component-formatted-message">{{this.formattedMessage}}</p>
+    <div id="another">
+      <AnotherComponent @notice={{this.mainMessage}} />
+    </div>
+    <button {{on "click" this.changeMessage}} id="message-button">Change main message</button>
+  `;
+
+  @action
+  changeMessage(): void {
+    this.mainMessage = 'message changed';
+  }
+}
+
+await renderComponent(MainComponent, {
+  element: document.getElementById('ember-testing'),
+  owner: { services: { locale: new LocaleService('en') } },
+});
+
+```
+
+Template/Component imports are respecting typescript standards, thus can be easily run node.js with npm, allowing
+simple server side rendering.
+
+This also allows the ability to distribute every component, route, helper, module as an npm package without a need for a build/addon system.
+Parent components can use `static includes` to include the components they depend on.
 
 This experiment is also a sketch/request for a new ember edition.
 Deprecates ember controllers and makes ember-specific CLI systems an option rather than requirement.

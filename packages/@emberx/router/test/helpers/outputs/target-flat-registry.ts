@@ -1,3 +1,5 @@
+import { Route } from '@emberx/router';
+
 export default {
   admin: {
     options: {
@@ -90,6 +92,13 @@ export default {
     },
     route: undefined,
     routeName: 'logout',
+  },
+  'not-found': {
+    options: {
+      path: '/*slug',
+    },
+    route: class NotFoundRoute extends Route {},
+    routeName: 'not-found',
   },
   public: {
     options: {

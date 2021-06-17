@@ -1,3 +1,5 @@
+import { Route } from '@emberx/router';
+
 export default [
   {
     routeName: 'admin',
@@ -78,6 +80,12 @@ export default [
     routeName: 'logout',
     route: undefined,
     options: { path: '/logout' },
+    nestedRoutes: [],
+  },
+  {
+    routeName: 'not-found',
+    route: class NotFoundRoute extends Route {},
+    options: { path: '/*slug' },
     nestedRoutes: [],
   },
   {

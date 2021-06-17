@@ -1,5 +1,6 @@
 import Router, { Route } from 'router_js';
 import EmberXRouter from './index';
+import { tracked } from '@emberx/component';
 import DefaultRoute from './route';
 import LocationBar from './vendor/location-bar';
 
@@ -7,43 +8,39 @@ interface FreeObject {
   [propName: string]: any;
 }
 
+// currentRoute
+// currentRouteName
+// currentURL
+// isDestroyed
+// isDestroying
+// location
+// mergedProperties
+// rootURL
+// routeWillChange
+
+// recognize
+// replaceWith
+// transitionTo
+// urlFor
 export default class RouterJSRouter extends Router<Route> {
   // @ts-ignore
   testing: boolean = !!globalThis.QUnit;
   locationBar: any;
   path: string;
 
-  // currentRoute
-  // currentRouteName
-  // currentURL
-  // isDestroyed
-  // isDestroying
-  // location
-  // mergedProperties
-  // rootURL
-
-  // routeDidChange
-  // routeWillChange
-
-  // recognize
-  // replaceWith
-  // transitionTo
-  // urlFor
+  @tracked currentRoute: string | undefined;
+  @tracked currentRouteName: string | undefined;
+  @tracked currentURL: string | undefined;
 
   constructor() {
     super();
 
     this.locationBar = new LocationBar();
     this.locationBar.start({ pushState: true });
+    debugger;
   }
 
   triggerEvent(): void {
-    return;
-  }
-  willTransition(): void {
-    return;
-  }
-  didTransition(): void {
     return;
   }
 
@@ -60,26 +57,45 @@ export default class RouterJSRouter extends Router<Route> {
   replaceURL(): void {
     return;
   }
+
   routeWillChange(abc): void {
     // console.log('routeWillChange call for', abc);
     return;
   }
+
   routeDidChange(abc): void {
     // console.log('routeDidChange call for', abc);
     return;
   }
+
   getSerializer(): any {
     return;
   }
+
+  willTransition(oldRouteInfos: any, newRouteInfos: any, transition) {
+    let targetRouteInfo = transition.routeInfos[transition.resolveIndex];
+
+    this.currentRoute = targetRouteInfo._route;
+    this.currentRouteName = targetRouteInfo.name;
+    this.currentURL = targetRouteInfo.router.path;
+  }
+
+  didTransition(routeInfos) {
+    let targetRouteInfo = routeInfos[routeInfos.length - 1];
+
+    this.currentRoute = targetRouteInfo._route;
+    this.currentRouteName = targetRouteInfo.name;
+    this.currentURL = targetRouteInfo.router.path;
+  }
+
   getRoute(name: string): any {
     if (EmberXRouter.LOG_ROUTES) {
       console.log('iz debug', name);
     }
 
-    // console.log('ZZZZZZZZ target route is', EmberXRouter.ROUTE_REGISTRY[name].route || DefaultRoute);
-    // console.log(EmberXRouter.ROUTE_REGISTRY);
-    debugger;
-    return EmberXRouter.ROUTE_REGISTRY[name].route || DefaultRoute;
+    let targetRoute = EmberXRouter.ROUTE_REGISTRY[name].route || DefaultRoute;
+
+    return Object.assign(targetRoute, EmberXRouter.SERVICES); // NOTE: maybe optimize this in future
   }
 
   updateURL(url: string): void {
@@ -93,7 +109,6 @@ export default class RouterJSRouter extends Router<Route> {
   async visit(path: string): Promise<void> {
     const targetHandlers = this.recognizer.recognize(path);
 
-    // TODO: this logic is wrong
     if (targetHandlers) {
       const targetHandler: FreeObject = targetHandlers[targetHandlers.length - 1] as FreeObject;
       const params = Object.keys(targetHandler.params);
@@ -104,15 +119,16 @@ export default class RouterJSRouter extends Router<Route> {
         let targetParams = [handler].concat(params.map((key) => targetHandler.params[key]));
 
         // @ts-ignore
-        console.log('targetParams', targetParams);
-        let lol = await this.transitionTo(...targetParams);
-        debugger;
+        // console.log('targetParams', targetParams);
+        await this.transitionTo(...targetParams);
       } else {
-        console.log('targetHandler', targetHandler);
+        // console.log('targetHandler', targetHandler);
         await this.transitionTo(targetHandler.handler);
       }
     } else {
-      console.log('NO ROUTE FOUND');
+      console.log(
+        'NO ROUTE FOUND. This is probably a bug, please report it to: https://github.com/izelnakri/emberx/issues/new'
+      );
     }
   }
 

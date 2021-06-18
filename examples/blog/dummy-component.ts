@@ -1,7 +1,5 @@
-import Component, { hbs } from '@emberx/component';
-import { tracked } from '@glimmer/tracking';
+import Component, { hbs, tracked, on, action } from '@emberx/component';
 import { precompileTemplate, setComponentTemplate, templateOnlyComponent } from '@glimmer/core';
-import { on, action } from '@glimmer/modifier';
 
 class MyComponent extends Component {
   message = 'hello world';

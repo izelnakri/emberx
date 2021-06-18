@@ -4,7 +4,7 @@ import PreviewUserPostsPostRoute from './routes/preview/user/posts/post';
 import PublicIndexRoute from './routes/public/index';
 import PublicBlogPostRoute from './routes/public/blog-post';
 import LocaleService from './services/intl';
-import Router, { RouterJSRouter } from '../../src/router'; // import Router from 'emberx/router';
+import Router from '@emberx/router';
 
 declare global {
   interface Window {
@@ -45,36 +45,36 @@ const oldRouterMap = function () {
   this.route('logout');
 };
 
-const router: RouterJSRouter = Router.start(
+const router = Router.start(
   [
     {
       path: '/',
       route: PublicIndexRoute,
-      routeName: 'public.index',
+      name: 'public.index',
     },
     {
       path: '/:slug',
       route: PublicBlogPostRoute,
-      routeName: 'public.blog-post',
+      name: 'public.blog-post',
     },
     {
       path: '/admin/posts/:slug',
       route: AdminPostsPostRoute,
-      routeName: 'admin.posts.post',
+      name: 'admin.posts.post',
     },
     {
       path: '/login',
       route: LoginRoute,
-      routeName: 'login',
+      name: 'login',
     },
     {
       path: '/preview/:user_id/posts/:post_id',
       route: PreviewUserPostsPostRoute,
-      routeName: 'preview.user.posts.post',
+      name: 'preview.user.posts.post',
     },
     {
       path: '/*path',
-      routeName: '404',
+      name: '404',
     },
   ],
   oldRouterMap

@@ -1,12 +1,7 @@
-import Route from '@emberx/route'; // import Route from 'emberx/route';
-import { tracked } from '@glimmer/tracking';
-// import { hbs, tracked } from '@glimmerx/component';
-// import { service } from '@glimmerx/service';
-import { action, on } from '@glimmer/modifier';
+import { Route, LinkTo, tracked, action, hbs } from '@emberx/router';
 import t from '../../helpers/t';
 
 import BlogHeader from '../../components/BlogHeader';
-import LinkTo from '@emberx/link-to'; // import Route from 'emberx/route';
 import Counter from '../../components/Counter';
 
 export default class PublicIndexRoute extends Route {
@@ -24,6 +19,12 @@ export default class PublicIndexRoute extends Route {
     }, 200);
   }
 
+  static includes = {
+    BlogHeader,
+    LinkTo,
+    Counter,
+  };
+
   static model(): object {
     console.log('index route model called');
     // this.flashMessages.danger('Invalid verification link');
@@ -36,7 +37,7 @@ export default class PublicIndexRoute extends Route {
     };
   }
 
-  static template = `
+  static template = hbs`
     <BlogHeader />
 
     <div id="intro">

@@ -1,9 +1,6 @@
-import Route from '@emberx/route'; // import Route from 'emberx/route';
-import { tracked } from '@glimmer/tracking';
-import { action, on } from '@glimmer/modifier';
+import { Route, tracked, action, on, LinkTo } from '@emberx/router';
 import t from '../helpers/t';
 
-import LinkTo from '@emberx/link-to'; // import LinkTo from 'emberx/LinkTo';
 import Counter from '../components/Counter';
 
 export default class IndexRoute extends Route {
@@ -20,6 +17,11 @@ export default class IndexRoute extends Route {
       };
     }, 200);
   }
+
+  static includes = {
+    LinkTo,
+    Counter,
+  };
 
   static model(): object {
     console.log('index route model called');

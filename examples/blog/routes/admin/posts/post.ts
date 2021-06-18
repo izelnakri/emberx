@@ -1,9 +1,11 @@
-import Route from '@emberx/route'; // import Route from 'emberx/route';
-
-import LinkTo from '@emberx/link-to'; // import LinkTo from 'emberx/link-to';
+import { Route, LinkTo } from '@emberx/router';
 
 export default class AdminPostsPostRoute extends Route {
   // @service intl;
+
+  static includes = {
+    LinkTo,
+  };
 
   static model(params: { slug: string }): { slug: string } {
     return {

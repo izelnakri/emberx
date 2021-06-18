@@ -1,7 +1,4 @@
-import Route from '@emberx/route'; // import Route from 'emberx/route';
-// import { service } from '@glimmerx/service';
-
-import LinkTo from '@emberx/link-to'; // import Route from 'emberx/route';
+import { Route, LinkTo } from '@emberx/router';
 
 export default class PublicBlogPostRoute extends Route {
   // @service intl;

@@ -1,6 +1,4 @@
-import Component from '@emberx/component';
-import { tracked } from '@glimmer/tracking';
-import { on, action } from '@glimmer/modifier';
+import Component, { tracked, action } from '@emberx/component';
 
 export default class extends Component {
   @tracked count = 1;

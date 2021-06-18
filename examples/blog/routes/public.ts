@@ -1,6 +1,4 @@
-import Route from '@emberx/route'; // import Route from 'emberx/route';
-
-import LinkTo from '@emberx/link-to'; // import Route from 'emberx/link-to';
+import { Route, LinkTo } from '@emberx/router';
 
 export default class LoginRoute extends Route {
   // @service intl;

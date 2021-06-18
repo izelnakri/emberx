@@ -25,7 +25,7 @@ function setupFocusEventStepListeners(assert, element) {
   });
 }
 
-module('emberx/test-helpers | tap', function (hooks) {
+module('@emberx/test-helpers | tap', function (hooks) {
   setupRenderingTest(hooks);
 
   module('non-focusable element types', function () {
@@ -92,15 +92,7 @@ module('emberx/test-helpers | tap', function (hooks) {
   });
 
   module('focusable element types', function () {
-    const TAP_STEPS = [
-      'touchstart',
-      'touchend',
-      'mousedown',
-      'focus',
-      'focusin',
-      'mouseup',
-      'click',
-    ];
+    const TAP_STEPS = ['touchstart', 'touchend', 'mousedown', 'focus', 'focusin', 'mouseup', 'click'];
 
     test('tapping a input via selector with context set', async function (assert) {
       await render(hbs`<input data-test-some-test-input />`);

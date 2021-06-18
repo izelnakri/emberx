@@ -3,7 +3,7 @@ import { module, test } from 'qunitx';
 import { render, scrollTo } from '@emberx/test-helpers';
 import { setupRenderingTest } from '../helpers';
 
-module('emberx/test-helpers | scrollTo', function (hooks) {
+module('@emberx/test-helpers | scrollTo', function (hooks) {
   setupRenderingTest(hooks);
 
   test('Scroll in vertical direction', async function (assert) {
@@ -71,10 +71,7 @@ module('emberx/test-helpers | scrollTo', function (hooks) {
   });
 
   test('It throws an error if a target is not supplied', async function (assert) {
-    assert.rejects(
-      scrollTo('', 0, 0),
-      new Error('Must pass an element or selector to `scrollTo`.')
-    );
+    assert.rejects(scrollTo('', 0, 0), new Error('Must pass an element or selector to `scrollTo`.'));
   });
 
   test('It throws an error if all coordinates are not supplied', async function (assert) {

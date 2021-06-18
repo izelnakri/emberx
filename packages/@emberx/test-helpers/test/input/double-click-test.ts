@@ -12,7 +12,7 @@ function setupEventStepListeners(assert, input) {
   input.addEventListener('dblclick', () => assert.step('dblclick'));
 }
 
-module('emberx/test-helpers | doubleClick', function (hooks) {
+module('@emberx/test-helpers | doubleClick', function (hooks) {
   module('non-focusable element types', function () {
     setupRenderingTest(hooks);
 
@@ -32,15 +32,7 @@ module('emberx/test-helpers | doubleClick', function (hooks) {
 
       await doubleClick('[data-test-some-div]');
 
-      assert.verifySteps([
-        'mousedown',
-        'mouseup',
-        'click',
-        'mousedown',
-        'mouseup',
-        'click',
-        'dblclick',
-      ]);
+      assert.verifySteps(['mousedown', 'mouseup', 'click', 'mousedown', 'mouseup', 'click', 'dblclick']);
     });
 
     test('double-clicking a div via selector with context set', async function (assert) {
@@ -61,15 +53,7 @@ module('emberx/test-helpers | doubleClick', function (hooks) {
 
       await doubleClick(div);
 
-      assert.verifySteps([
-        'mousedown',
-        'mouseup',
-        'click',
-        'mousedown',
-        'mouseup',
-        'click',
-        'dblclick',
-      ]);
+      assert.verifySteps(['mousedown', 'mouseup', 'click', 'mousedown', 'mouseup', 'click', 'dblclick']);
     });
 
     test('does not run sync', async function (assert) {
@@ -85,15 +69,7 @@ module('emberx/test-helpers | doubleClick', function (hooks) {
 
       await promise;
 
-      assert.verifySteps([
-        'mousedown',
-        'mouseup',
-        'click',
-        'mousedown',
-        'mouseup',
-        'click',
-        'dblclick',
-      ]);
+      assert.verifySteps(['mousedown', 'mouseup', 'click', 'mousedown', 'mouseup', 'click', 'dblclick']);
     });
 
     test('rejects if selector is not found', async function (assert) {
@@ -189,15 +165,7 @@ module('emberx/test-helpers | doubleClick', function (hooks) {
 
         await doubleClick(iframeElement);
 
-        assert.verifySteps([
-          'mousedown',
-          'mouseup',
-          'click',
-          'mousedown',
-          'mouseup',
-          'click',
-          'dblclick',
-        ]);
+        assert.verifySteps(['mousedown', 'mouseup', 'click', 'mousedown', 'mouseup', 'click', 'dblclick']);
       });
     });
   });

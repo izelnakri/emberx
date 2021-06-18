@@ -11,7 +11,7 @@ function setupEventStepListeners(assert, element) {
   });
 }
 
-module('emberx/test-helpers | blur', function (hooks) {
+module('@emberx/test-helpers | blur', function (hooks) {
   setupRenderingTest(hooks);
 
   test('it works', async function (assert) {
@@ -90,11 +90,7 @@ module('emberx/test-helpers | blur', function (hooks) {
 
     await focus('#test-input');
 
-    assert.equal(
-      document.activeElement,
-      document.querySelector('#test-input'),
-      'activeElement updated'
-    );
+    assert.equal(document.activeElement, document.querySelector('#test-input'), 'activeElement updated');
     assert.verifySteps(['focus', 'focusin']);
     assert.dom('#test-input').isFocused();
 
@@ -109,11 +105,7 @@ module('emberx/test-helpers | blur', function (hooks) {
 
     assert.verifySteps(['focus', 'focusin']);
     assert.dom('#test-input').isFocused();
-    assert.equal(
-      document.activeElement,
-      document.querySelector('#test-input'),
-      'activeElement updated'
-    );
+    assert.equal(document.activeElement, document.querySelector('#test-input'), 'activeElement updated');
 
     await blur('#test-input');
 

@@ -1,7 +1,7 @@
 import { module, test } from 'qunitx';
 import { capitalize } from '@emberx/string';
 
-module('emberx/string | capitalize', () => {
+module('@emberx/string | capitalize', () => {
   test('capitalizes strings', async (assert) => {
     assert.equal(capitalize('my favorite items'), 'My favorite items', 'capitalize normal string');
     assert.equal(capitalize('css-class-name'), 'Css-class-name', 'capitalize dasherized string');

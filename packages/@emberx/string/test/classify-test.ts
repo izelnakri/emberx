@@ -1,7 +1,7 @@
 import { module, test } from 'qunitx';
 import { classify } from '@emberx/string';
 
-module('emberx/string | classify', () => {
+module('@emberx/string | classify', () => {
   test('classifies strings', async (assert) => {
     assert.equal(classify('my favorite items'), 'MyFavoriteItems', 'classify normal string');
     assert.equal(classify('css-class-name'), 'CssClassName', 'classify dasherized string');
@@ -21,21 +21,13 @@ module('emberx/string | classify', () => {
       'PrivateDocs/OwnerInvoice',
       'classify namespaced dasherized string'
     );
-    assert.equal(
-      classify('-view-registry'),
-      '_ViewRegistry',
-      'classify prefixed dasherized string'
-    );
+    assert.equal(classify('-view-registry'), '_ViewRegistry', 'classify prefixed dasherized string');
     assert.equal(
       classify('components/-text-field'),
       'Components/_TextField',
       'classify namespaced prefixed dasherized string'
     );
-    assert.equal(
-      classify('_Foo_Bar'),
-      '_FooBar',
-      'classify underscore-prefixed underscored string'
-    );
+    assert.equal(classify('_Foo_Bar'), '_FooBar', 'classify underscore-prefixed underscored string');
     assert.equal(classify('_Foo-Bar'), '_FooBar', 'classify underscore-prefixed dasherized string');
     assert.equal(
       classify('_foo/_bar'),

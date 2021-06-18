@@ -1,7 +1,7 @@
 import { module, test } from 'qunitx';
 import { setupRenderingTest, waitFor } from '@emberx/test-helpers';
 
-module('emberx/test-helpers | waitFor', function (hooks) {
+module('@emberx/test-helpers | waitFor', function (hooks) {
   setupRenderingTest(hooks);
 
   let rootElement;

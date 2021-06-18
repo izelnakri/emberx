@@ -9,7 +9,7 @@ function setupEventStepListeners(assert, element, arrayOfEvents) {
   });
 }
 
-module('emberx/test-helpers | triggerEvent', function (hooks) {
+module('@emberx/test-helpers | triggerEvent', function (hooks) {
   setupRenderingTest(hooks);
 
   module('assertion before triggerEvent error cases', function () {
@@ -59,9 +59,7 @@ module('emberx/test-helpers | triggerEvent', function (hooks) {
     test('triggering event via selector works', async function (assert) {
       await render(hbs`<div data-test-some-div></div>`);
 
-      setupEventStepListeners(assert, document.querySelector('[data-test-some-div]'), [
-        'mouseenter',
-      ]);
+      setupEventStepListeners(assert, document.querySelector('[data-test-some-div]'), ['mouseenter']);
 
       await triggerEvent('[data-test-some-div]', 'mouseenter');
 

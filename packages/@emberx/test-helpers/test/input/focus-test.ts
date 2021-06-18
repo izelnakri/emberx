@@ -15,7 +15,7 @@ function setupBlurEventStepListeners(assert, element) {
   });
 }
 
-module('emberx/test-helpers | focus', function (hooks) {
+module('@emberx/test-helpers | focus', function (hooks) {
   const FOCUS_STEPS = ['focus', 'focusin'];
   const BLUR_STEPS = ['blur', 'focusout'];
 
@@ -31,10 +31,7 @@ module('emberx/test-helpers | focus', function (hooks) {
     test('focusing a disabled form control', async function (assert) {
       await render(hbs`<input data-test-some-input disabled />`);
 
-      assert.rejects(
-        focus('[data-test-some-input]'),
-        'Error: [object HTMLInputElement] is not focusable'
-      );
+      assert.rejects(focus('[data-test-some-input]'), 'Error: [object HTMLInputElement] is not focusable');
     });
 
     test('trying to focus on unfocusable element raises', async function (assert) {
@@ -101,19 +98,13 @@ module('emberx/test-helpers | focus', function (hooks) {
 
       await focus('[data-test-some-test-input]');
 
-      assert.strictEqual(
-        document.activeElement,
-        document.querySelector('[data-test-some-test-input]')
-      );
+      assert.strictEqual(document.activeElement, document.querySelector('[data-test-some-test-input]'));
 
       assert.verifySteps(FOCUS_STEPS);
 
       await focus('[data-test-some-textarea]');
 
-      assert.strictEqual(
-        document.activeElement,
-        document.querySelector('[data-test-some-textarea]')
-      );
+      assert.strictEqual(document.activeElement, document.querySelector('[data-test-some-textarea]'));
       assert.verifySteps(BLUR_STEPS.concat(FOCUS_STEPS));
     });
 
@@ -138,10 +129,7 @@ module('emberx/test-helpers | focus', function (hooks) {
 
       await focus('[data-test-some-test-input]');
 
-      assert.strictEqual(
-        document.activeElement,
-        document.querySelector('[data-test-some-test-input]')
-      );
+      assert.strictEqual(document.activeElement, document.querySelector('[data-test-some-test-input]'));
       assert.verifySteps(FOCUS_STEPS);
     });
 

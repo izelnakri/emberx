@@ -9,7 +9,7 @@ function setupEventStepListeners(assert, element) {
   });
 }
 
-module('emberx/test-helpers | select', function (hooks) {
+module('@emberx/test-helpers | select', function (hooks) {
   setupRenderingTest(hooks);
 
   const SELECT_STEPS = ['focus', 'focusin', 'input', 'change'];
@@ -61,10 +61,7 @@ module('emberx/test-helpers | select', function (hooks) {
     `);
 
     const element = document.querySelector('[data-test-some-select]');
-    assert.rejects(
-      select(element, 'One'),
-      `Element is disabled when calling \`select(${element})\`./`
-    );
+    assert.rejects(select(element, 'One'), `Element is disabled when calling \`select(${element})\`./`);
   });
 
   test('select | multiple: false - options.length > 1', async function (assert) {

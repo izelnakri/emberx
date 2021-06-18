@@ -1,7 +1,7 @@
 import { module, test } from 'qunitx';
 import { underscore } from '@emberx/string';
 
-module('emberx/string | underscore', () => {
+module('@emberx/string | underscore', () => {
   test('@test String underscore tests', async (assert) => {
     assert.equal(underscore('my favorite items'), 'my_favorite_items', 'with normal string');
     assert.equal(underscore('css-class-name'), 'css_class_name', 'with dasherized string');

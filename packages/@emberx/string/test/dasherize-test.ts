@@ -1,14 +1,10 @@
 import { module, test } from 'qunitx';
 import { dasherize } from '@emberx/string';
 
-module('emberx/string | dasherize', () => {
+module('@emberx/string | dasherize', () => {
   test('classifies strings', async (assert) => {
     assert.equal(dasherize('my favorite items'), 'my-favorite-items', 'dasherize normal string');
-    assert.equal(
-      dasherize('css-class-name'),
-      'css-class-name',
-      'does nothing with dasherized string'
-    );
+    assert.equal(dasherize('css-class-name'), 'css-class-name', 'does nothing with dasherized string');
     assert.equal(dasherize('action_name'), 'action-name', 'dasherize underscored string');
     assert.equal(dasherize('innerHTML'), 'inner-html', 'dasherize camelcased string');
     assert.equal(

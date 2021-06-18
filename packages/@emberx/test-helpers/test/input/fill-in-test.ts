@@ -9,7 +9,7 @@ function setupEventStepListeners(assert, element) {
   });
 }
 
-module('emberx/test-helpers | fillIn', function (hooks) {
+module('@emberx/test-helpers | fillIn', function (hooks) {
   setupRenderingTest(hooks);
 
   module('assertion before fill error cases', function () {
@@ -60,10 +60,7 @@ module('emberx/test-helpers | fillIn', function (hooks) {
     test('rejects if text to fill in is not provided', async function (assert) {
       await render(hbs`<input data-test-some-test-input />`);
 
-      assert.rejects(
-        fillIn('[data-test-some-test-input]'),
-        /Must provide `text` when calling `fillIn`/
-      );
+      assert.rejects(fillIn('[data-test-some-test-input]'), /Must provide `text` when calling `fillIn`/);
     });
   });
 

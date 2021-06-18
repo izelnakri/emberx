@@ -1,7 +1,7 @@
 import { module, test } from 'qunitx';
 import { camelize } from '@emberx/string';
 
-module('emberx/string | camelize', () => {
+module('@emberx/string | camelize', () => {
   test('camelizes strings', async (assert) => {
     assert.equal(camelize('my favorite items'), 'myFavoriteItems', 'camelize normal string');
     assert.equal(camelize('I Love Ramen'), 'iLoveRamen', 'camelize capitalized string');

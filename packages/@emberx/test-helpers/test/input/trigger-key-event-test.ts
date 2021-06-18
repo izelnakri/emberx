@@ -3,7 +3,7 @@ import { module, test } from 'qunitx';
 import { render, triggerKeyEvent } from '@emberx/test-helpers';
 import { setupRenderingTest } from '../helpers';
 
-module('emberx/test-helpers | triggerKeyEvent', function (hooks) {
+module('@emberx/test-helpers | triggerKeyEvent', function (hooks) {
   setupRenderingTest(hooks);
 
   module('assertion before triggerKeyEvent error cases', function () {

@@ -9,7 +9,7 @@ function setupEventStepListeners(assert, element) {
   });
 }
 
-module('emberx/test-helpers | click', function (hooks) {
+module('@emberx/test-helpers | click', function (hooks) {
   setupRenderingTest(hooks);
 
   test('it works', async function (assert) {

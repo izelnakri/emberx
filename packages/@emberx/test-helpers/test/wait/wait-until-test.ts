@@ -1,7 +1,7 @@
 import { module, test } from 'qunitx';
 import { setupRenderingTest, waitUntil } from '@emberx/test-helpers';
 
-module('emberx/test-helpers | waitUntil', function (hooks) {
+module('@emberx/test-helpers | waitUntil', function (hooks) {
   setupRenderingTest(hooks);
 
   test('waits until the provided function returns true', async function (assert) {

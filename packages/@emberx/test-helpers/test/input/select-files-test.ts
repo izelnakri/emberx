@@ -3,7 +3,7 @@ import { module, test } from 'qunitx';
 import { render, triggerEvent } from '@emberx/test-helpers';
 import { setupRenderingTest } from '../helpers';
 
-module('emberx/test-helpers | select files', function (hooks) {
+module('@emberx/test-helpers | select files', function (hooks) {
   setupRenderingTest(hooks);
 
   const textFile = new Blob(['Hello World'], { type: 'text/plain' });

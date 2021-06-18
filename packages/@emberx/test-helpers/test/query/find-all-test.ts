@@ -2,7 +2,7 @@ import { hbs } from '@emberx/component';
 import { module, test } from 'qunitx';
 import { setupRenderingTest, render, findAll } from '@emberx/test-helpers';
 
-module('emberx/test-helpers | findAll', function (hooks) {
+module('@emberx/test-helpers | findAll', function (hooks) {
   setupRenderingTest(hooks);
 
   test('works correctly', async function (assert) {

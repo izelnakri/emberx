@@ -10,7 +10,7 @@ import {
 import { fn, hash, array, get, concat, on } from '@glimmer/runtime';
 import createTemplate from './create-template';
 
-export { tracked } from '@glimmer/tracking';
+import { tracked } from '@glimmer/tracking';
 import { action as glimmerAction } from '@glimmer/modifier';
 
 interface Owner {
@@ -144,6 +144,13 @@ export {
   templateOnlyComponent,
   renderComponent,
   hbs,
+  fn,
+  hash,
+  array,
+  get,
+  concat,
+  on,
   service,
+  tracked,
   traverseAndCompileAllComponents,
 };

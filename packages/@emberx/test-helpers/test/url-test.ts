@@ -21,10 +21,8 @@ module('@emberx/test-helpers | url helpers', function (hooks) {
     `;
   }
 
-  setupRenderingTest(hooks);
-
-  test('visit, currentRouteName, currentURL works consequently', async function (assert) {
-    this.router = Router.start([
+  setupRenderingTest(hooks, () => {
+    return Router.start([
       {
         path: '/',
         name: 'index',
@@ -41,7 +39,9 @@ module('@emberx/test-helpers | url helpers', function (hooks) {
         route: AdvancedRoute,
       },
     ]);
+  });
 
+  test('visit, currentRouteName, currentURL works consequently', async function (assert) {
     assert.equal(currentURL(), undefined);
     assert.equal(currentRouteName(), undefined);
 
@@ -65,24 +65,6 @@ module('@emberx/test-helpers | url helpers', function (hooks) {
   });
 
   test('not found route on visit, currentRouteName, currentURL works correctly', async function (assert) {
-    this.router = Router.start([
-      {
-        path: '/',
-        name: 'index',
-        route: IndexRoute,
-      },
-      {
-        path: '/basic',
-        name: 'basic',
-        route: BasicRoute,
-      },
-      {
-        path: '/profiles/:slug',
-        name: 'profiles.profile',
-        route: AdvancedRoute,
-      },
-    ]);
-
     assert.equal(currentURL(), undefined);
     assert.equal(currentRouteName(), undefined);
 
@@ -94,24 +76,6 @@ module('@emberx/test-helpers | url helpers', function (hooks) {
   });
 
   test('visit, currentRouteName, currentURL works consequently when initially landed on not-found route', async function (assert) {
-    this.router = Router.start([
-      {
-        path: '/',
-        name: 'index',
-        route: IndexRoute,
-      },
-      {
-        path: '/basic',
-        name: 'basic',
-        route: BasicRoute,
-      },
-      {
-        path: '/profiles/:slug',
-        name: 'profiles.profile',
-        route: AdvancedRoute,
-      },
-    ]);
-
     await visit('/profiles/izelnakri');
 
     assert.dom('[data-test-route-title]').hasText('This is from Advanced Route');

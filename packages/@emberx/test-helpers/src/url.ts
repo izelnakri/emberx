@@ -3,14 +3,14 @@ import { getContext } from './context';
 export async function visit(path: string): Promise<void> {
   const context = getContext();
 
-  if (!context.router) {
+  if (!context.Router) {
     throw new Error(
-      `visit(${path}) called in test without prior Router.start()!\n Did you pass the Router to setupApplicationTest(hooks, Router) ?`
+      `visit(${path}) called in test without prior Router.start()!\n Did you pass the Router to this.Router or setupApplicationTest(hooks, startedRouter) ?`
     );
   }
 
   try {
-    await context.router.visit(path);
+    await context.Router.visit(path);
   } catch (error) {
     debugger;
   }
@@ -19,13 +19,13 @@ export async function visit(path: string): Promise<void> {
 export function currentRouteName(): string {
   const context = getContext();
 
-  if (!context.router) {
+  if (!context.Router) {
     throw new Error(
       `currentRouteName() called in tests without prior Router.start()!\n Did you pass the Router to setupApplicationTest(hooks, Router) ?`
     );
   }
 
-  const routes = context.router.currentRouteInfos;
+  const routes = context.Router.currentRouteInfos;
 
   return routes && routes[routes.length - 1].name;
 }
@@ -33,11 +33,11 @@ export function currentRouteName(): string {
 export function currentURL(): string {
   const context = getContext();
 
-  if (!context.router) {
+  if (!context.Router) {
     throw new Error(
       `currentURL() called in tests without prior Router.start()!\n Did you pass the Router to setupApplicationTest(hooks, Router) ?`
     );
   }
 
-  return context.router.path;
+  return context.Router.path;
 }

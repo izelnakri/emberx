@@ -1,10 +1,9 @@
 import Route from './route';
 import Router from './router';
+import LinkTo from './link-to';
 import RouterService from './router-service';
 
-export { hbs, service, action } from '@emberx/component';
-export { tracked } from '@glimmer/tracking';
+import { hbs, service, action, on, tracked } from '@emberx/component';
 
 export default Router;
-
-export { Route, RouterService };
+export { Route, LinkTo, RouterService, hbs, service, action, on, tracked };

@@ -1,4 +1,8 @@
-import Router from './router';
+import startApplication from './router';
+
+const Router = startApplication();
+
+window.Router = Router;
 
 export default Router.visit(document.location.pathname);
 

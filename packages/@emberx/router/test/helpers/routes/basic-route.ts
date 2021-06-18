@@ -1,9 +1,7 @@
-import axios from 'axios'; // TODO: maybe just make an xhr request instead
-import { Route, hbs, action, tracked, service } from '@emberx/router';
+import axios from 'axios';
+import { Route, hbs, action, tracked } from '@emberx/router';
 
 export default class BasicRoute extends Route {
-  @service router;
-
   @tracked count = 55;
   @tracked secretMessage: string | null;
   @tracked loadingMessage: string | null;

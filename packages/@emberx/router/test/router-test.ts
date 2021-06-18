@@ -3,6 +3,7 @@ import Router from '@emberx/router';
 import oldRouterMap from './helpers/old-router-map';
 import targetFlatRegistry from './helpers/outputs/target-flat-registry';
 import targetRouterJSArray from './helpers/outputs/target-router-js-array';
+import setupTest from './helpers/index';
 
 function removeRoute(routeRegistry, targetKey) {
   return Object.keys(routeRegistry).reduce((result, routeKey) => {
@@ -14,9 +15,11 @@ function removeRoute(routeRegistry, targetKey) {
   }, {});
 }
 
-module('@emberx/router | Public API', () => {
+module('@emberx/router | Public API', function (hooks) {
+  setupTest(hooks);
+
   test('Router.map creates route registry without Router.start()', async (assert) => {
-    Router.ROUTE_REGISTRY = {};
+    Router.reset();
 
     assert.true(Router.LOG_ROUTES);
     assert.true(Router.LOG_MODELS);
@@ -33,7 +36,7 @@ module('@emberx/router | Public API', () => {
   });
 
   test('Router.convertToRouterJSRouteArray with routeRegistry gets converted to right array of nested routes', async (assert) => {
-    Router.SERVICES = {};
+    Router.reset();
 
     assert.propEqual(Router.convertToRouterJSRouteArray(targetFlatRegistry), targetRouterJSArray);
   });
@@ -41,9 +44,9 @@ module('@emberx/router | Public API', () => {
   test('Router.start with only map create route registry correctly', async (assert) => {
     let router = Router.start([], oldRouterMap);
 
-    assert.propEqual(Router.ROUTE_REGISTRY, targetFlatRegistry);
+    assert.propEqual(router.ROUTE_REGISTRY, targetFlatRegistry);
     assert.ok(router);
-    assert.deepEqual(Object.keys(router), [
+    assert.deepEqual(Object.keys(router.ROUTER_SERVICE), [
       '_lastQueryParams',
       'state',
       'oldState',

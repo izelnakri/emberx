@@ -1,3 +1,4 @@
+import Router from '@emberx/router';
 import { setContext } from './context';
 
 declare global {
@@ -54,22 +55,34 @@ export function setupTest(hooks: QUnitHooks): void {
   });
 }
 
-export function setupRenderingTest(hooks: QUnitHooks, Application?: any): void {
+export function setupRenderingTest(hooks: QUnitHooks, startRouter?: any): void {
   setupTest(hooks);
 
-  hooks.beforeEach(async function () {
-    this.router = Application;
-    this.services = { router: this.router };
+  hooks.beforeEach(function () {
+    Router.reset();
+    if (startRouter) {
+      this.Router = startRouter();
+    }
+  });
+
+  hooks.afterEach(function () {
+    this.Router ? this.Router.reset() : null;
   });
 }
 
 // TODO: also set this.owner, this.owner.lookup
-export function setupApplicationTest(hooks: QUnitHooks, Application?: any): void {
+export function setupApplicationTest(hooks: QUnitHooks, startRouter?: any): void {
   setupTest(hooks);
 
-  hooks.beforeEach(async function () {
-    // TODO: implement owner lookup for services
-    this.router = Application;
+  hooks.beforeEach(function () {
+    Router.reset();
+    if (startRouter) {
+      this.Router = startRouter();
+    }
+  });
+
+  hooks.afterEach(function () {
+    this.Router ? this.Router.reset() : null;
   });
 }
 

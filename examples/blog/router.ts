@@ -15,71 +15,69 @@ declare global {
 
 // initializers(array<function>)[cant I put this Router.init() somewhere instead),
 
-Router.SERVICES = {
-  intl: new LocaleService(),
-};
+export default function startApplication() {
+  Router.SERVICES = {
+    intl: new LocaleService(),
+  };
 
-const oldRouterMap = function () {
-  // NOTE: Router below adds this:
-  // this.route('public', { path: '/' }, function () {
-  //   this.route('index', { path: '/' });
-  //   this.route('blog-post', { path: '/:slug' });
-  // });
+  const oldRouterMap = function () {
+    // NOTE: Router below adds this:
+    // this.route('public', { path: '/' }, function () {
+    //   this.route('index', { path: '/' });
+    //   this.route('blog-post', { path: '/:slug' });
+    // });
 
-  this.route('admin', function () {
-    this.route('index', { path: '/' });
-    this.route('content');
+    this.route('admin', function () {
+      this.route('index', { path: '/' });
+      this.route('content');
 
-    this.route('posts', { resetnamespace: true }, function () {
-      this.route('new');
-      // NOTE: Router below adds this: this.route('post', { path: '/:slug' });
+      this.route('posts', { resetnamespace: true }, function () {
+        this.route('new');
+        // NOTE: Router below adds this: this.route('post', { path: '/:slug' });
+      });
+
+      this.route('another', function () {
+        this.route('abc');
+      });
+
+      this.route('settings');
     });
 
-    this.route('another', function () {
-      this.route('abc');
-    });
+    this.route('logout');
+  };
 
-    this.route('settings');
-  });
-
-  this.route('logout');
-};
-
-const router = Router.start(
-  [
-    {
-      path: '/',
-      route: PublicIndexRoute,
-      name: 'public.index',
-    },
-    {
-      path: '/:slug',
-      route: PublicBlogPostRoute,
-      name: 'public.blog-post',
-    },
-    {
-      path: '/admin/posts/:slug',
-      route: AdminPostsPostRoute,
-      name: 'admin.posts.post',
-    },
-    {
-      path: '/login',
-      route: LoginRoute,
-      name: 'login',
-    },
-    {
-      path: '/preview/:user_id/posts/:post_id',
-      route: PreviewUserPostsPostRoute,
-      name: 'preview.user.posts.post',
-    },
-    {
-      path: '/*path',
-      name: '404',
-    },
-  ],
-  oldRouterMap
-);
-
-window.router = router;
-
-export default router;
+  return Router.start(
+    [
+      {
+        path: '/',
+        route: PublicIndexRoute,
+        name: 'public.index',
+      },
+      {
+        path: '/:slug',
+        route: PublicBlogPostRoute,
+        name: 'public.blog-post',
+      },
+      {
+        path: '/admin/posts/:slug',
+        route: AdminPostsPostRoute,
+        name: 'admin.posts.post',
+      },
+      {
+        path: '/login',
+        route: LoginRoute,
+        name: 'login',
+      },
+      {
+        path: '/preview/:user_id/posts/:post_id',
+        route: PreviewUserPostsPostRoute,
+        name: 'preview.user.posts.post',
+      },
+      {
+        path: '/*path',
+        name: '404',
+      },
+    ],
+    oldRouterMap
+  );
+}

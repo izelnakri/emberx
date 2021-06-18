@@ -41,10 +41,15 @@ export default class Router {
   //   return !!globalThis.QUnit;
   // }
 
-  static start(
-    arrayOfRouteDefinitions: Array<RouteDefinition> = [],
-    routeMap: any = undefined
-  ): RouterService {
+  static visit() {
+    return this.ROUTER_SERVICE.visit(...arguments);
+  }
+
+  static path() {
+    return this.ROUTER_SERVICE.path;
+  }
+
+  static start(arrayOfRouteDefinitions: Array<RouteDefinition> = [], routeMap: any = undefined): Router {
     this.ROUTE_REGISTRY = {};
 
     let routeMapRegistry = routeMap ? this.map(routeMap) : {}; // move this to super.map since it just mutates the module
@@ -57,7 +62,13 @@ export default class Router {
     });
     this.SERVICES.router = this.ROUTER_SERVICE;
 
-    return this.ROUTER_SERVICE;
+    return this;
+  }
+
+  static reset() {
+    [this.SERVICES, this.ROUTE_REGISTRY, this.ROUTER_SERVICE].forEach((object) => {
+      for (var key in object) delete object[key];
+    });
   }
 
   static definitionsToRegistry(arrayOfRouteDefinitions: Array<RouteDefinition> = []): RouteRegistry {

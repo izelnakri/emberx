@@ -6,27 +6,27 @@ import setupTest from './helpers/index';
 import setupMemserver from './helpers/setup-memserver';
 
 module('@emberx/router | Route Unit Test', function (hooks) {
-  setupTest(hooks, Router);
-  setupMemserver(hooks);
-
-  test('Route has the initial properties', async function (assert) {
-    assert.deepEqual(Object.keys(Route), ['includes', 'template']);
-
-    let route = new Route();
-
-    assert.deepEqual(Object.keys(route), ['args']);
-    assert.ok(route.router);
-  });
-
-  test('Route has a router service, routeName and model with correct rendering when resolved', async function (assert) {
-    this.router = Router.start([
+  setupTest(hooks, () => {
+    return Router.start([
       {
         path: '/',
         name: 'home',
         route: BasicRoute,
       },
     ]);
+  });
+  setupMemserver(hooks);
 
+  test('Route has the initial properties', async function (assert) {
+    let route = new Route();
+
+    assert.ok('includes' in Route);
+    assert.ok('template' in Route);
+    assert.deepEqual(Object.keys(route), ['args']);
+    assert.ok(route.router);
+  });
+
+  test('Route has a router service, routeName and model with correct rendering when resolved', async function (assert) {
     await visit('/');
 
     assert.dom('[data-test-route-title]').hasText('This is basic route: home');
@@ -40,14 +40,6 @@ module('@emberx/router | Route Unit Test', function (hooks) {
   });
 
   test('simple async non-network action gets awaited correctly', async function (assert) {
-    this.router = Router.start([
-      {
-        path: '/',
-        name: 'home',
-        route: BasicRoute,
-      },
-    ]);
-
     await visit('/');
 
     assert.dom('#counter').hasText('Counter: 55');
@@ -66,14 +58,6 @@ module('@emberx/router | Route Unit Test', function (hooks) {
   });
 
   test('simple async fetch network action gets awaited correctly', async function (assert) {
-    this.router = Router.start([
-      {
-        path: '/',
-        name: 'home',
-        route: BasicRoute,
-      },
-    ]);
-
     await visit('/');
 
     assert.dom('#user-details').doesNotExist();
@@ -98,14 +82,6 @@ module('@emberx/router | Route Unit Test', function (hooks) {
   });
 
   test('simple async xhr network action gets awaited correctly', async function (assert) {
-    this.router = Router.start([
-      {
-        path: '/',
-        name: 'home',
-        route: BasicRoute,
-      },
-    ]);
-
     await visit('/');
 
     assert.dom('#user-details').doesNotExist();

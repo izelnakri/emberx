@@ -1,7 +1,7 @@
 import Component, { getOwner, hbs, service } from '@emberx/component';
 import { tracked } from '@glimmer/tracking';
 import { on, action } from '@glimmer/modifier';
-import { helper } from '@emberx/helper';
+import helper from '@emberx/helper';
 import OtherComponent from './OtherComponent';
 
 const myHelper = helper(function ([name], { greeting }) {
@@ -47,9 +47,7 @@ class MyComponent extends Component {
 
   @action
   changeLocale(): void {
-    this.locale.currentLocale === 'zh_CN'
-      ? this.locale.setLocale('en_US')
-      : this.locale.setLocale('zh_CN');
+    this.locale.currentLocale === 'zh_CN' ? this.locale.setLocale('en_US') : this.locale.setLocale('zh_CN');
   }
 }
 

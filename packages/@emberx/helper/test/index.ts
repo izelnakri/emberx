@@ -1,5 +1,5 @@
 import Component, { hbs, service, renderComponent } from '@emberx/component';
-import { helper } from '@emberx/helper';
+import helper from '@emberx/helper';
 import { tracked } from '@glimmer/tracking';
 import { action } from '@glimmer/modifier';
 import { module, test } from 'qunitx';

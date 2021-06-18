@@ -36,11 +36,10 @@ class HelperWithServicesManager implements HelperManager<HelperBucket> {
   }
 }
 
-const HelperWithServicesManagerFactory = (owner: {
-  services: unknown;
-}): HelperWithServicesManager => new HelperWithServicesManager(owner);
+const HelperWithServicesManagerFactory = (owner: { services: unknown }): HelperWithServicesManager =>
+  new HelperWithServicesManager(owner);
 
-export function helper<T extends helperFunc>(fn: T): T {
+export default function helper<T extends helperFunc>(fn: T): T {
   setHelperManager(HelperWithServicesManagerFactory, fn);
   return fn;
 }

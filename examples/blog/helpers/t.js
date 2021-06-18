@@ -1,8 +1,5 @@
-// TODO: change this most likely
-// import { helper } from '@glimmer/helper';
+import helper from '@emberx/helper';
 
-// const t = helper(([key, intl]) => {
-//   return intl.t(key);
-// });
-
-// export default t;
+export default helper(([key, intl]) => {
+  return intl.t(key);
+});

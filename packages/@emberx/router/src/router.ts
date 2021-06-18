@@ -45,10 +45,6 @@ export default class Router {
     return this.ROUTER_SERVICE.visit(...arguments);
   }
 
-  static path() {
-    return this.ROUTER_SERVICE.path;
-  }
-
   static start(arrayOfRouteDefinitions: Array<RouteDefinition> = [], routeMap: any = undefined): Router {
     this.ROUTE_REGISTRY = {};
 

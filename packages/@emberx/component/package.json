@@ -1,7 +1,7 @@
 {
   "name": "@emberx/component",
   "description": "",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "author": "Izel Nakri",
   "files": [
     "dist/*"
@@ -15,13 +15,13 @@
     "test": "tests"
   },
   "dependencies": {
-    "@glimmer/compiler": "0.79.2",
+    "@glimmer/compiler": "^0.79.2",
     "@glimmer/component": "2.0.0-beta.16",
     "@glimmer/core": "2.0.0-beta.16",
     "@glimmer/modifier": "2.0.0-beta.16",
-    "@glimmer/opcode-compiler": "0.79.2",
+    "@glimmer/opcode-compiler": "^0.79.2",
     "@glimmer/runtime": "^0.79.2",
     "@glimmer/tracking": "2.0.0-beta.16",
-    "@emberx/helper": "0.0.1"
+    "@emberx/helper": "0.0.12"
   }
 }

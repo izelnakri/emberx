@@ -1,6 +1,6 @@
 {
   "name": "@emberx/test-helpers",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "author": "Izel Nakri",
   "description": "",
   "files": [
@@ -12,8 +12,8 @@
   },
   "license": "ISC",
   "dependencies": {
-    "@emberx/component": "0.0.11",
-    "@emberx/router": "0.0.1",
+    "@emberx/component": "0.0.12",
+    "@emberx/router": "0.0.12",
     "browser-inputs": "1.1.0"
   }
 }

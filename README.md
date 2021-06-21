@@ -15,6 +15,19 @@ When stable, check examples folder for the documentation.
 npm install && parcel examples/blog/index.html
 ```
 
+
+### Current Status
+
+- @emberx/component - Test coverage: ✔️
+- @emberx/string - Test coverage: ✔️
+- @emberx/helper - Test coverage: ✔️
+- @emberx/test-helpers - Test coverage: ✔️
+- @emberx/router - Test coverage: ~70%. Missing: query param handling, loading states, error states, this.paramsFor()
+- @emberx/ssr - Test coverage: 0%. Waiting to finish @emberx.router.
+
+Although the project is not production-ready one can still experiment with it using the blog example as a guide.
+`@emberx` packages are distributed on npm
+
 ### API Design
 
 What if `@ember/routing/router` & `@ember/routing/route` were a tiny and explicitly resolvable router you could import from npm.

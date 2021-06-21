@@ -15,12 +15,12 @@ export default class RouteMapContext {
     return Object.keys(routerJSRouteArray).map((registryRoute) => {
       let route = routerJSRouteArray[registryRoute];
       if (route.nestedRoutes.length > 0) {
-        return match(route.options.path).to(route.routeName, function (match: any) {
+        return match(route.options.path).to(route.name, function (match: any) {
           map(map, match, route.nestedRoutes);
         });
       }
 
-      match(route.options.path).to(route.routeName);
+      match(route.options.path).to(route.name);
     });
   }
 
@@ -39,14 +39,14 @@ export default class RouteMapContext {
       const existingIndexRoute = this.ROUTE_REGISTRY[`${this._parentRoute}.index`];
 
       this.ROUTE_REGISTRY[`${this._parentRoute}.index`] = existingIndexRoute || {
-        routeName: `${this._parentRoute}.index`,
+        name: `${this._parentRoute}.index`,
         options: { path: '/' },
         route: undefined,
       };
     }
 
     this.ROUTE_REGISTRY[this._parentRoute] = {
-      routeName: this._parentRoute,
+      name: this._parentRoute,
       options: targetOptions,
       route: undefined,
     };

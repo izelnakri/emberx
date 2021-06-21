@@ -2,35 +2,35 @@ import { Route } from '@emberx/router';
 
 export default [
   {
-    routeName: 'admin',
+    name: 'admin',
     route: undefined,
     options: { path: '/admin' },
     nestedRoutes: [
       {
-        routeName: 'admin.content',
+        name: 'admin.content',
         route: undefined,
         options: { path: '/content' },
         nestedRoutes: [],
       },
       {
-        routeName: 'admin.index',
+        name: 'admin.index',
         route: undefined,
         options: { path: '/' },
         nestedRoutes: [],
       },
       {
-        routeName: 'admin.lol',
+        name: 'admin.lol',
         route: undefined,
         options: { path: '/lol' },
         nestedRoutes: [
           {
-            routeName: 'admin.lol.abc',
+            name: 'admin.lol.abc',
             route: undefined,
             options: { path: '/abc' },
             nestedRoutes: [],
           },
           {
-            routeName: 'admin.lol.index',
+            name: 'admin.lol.index',
             route: undefined,
             options: { path: '/' },
             nestedRoutes: [],
@@ -38,24 +38,24 @@ export default [
         ],
       },
       {
-        routeName: 'admin.posts',
+        name: 'admin.posts',
         route: undefined,
         options: { resetNamespace: true, path: '/posts' },
         nestedRoutes: [
           {
-            routeName: 'admin.posts.index',
+            name: 'admin.posts.index',
             route: undefined,
             options: { path: '/' },
             nestedRoutes: [],
           },
           {
-            routeName: 'admin.posts.new',
+            name: 'admin.posts.new',
             route: undefined,
             options: { path: '/new' },
             nestedRoutes: [],
           },
           {
-            routeName: 'admin.posts.post',
+            name: 'admin.posts.post',
             route: undefined,
             options: { path: '/:slug' },
             nestedRoutes: [],
@@ -63,7 +63,7 @@ export default [
         ],
       },
       {
-        routeName: 'admin.settings',
+        name: 'admin.settings',
         route: undefined,
         options: { path: '/settings' },
         nestedRoutes: [],
@@ -71,36 +71,36 @@ export default [
     ],
   },
   {
-    routeName: 'login',
+    name: 'login',
     route: undefined,
     options: { path: '/login' },
     nestedRoutes: [],
   },
   {
-    routeName: 'logout',
+    name: 'logout',
     route: undefined,
     options: { path: '/logout' },
     nestedRoutes: [],
   },
   {
-    routeName: 'not-found',
+    name: 'not-found',
     route: class NotFoundRoute extends Route {},
     options: { path: '/*slug' },
     nestedRoutes: [],
   },
   {
-    routeName: 'public',
+    name: 'public',
     route: undefined,
     options: { path: '/' },
     nestedRoutes: [
       {
-        routeName: 'public.blog-post',
+        name: 'public.blog-post',
         route: undefined,
         options: { path: '/:slug' },
         nestedRoutes: [],
       },
       {
-        routeName: 'public.index',
+        name: 'public.index',
         route: undefined,
         options: { path: '/' },
         nestedRoutes: [],

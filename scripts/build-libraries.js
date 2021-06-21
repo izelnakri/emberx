@@ -7,10 +7,10 @@ import './make-glimmer-compiler-universal.js';
 const shell = promisify(exec);
 
 let targetPackages = [
-  '@emberx/component',
   '@emberx/helper',
-  '@emberx/router',
+  '@emberx/component',
   '@emberx/string',
+  '@emberx/router',
   '@emberx/test-helpers',
   '@emberx/ssr'
 ];

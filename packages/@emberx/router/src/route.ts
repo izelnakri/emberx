@@ -18,7 +18,7 @@ export default class Route<Args extends FreeObject = {}> extends EmberXComponent
     </div>
   `;
 
-  static async setup(model: object, transition: FreeObject): any {
+  static async setup(model: object, transition: FreeObject): Promise<any> {
     if (Router.LOG_MODELS) {
       console.log(`'${transition.targetName}' Route[model] is`, model);
       console.log(`'${transition.targetName}' Route[transition] is`, transition);
@@ -26,7 +26,8 @@ export default class Route<Args extends FreeObject = {}> extends EmberXComponent
 
     // TODO: add a throw here if containerElement doesnt exist
 
-    const containerElement = globalThis.QUnit
+    // @ts-ignore
+    const containerElement: HTMLElement = globalThis.QUnit
       ? document.getElementById('ember-testing')
       : document.getElementById('app');
 

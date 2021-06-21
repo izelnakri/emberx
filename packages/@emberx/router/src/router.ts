@@ -10,7 +10,7 @@ export interface FreeObject {
 export interface RouteDefinition {
   path?: string;
   route: Route | undefined;
-  routeName: string;
+  name: string;
   options?: FreeObject;
   indexRoute?: Route;
 }
@@ -23,7 +23,7 @@ export interface routerJSRouteDefinition {
   path?: string;
   route: Route | undefined;
   options?: FreeObject;
-  routeName: string;
+  name: string;
   nestedRoutes?: [routerJSRouteDefinition?];
 }
 
@@ -35,13 +35,14 @@ export default class Router {
   static LOG_MODELS = true;
   static SERVICES: FreeObject = {};
   static ROUTE_REGISTRY: RouteRegistry = {};
-  static ROUTER_SERVICE: RouterService | null = null;
+  static ROUTER_SERVICE: RouterService;
 
   // static IS_TESTING() {
   //   return !!globalThis.QUnit;
   // }
 
   static visit() {
+    // @ts-ignore
     return this.ROUTER_SERVICE.visit(...arguments);
   }
 
@@ -67,7 +68,9 @@ export default class Router {
     });
   }
 
-  static definitionsToRegistry(arrayOfRouteDefinitions: Array<RouteDefinition> = []): RouteRegistry {
+  static definitionsToRegistry(
+    arrayOfRouteDefinitions: Array<RouteDefinition> = []
+  ): RouteRegistry {
     arrayOfRouteDefinitions.forEach((routeDefinition: RouteDefinition) => {
       if (!routeDefinition.path) {
         throw new Error('One of the RouteDefinition on Router.start(RouteDefinition[]) misses "path" key');
@@ -88,14 +91,14 @@ export default class Router {
         const targetIndex = index >= routePathSegments.length ? routePathSegments.length - 1 : index;
 
         checkInRouteRegistryOrCreateRoute(this.ROUTE_REGISTRY, {
-          routeName: targetSegmentName,
+          name: targetSegmentName,
           options: { path: `/${routePathSegments[targetIndex]}` },
           route: index === routeNameSegments.length - 1 ? routeDefinition.route : undefined,
         } as routerJSRouteDefinition);
 
         if (currentSegment && !this.ROUTE_REGISTRY[`${currentSegment}.index`]) {
           this.ROUTE_REGISTRY[`${currentSegment}.index`] = {
-            routeName: `${currentSegment}.index`,
+            name: `${currentSegment}.index`,
             options: { path: '/' },
             route: undefined, // TODO: add index route from parent by default
           };
@@ -106,17 +109,19 @@ export default class Router {
 
       if (routeDefinition.indexRoute && routeName !== 'index') {
         this.ROUTE_REGISTRY[`${routeName}.index`] = {
-          routeName: `${routeName}.index`,
+          name: `${routeName}.index`,
           options: { path: '/' },
           route: routeDefinition.indexRoute,
         };
       }
     });
 
+    // @ts-ignore
     if (!arrayOfRouteDefinitions.find((routeDefinition) => routeDefinition.path.startsWith('/*'))) {
       this.ROUTE_REGISTRY['not-found'] = {
-        routeName: 'not-found',
+        name: 'not-found',
         options: { path: '/*slug' },
+        // @ts-ignore
         route: class NotFoundRoute extends Route {},
       };
     }
@@ -166,10 +171,11 @@ export default class Router {
 
 export function createRouteNameFromRouteClass(routeClass: Route | void): string | void {
   if (routeClass) {
+    // @ts-ignore
     return routeClass.name
       .replace(/Route$/g, '')
       .split('')
-      .reduce((result, character, index) => {
+      .reduce((result: string[], character: string, index: number) => {
         if (index === 0) {
           return character.toLowerCase();
         } else if (character.toUpperCase() === character) {
@@ -188,8 +194,8 @@ export function createRouteNameFromPath(routePath: string): string {
 }
 
 function checkInRouteRegistryOrCreateRoute(registry: RouteRegistry, targetRoute: routerJSRouteDefinition) {
-  const routeName = targetRoute.routeName;
-  const foundRoute = registry[targetRoute.routeName];
+  const routeName = targetRoute.name;
+  const foundRoute = registry[targetRoute.name];
 
   if (!foundRoute) {
     registry[routeName] = targetRoute;
@@ -198,9 +204,9 @@ function checkInRouteRegistryOrCreateRoute(registry: RouteRegistry, targetRoute:
   }
 
   if (targetRoute.route) {
-    if (foundRoute.route && foundRoute.routeName !== targetRoute.routeName) {
+    if (foundRoute.route && foundRoute.name !== targetRoute.name) {
       console.log(
-        `[WARNING]: ${routeName}.route already has ${foundRoute.routeName}. You tried to overwrite ${routeName}.route with ${targetRoute.routeName}`
+        `[WARNING]: ${routeName}.route already has ${foundRoute.name}. You tried to overwrite ${routeName}.route with ${targetRoute.name}`
       );
     }
 
@@ -215,8 +221,8 @@ function findNestedRoute(routerJSRouteArray: Array<routerJSRouteDefinition>, rou
     const target = result.nestedRoutes || routerJSRouteArray;
     const targetRouteName = index === 0 ? routeNameSegment : routeNameSegments.slice(0, index + 1).join('.');
 
-    return target.find((routeObject: routerJSRouteDefinition) => routeObject.routeName === targetRouteName);
+    return target.find((routeObject: routerJSRouteDefinition) => routeObject.name === targetRouteName);
   }, {} as FreeObject);
 }
 
-window.Router = Router;
+// window.Router = Router;

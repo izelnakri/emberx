@@ -48,6 +48,10 @@ export default class RouterJSRouter extends Router<Route> {
     return;
   }
 
+  replaceURL(): void {
+    return;
+  }
+
   transitionDidError(error: any, transition: any) {
     if (error.wasAborted || transition.isAborted) {
       // return logAbort(transition);
@@ -58,12 +62,12 @@ export default class RouterJSRouter extends Router<Route> {
     }
   }
 
-  routeWillChange(abc): void {
+  routeWillChange(): void {
     // console.log('routeWillChange call for', abc);
     return;
   }
 
-  routeDidChange(abc): void {
+  routeDidChange(): void {
     // console.log('routeDidChange call for', abc);
     return;
   }
@@ -72,7 +76,7 @@ export default class RouterJSRouter extends Router<Route> {
     return;
   }
 
-  willTransition(oldRouteInfos: any, newRouteInfos: any, transition) {
+  willTransition(_oldRouteInfos: any, _newRouteInfos: any, transition: any) {
     let targetRouteInfo = transition.routeInfos[transition.resolveIndex];
 
     this.currentRoute = targetRouteInfo._route;
@@ -80,7 +84,7 @@ export default class RouterJSRouter extends Router<Route> {
     this.currentURL = targetRouteInfo.router.path;
   }
 
-  didTransition(routeInfos) {
+  didTransition(routeInfos: any) {
     let targetRouteInfo = routeInfos[routeInfos.length - 1];
 
     this.currentRoute = targetRouteInfo._route;
@@ -120,6 +124,7 @@ export default class RouterJSRouter extends Router<Route> {
 
         // @ts-ignore
         console.log('targetParams', targetParams);
+        // @ts-ignore
         await this.transitionTo(...targetParams);
       } else {
         console.log('targetHandler', targetHandler);

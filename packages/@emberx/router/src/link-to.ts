@@ -6,7 +6,7 @@ interface FreeObject {
   [propName: string]: any;
 }
 
-function isMissing<T>(value: Maybe<T>): value is null | undefined {
+function isMissing<T>(value: T): boolean {
   return value === null || value === undefined;
 }
 
@@ -16,10 +16,11 @@ export default class extends Component<{
   tagName?: string;
   query?: FreeObject;
   preventDefault?: boolean;
+  disabled?: boolean;
   replace?: boolean;
   route: string;
 }> {
-  @service router;
+  @service router: any;
 
   get tagName() {
     return this.args.tagName || 'a';
@@ -29,7 +30,7 @@ export default class extends Component<{
     return 'preventDefault' in this.args ? this.args.preventDefault : false;
   }
 
-  constructor(owner, args) {
+  constructor(owner: any, args: any) {
     super(owner, args);
 
     if (!args.route) {
@@ -50,7 +51,8 @@ export default class extends Component<{
 
     let linkWithParams = new URLSearchParams('');
 
-    Object.keys(this.args.query).forEach((key) => {
+    Object.keys(this.args.query as object).forEach((key) => {
+      // @ts-ignore
       linkWithParams.set(key, this.args.query[key]);
     });
 
@@ -85,29 +87,32 @@ export default class extends Component<{
 
   get models() {
     // NOTE: maybe optimize rendering if there is no dynamic segments?
-    let dynamicSegments = this.router.recognizer.names[this.args.route].handlers.reduce(
-      (result, handlerFunc) => {
-        if (handlerFunc.shouldDecodes.length > 0) {
-          result.push(handlerFunc.names);
-        }
+    // @ts-ignore
+    let dynamicSegments = this.router.recognizer.names[this.args.route].handlers.reduce((result, handlerFunc) => {
+      if (handlerFunc.shouldDecodes.length > 0) {
+        result.push(handlerFunc.names);
+      }
 
-        return result;
-      },
-      []
-    );
+      return result;
+    }, []);
 
     if (this.args.models) {
+      // @ts-ignore
       return dynamicSegments.reduce((model, segment, index) => {
+        // @ts-ignore
         return Object.assign(model, { [segment]: this.args.models[index] });
       }, {});
     } else if (isObject(this.args.model)) {
+      // @ts-ignore
       return dynamicSegments.reduce((model, segment) => {
         let actualSegmentInModel = [segment[0], underscore(segment[0]), camelize(segment[0]), 'id'].find(
           (potentialKey) => {
+            // @ts-ignore
             return potentialKey in this.args.model;
           }
         );
 
+        // @ts-ignore
         return Object.assign(model, { [segment]: this.args.model[actualSegmentInModel] });
       }, {});
     } else if (this.args.model) {
@@ -125,7 +130,8 @@ export default class extends Component<{
     </a>
   `;
 
-  @action transition(event) {
+  @action transition(event: any) {
+    // @ts-ignore
     let element = event.target;
     if (element.target === '' || element.target === '_self') {
       event.preventDefault();
@@ -159,6 +165,6 @@ export default class extends Component<{
   }
 }
 
-function isObject(value) {
+function isObject(value: any) {
   return ['function', 'object'].includes(typeof value) && value !== null && !Array.isArray(value);
 }

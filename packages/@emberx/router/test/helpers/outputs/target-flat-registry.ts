@@ -6,42 +6,42 @@ export default {
       path: '/admin',
     },
     route: undefined,
-    routeName: 'admin',
+    name: 'admin',
   },
   'admin.content': {
     options: {
       path: '/content',
     },
     route: undefined,
-    routeName: 'admin.content',
+    name: 'admin.content',
   },
   'admin.index': {
     options: {
       path: '/',
     },
     route: undefined,
-    routeName: 'admin.index',
+    name: 'admin.index',
   },
   'admin.lol': {
     options: {
       path: '/lol',
     },
     route: undefined,
-    routeName: 'admin.lol',
+    name: 'admin.lol',
   },
   'admin.lol.abc': {
     options: {
       path: '/abc',
     },
     route: undefined,
-    routeName: 'admin.lol.abc',
+    name: 'admin.lol.abc',
   },
   'admin.lol.index': {
     options: {
       path: '/',
     },
     route: undefined,
-    routeName: 'admin.lol.index',
+    name: 'admin.lol.index',
   },
   'admin.posts': {
     options: {
@@ -49,76 +49,76 @@ export default {
       path: '/posts',
     },
     route: undefined,
-    routeName: 'admin.posts',
+    name: 'admin.posts',
   },
   'admin.posts.index': {
     options: {
       path: '/',
     },
     route: undefined,
-    routeName: 'admin.posts.index',
+    name: 'admin.posts.index',
   },
   'admin.posts.new': {
     options: {
       path: '/new',
     },
     route: undefined,
-    routeName: 'admin.posts.new',
+    name: 'admin.posts.new',
   },
   'admin.posts.post': {
     options: {
       path: '/:slug',
     },
     route: undefined,
-    routeName: 'admin.posts.post',
+    name: 'admin.posts.post',
   },
   'admin.settings': {
     options: {
       path: '/settings',
     },
     route: undefined,
-    routeName: 'admin.settings',
+    name: 'admin.settings',
   },
   login: {
     options: {
       path: '/login',
     },
     route: undefined,
-    routeName: 'login',
+    name: 'login',
   },
   logout: {
     options: {
       path: '/logout',
     },
     route: undefined,
-    routeName: 'logout',
+    name: 'logout',
   },
   'not-found': {
     options: {
       path: '/*slug',
     },
     route: class NotFoundRoute extends Route {},
-    routeName: 'not-found',
+    name: 'not-found',
   },
   public: {
     options: {
       path: '/',
     },
     route: undefined,
-    routeName: 'public',
+    name: 'public',
   },
   'public.blog-post': {
     options: {
       path: '/:slug',
     },
     route: undefined,
-    routeName: 'public.blog-post',
+    name: 'public.blog-post',
   },
   'public.index': {
     options: {
       path: '/',
     },
     route: undefined,
-    routeName: 'public.index',
+    name: 'public.index',
   },
 };

@@ -48,6 +48,8 @@ export function setupTest(hooks: QUnitHooks): void {
 
     document.getElementById('qunit-fixture').after(container);
     container.appendChild(containerPage);
+
+    this.element = containerPage;
   });
 
   hooks.afterEach(function () {
@@ -72,18 +74,7 @@ export function setupRenderingTest(hooks: QUnitHooks, startRouter?: any): void {
 
 // TODO: also set this.owner, this.owner.lookup
 export function setupApplicationTest(hooks: QUnitHooks, startRouter?: any): void {
-  setupTest(hooks);
-
-  hooks.beforeEach(function () {
-    Router.reset();
-    if (startRouter) {
-      this.Router = startRouter();
-    }
-  });
-
-  hooks.afterEach(function () {
-    this.Router ? this.Router.reset() : null;
-  });
+  setupRenderingTest(hooks, startRouter);
 }
 
 export default {

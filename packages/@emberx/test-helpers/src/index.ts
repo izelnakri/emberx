@@ -1,3 +1,4 @@
+import { hbs } from '@emberx/component';
 import { getContext } from './context';
 import { setupTest, setupRenderingTest, setupApplicationTest } from './setup';
 import {
@@ -31,6 +32,7 @@ export {
   fireEvent,
   focus,
   getContext,
+  hbs,
   scrollTo,
   select,
   tap,
@@ -60,6 +62,7 @@ export default {
   fireEvent,
   focus,
   getContext,
+  hbs,
   scrollTo,
   select,
   tap,

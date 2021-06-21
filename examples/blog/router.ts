@@ -1,6 +1,7 @@
 import AdminPostsPostRoute from './routes/admin/posts/post';
 import LoginRoute from './routes/login';
 import PreviewUserPostsPostRoute from './routes/preview/user/posts/post';
+import PreviewUserRoute from './routes/preview/user';
 import PublicIndexRoute from './routes/public/index';
 import PublicBlogPostRoute from './routes/public/blog-post';
 import LocaleService from './services/intl';
@@ -31,7 +32,7 @@ export default function startApplication() {
       this.route('index', { path: '/' });
       this.route('content');
 
-      this.route('posts', { resetnamespace: true }, function () {
+      this.route('posts', { resetNamespace: true }, function () {
         this.route('new');
         // NOTE: Router below adds this: this.route('post', { path: '/:slug' });
       });
@@ -72,6 +73,12 @@ export default function startApplication() {
         path: '/preview/:user_id/posts/:post_id',
         route: PreviewUserPostsPostRoute,
         name: 'preview.user.posts.post',
+      },
+      {
+        path: '/preview/:user_id',
+        route: PreviewUserRoute,
+        indexRoute: PreviewUserRoute, // TODO: remove this and make this automatic
+        name: 'preview.user',
       },
       {
         path: '/*path',

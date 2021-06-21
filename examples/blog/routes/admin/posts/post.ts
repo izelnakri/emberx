@@ -1,4 +1,4 @@
-import { Route, LinkTo } from '@emberx/router';
+import { Route, hbs, LinkTo } from '@emberx/router';
 
 export default class AdminPostsPostRoute extends Route {
   // @service intl;
@@ -13,7 +13,7 @@ export default class AdminPostsPostRoute extends Route {
     };
   }
 
-  static template = `
+  static template = hbs`
     <p>Post slug is: {{this.model.slug}}</p>
     <LinkTo @route="public.index">Go back</LinkTo>
   `;

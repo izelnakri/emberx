@@ -23,6 +23,7 @@ export default class PublicIndexRoute extends Route {
     BlogHeader,
     LinkTo,
     Counter,
+    t,
   };
 
   static model(): object {
@@ -47,7 +48,7 @@ export default class PublicIndexRoute extends Route {
       <button type="button" {{on "click" this.changeLocale}}>Change locale</button>
       <p>Localized button example</p>
 
-      <button type="button">{{t "button.save" this.intl}}</button>
+      <button type="button">{{t "button.save"}}</button>
 
       <img src={{this.model.logo}}/>
       <h5>Logo is {{this.model.logo}}</h5>

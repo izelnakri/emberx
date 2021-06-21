@@ -8,6 +8,7 @@ import {
   RenderComponentOptions,
 } from '@glimmer/core';
 import { fn, hash, array, get, concat, on } from '@glimmer/runtime';
+import { and, or, not, eq, neq, gt, gte, lt, lte } from '@emberx/helper';
 import createTemplate from './create-template';
 
 import { tracked } from '@glimmer/tracking';
@@ -33,6 +34,15 @@ export default class EmberXComponent<Args extends FreeObject = {}> extends Compo
       get,
       concat,
       on,
+      and,
+      or,
+      not,
+      eq: eq,
+      neq: neq,
+      gt,
+      gte,
+      lt,
+      lte,
     });
     let templateFactory: any = createTemplate(sourceCode || ``, { strictMode: true }, scope);
 

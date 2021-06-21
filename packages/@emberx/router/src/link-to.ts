@@ -1,36 +1,14 @@
 import Component, { hbs, service } from '@emberx/component';
 import { action } from '@glimmer/modifier';
+import { underscore, camelize } from '@emberx/string';
 
 interface FreeObject {
   [propName: string]: any;
 }
 
-// <LinkTo @route='photoGallery' @model={{this.aPhoto}}>
-// <LinkTo @route='photoGallery.comment' @models={{array this.aPhoto this.comment}}>
-
-// By default the `<LinkTo>` component prevents the default browser action by calling
-// `preventDefault()` to avoid reloading the browser page.
-
-// If you need to trigger a full browser reload pass `@preventDefault={{false}}`:
-// <LinkTo @route='photoGallery' @model={{this.aPhotoId}} @preventDefault={{false}}>
-
-// <LinkTo @route='photoGallery' @tagName='li'>
-//   Great Hamster Photos
-// </LinkTo>
-
-// ```handlebars
-// <LinkTo @route='photoGallery' @query={{hash page=1 per_page=20}}>
-//   Great Hamster Photos
-// </LinkTo>
-// ```
-
-// This will result in:
-
-// ```html
-// <a href="/hamster-photos?page=1&per_page=20">
-//   Great Hamster Photos
-// </a>
-// ```
+function isMissing<T>(value: Maybe<T>): value is null | undefined {
+  return value === null || value === undefined;
+}
 
 export default class extends Component<{
   models?: any[];
@@ -47,56 +25,70 @@ export default class extends Component<{
     return this.args.tagName || 'a';
   }
 
-  //   try {
-  //   return routing.generateURL(route, models, query);
-  // } catch (e) {
-  //   // tslint:disable-next-line:max-line-length
-  //   assert(
-  //     `You attempted to generate a link for the "${this.route}" route, but did not ` +
-  //       `pass the models required for generating its dynamic segments. ` +
-  //       e.message
-  //   );
-  // }
-
-  // get models() {
-  //   let { model, models } = this;
-
-  //   assert(
-  //     'You cannot provide both the `@model` and `@models` arguments to the <LinkTo> component.',
-  //     model === UNDEFINED || models === UNDEFINED
-  //   );
-
-  //   if (model !== UNDEFINED) {
-  //     return [model];
-  //   } else if (models !== UNDEFINED) {
-  //     assert('The `@models` argument must be an array.', Array.isArray(models));
-  //     return models;
-  //   } else {
-  //     return [];
-  //   }
-  // }
+  get preventDefault() {
+    return 'preventDefault' in this.args ? this.args.preventDefault : false;
+  }
 
   constructor(owner, args) {
     super(owner, args);
 
     if (!args.route) {
       throw new Error('<LinkTo /> component missing @route argument');
+    } else if ('model' in this.args && 'models' in this.args) {
+      throw new Error(
+        'You cannot provide both the `@model` and `@models` arguments to the <LinkTo> component.'
+      );
     }
   }
 
-  // TODO: model, models, query
   get link() {
-    const targetModel = this.buildModel();
+    let link = this.router.recognizer.generate(this.args.route, this.models);
 
-    return this.router.recognizer.generate(this.args.route, targetModel); // TODO: append queryParams
+    if (!this.args.query) {
+      return link;
+    }
+
+    let linkWithParams = new URLSearchParams('');
+
+    Object.keys(this.args.query).forEach((key) => {
+      linkWithParams.set(key, this.args.query[key]);
+    });
+
+    return `${link}?${linkWithParams.toString()}`;
   }
 
-  buildModel() {
+  get isLoading() {
+    return (
+      this.isActive &&
+      (isMissing(this.args.route) ||
+        Object.keys(this.models)
+          .map((key) => this.models[key])
+          .some((model) => isMissing(model)))
+    );
+  }
+
+  get isActive() {
+    return this.router.currentURL === this.link;
+  }
+
+  get willBeActive() {
+    // NOTE: router needs a tracked property to be able to track it most likely
+    if (this.router.activeTransition) {
+      // console.log(this.router.activeTransition);
+      // console.log('a', this.router.activeTransition.targetName);
+      // console.log('b', this.args.route);
+      return this.router.activeTransition.targetName.startsWith(this.args.route); // TODO: should also include params and queryParams
+    }
+
+    return false;
+  }
+
+  get models() {
     // NOTE: maybe optimize rendering if there is no dynamic segments?
-    const dynamicSegments = this.router.recognizer.names[this.args.route].handlers.reduce(
+    let dynamicSegments = this.router.recognizer.names[this.args.route].handlers.reduce(
       (result, handlerFunc) => {
         if (handlerFunc.shouldDecodes.length > 0) {
-          result.push(handlerFunc.names); // TODO: maybe @ember/string manipulate in future
+          result.push(handlerFunc.names);
         }
 
         return result;
@@ -104,28 +96,66 @@ export default class extends Component<{
       []
     );
 
-    if (isObject(this.args.model)) {
-      return dynamicSegments.reduce((model, segment) => {
-        return Object.assign(model, { [segment]: this.args.model[segment] });
-      }, {});
-    } else if (this.args.models) {
+    if (this.args.models) {
       return dynamicSegments.reduce((model, segment, index) => {
         return Object.assign(model, { [segment]: this.args.models[index] });
       }, {});
+    } else if (isObject(this.args.model)) {
+      return dynamicSegments.reduce((model, segment) => {
+        let actualSegmentInModel = [segment[0], underscore(segment[0]), camelize(segment[0]), 'id'].find(
+          (potentialKey) => {
+            return potentialKey in this.args.model;
+          }
+        );
+
+        return Object.assign(model, { [segment]: this.args.model[actualSegmentInModel] });
+      }, {});
     } else if (this.args.model) {
       return { [dynamicSegments[0]]: this.args.model };
-    } // TODO: or use the existing params from the existing router
+    } // TODO: or use the existing model params from the existing router
+
+    return {};
   }
 
-  // TODO: add activeClass, loadingClass, disabledClass, 'ember-transitioning-in', 'ember-transitioning-out'
   static template = hbs`
-    <a href="{{this.link}}" {{on "click" this.transition}} ...attributes>{{yield}}</a>
+    <a href="{{this.link}}" {{on "click" this.transition}}
+      class="{{if @disabled 'disabled'}} {{if this.isActive 'active'}} {{if this.isLoading 'loading'}} {{if (and this.willBeActive (not this.isActive)) 'ember-transitioning-in'}} {{if (and this.isActive (not this.willBeActive)) 'ember-transitioning-out'}}"
+      ...attributes>
+      {{yield}}
+    </a>
   `;
 
   @action transition(event) {
-    event.preventDefault();
+    let element = event.target;
+    if (element.target === '' || element.target === '_self') {
+      event.preventDefault();
+    } else {
+      return;
+    }
 
-    this.router.transitionTo(this.link);
+    if (this.args.disabled) {
+      return;
+    } else if (this.isLoading) {
+      throw new Error(
+        'This link is in an inactive loading state because at least one of its models currently has a null/undefined value, or the provided route name is invalid.'
+      );
+    }
+
+    if (!this.preventDefault) {
+      if (this.args.replace) {
+        let promise = this.router
+          .transitionTo(this.link, { queryParams: this.args.query }, true)
+          .method('replace');
+        this.willBeActive;
+        // console.log(this.willBeActive);
+        return promise;
+      }
+
+      let promise = this.router.transitionTo(this.link, { queryParams: this.args.query }, true);
+      this.willBeActive;
+      // console.log(this.willBeActive);
+      return promise;
+    }
   }
 }
 

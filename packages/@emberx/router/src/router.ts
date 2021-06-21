@@ -97,7 +97,7 @@ export default class Router {
           this.ROUTE_REGISTRY[`${currentSegment}.index`] = {
             routeName: `${currentSegment}.index`,
             options: { path: '/' },
-            route: undefined,
+            route: undefined, // TODO: add index route from parent by default
           };
         }
 

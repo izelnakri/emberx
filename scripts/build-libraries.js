@@ -32,8 +32,12 @@ async function buildPackage(packageName) {
 
   try {
     // await shell(`node_modules/.bin/esbuild $(find 'packages/${packageName}/src' -type f)  --outdir="./packages/${packageName}/dist"`);
-    await shell(`node_modules/.bin/tsc $(find 'packages/${packageName}/src' -type f) --outDir packages/${packageName}/dist --target ES2018 --moduleResolution node --experimentalDecorators true -d --allowJs`);
+    await shell(`node_modules/.bin/tsc $(find 'packages/${packageName}/src' -name "*.ts" -type f) --outDir packages/${packageName}/dist --target ES2018 --moduleResolution node --experimentalDecorators true -d --allowJs`);
+
+    // This includes "rollup-plugin-dts" // rollup -c rollup.config.js src/**/*.ts -d dist
   } catch (error) {
     console.error(error);
   }
 }
+
+// node_modules/.bin/tsc $(find 'src' -type f) --outDir dist --target ES2018 --moduleResolution node --experimentalDecorators true -d --allowJs --resolveJsonModule true

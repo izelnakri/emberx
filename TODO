@@ -1,3 +1,21 @@
+queryParams implementation needed for examples/blog/routes/preview/user.ts
+
+
+then do router tests
+
+// NOTE: @emberx/rsvp: RSVP.defer(); NOTE: probably should just use rsvp npm package.
+// NOTE: @emberx/runloop: later, once, next, cancel, debounce, throttle, currentLoop(?) NO, more importantly and a test-waiter system to register test events
+
+// I need something like await settled() for next queue; and and API to declare it in the app code.
+// all rsvp? because it has RSVP.hash, RSVP.defer, RSVP.filter(?), RSVP.later
+// runloop: later, once(setTimeout, 0), next(), cancel, debounce, throttle, currentLoop(?),
+// merge runloop with RSVP.
+
+glimmer level dom change wait is hooked to global-context on @ember/application
+
+also wraps fetch to implement the similar behavior
+instead we will need to monkey-patch fetch? or implement our fetch
+
 - avoid running model hooks
 - Avoid running model hooks when redirecting in the middle of another transition.
 - Handle two different approaches to transitions:
@@ -8,8 +26,7 @@ Ember.Application = boot, register services, reset state, viist, rootElement, un
 autoboot: false
 
 
-
-test-helpers, this.owner, this.pauseTest()
+test-helpers: this.owner
 
 think about error and loading routes
 

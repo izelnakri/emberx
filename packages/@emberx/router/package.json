@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "@emberx/route": "0.0.11",
+    "@emberx/string": "0.0.1",
     "router_js": "^7.3.0"
   }
 }

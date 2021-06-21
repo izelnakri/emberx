@@ -30,14 +30,18 @@ export default class RouterJSRouter extends Router<Route> {
 
   @tracked currentRoute: string | undefined;
   @tracked currentRouteName: string | undefined;
-  @tracked currentURL: string | undefined;
+  @tracked currentURL: string | undefined; // TODO: this as well
+
+  get currentPath() {
+    // NOTE: maybe just have currentPath instead of path
+    return this.path;
+  }
 
   constructor() {
     super();
 
     this.locationBar = new LocationBar();
     this.locationBar.start({ pushState: true });
-    debugger;
   }
 
   triggerEvent(): void {
@@ -52,10 +56,6 @@ export default class RouterJSRouter extends Router<Route> {
       transition.abort();
       return error.error;
     }
-  }
-
-  replaceURL(): void {
-    return;
   }
 
   routeWillChange(abc): void {
@@ -119,11 +119,15 @@ export default class RouterJSRouter extends Router<Route> {
         let targetParams = [handler].concat(params.map((key) => targetHandler.params[key]));
 
         // @ts-ignore
-        // console.log('targetParams', targetParams);
+        console.log('targetParams', targetParams);
         await this.transitionTo(...targetParams);
       } else {
-        // console.log('targetHandler', targetHandler);
-        await this.transitionTo(targetHandler.handler);
+        console.log('targetHandler', targetHandler);
+        try {
+          await this.transitionTo(targetHandler.handler);
+        } catch (error) {
+          debugger;
+        }
       }
     } else {
       console.log(

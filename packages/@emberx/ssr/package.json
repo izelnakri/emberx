@@ -1,6 +1,8 @@
 {
   "name": "@emberx/ssr",
+  "description": "",
   "version": "0.0.12",
+  "type": "module",
   "author": "Izel Nakri",
   "files": [
     "dist/*"
@@ -13,7 +15,6 @@
   "directories": {
     "test": "tests"
   },
-  "description": "",
   "dependencies": {
     "@glimmer/ssr": "^2.0.0-beta.16"
   }

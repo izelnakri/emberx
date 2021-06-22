@@ -1,8 +1,9 @@
 {
   "name": "@emberx/router",
-  "version": "0.0.12",
-  "author": "Izel Nakri",
   "description": "",
+  "version": "0.0.12",
+  "type": "module",
+  "author": "Izel Nakri",
   "files": [
     "dist/*"
   ],

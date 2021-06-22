@@ -2,6 +2,7 @@
   "name": "@emberx/component",
   "description": "",
   "version": "0.0.12",
+  "type": "module",
   "author": "Izel Nakri",
   "files": [
     "dist/*"

@@ -1,6 +1,7 @@
 import { module, test } from 'qunitx';
-import { setupRenderingTest, visit, currentURL, currentRouteName } from '@emberx/test-helpers';
+import { visit, currentURL, currentRouteName } from '@emberx/test-helpers';
 import Router, { Route, hbs } from '@emberx/router';
+import { setupRenderingTest } from './helpers/index';
 
 module('@emberx/test-helpers | url helpers', function (hooks) {
   class IndexRoute extends Route {

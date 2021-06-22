@@ -1,10 +1,10 @@
 import QUnit from 'qunitx';
-import { setup } from 'qunit-dom/dist/addon-test-support/index';
-import { setupRenderingTest as upstreamSetupApplicationTest } from '@emberx/test-helpers';
+import { setup } from 'qunit-dom/dist/addon-test-support/index.js';
+import { setupRenderingTest as upstreamSetupRenderingTest } from '@emberx/test-helpers';
 
-export function setupRenderingTest(hooks, options) {
+export function setupRenderingTest(hooks, startRouter) {
   setup(QUnit.assert);
-  upstreamSetupApplicationTest(hooks)
+  upstreamSetupRenderingTest(hooks, startRouter)
 }
 
 

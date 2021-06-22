@@ -6,7 +6,7 @@ module('@emberx/component | Public API', function (hooks) {
   setupRenderingTest(hooks);
 
   test('holds the correct default static properties', async function (assert) {
-    assert.deepEqual(Object.keys(Component), ['compiled', 'includes', 'template']);
+    assert.ok(Component.includes);
     assert.equal(Component.compiled, false);
     assert.ok(Component.includes);
     assert.ok(typeof Component.includes === 'object');

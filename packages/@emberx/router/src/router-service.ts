@@ -26,7 +26,7 @@ export default class RouterJSRouter extends Router<Route> {
   // @ts-ignore
   testing: boolean = !!globalThis.QUnit;
   locationBar: any;
-  path: string;
+  path: string | null = null;
 
   @tracked currentRoute: string | undefined;
   @tracked currentRouteName: string | undefined;
@@ -124,8 +124,12 @@ export default class RouterJSRouter extends Router<Route> {
 
         // @ts-ignore
         console.log('targetParams', targetParams);
-        // @ts-ignore
-        await this.transitionTo(...targetParams);
+        try {
+          // @ts-ignore
+          await this.transitionTo(...targetParams);
+        } catch (error) {
+          debugger;
+        }
       } else {
         console.log('targetHandler', targetHandler);
         try {

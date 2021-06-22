@@ -68,9 +68,7 @@ export default class Router {
     });
   }
 
-  static definitionsToRegistry(
-    arrayOfRouteDefinitions: Array<RouteDefinition> = []
-  ): RouteRegistry {
+  static definitionsToRegistry(arrayOfRouteDefinitions: Array<RouteDefinition> = []): RouteRegistry {
     arrayOfRouteDefinitions.forEach((routeDefinition: RouteDefinition) => {
       if (!routeDefinition.path) {
         throw new Error('One of the RouteDefinition on Router.start(RouteDefinition[]) misses "path" key');
@@ -169,33 +167,33 @@ export default class Router {
   // NOTE: add to actual router by demand
 }
 
-export function createRouteNameFromRouteClass(routeClass: Route | void): string | void {
-  if (routeClass) {
-    // @ts-ignore
-    return routeClass.name
-      .replace(/Route$/g, '')
-      .split('')
-      .reduce((result: string[], character: string, index: number) => {
-        if (index === 0) {
-          return character.toLowerCase();
-        } else if (character.toUpperCase() === character) {
-          return `${result}.${character.toLowerCase()}`;
-        }
+// export function createRouteNameFromRouteClass(routeClass: Route | void): string | void {
+//   if (routeClass) {
+//     // @ts-ignore
+//     return routeClass.name
+//       .replace(/Route$/g, '')
+//       .split('')
+//       .reduce((result: string[], character: string, index: number) => {
+//         if (index === 0) {
+//           return character.toLowerCase();
+//         } else if (character.toUpperCase() === character) {
+//           return `${result}.${character.toLowerCase()}`;
+//         }
 
-        return `${result}${character}`;
-      }, '');
-  }
-}
+//         return `${result}${character}`;
+//       }, '');
+//   }
+// }
 
-export function createRouteNameFromPath(routePath: string): string {
-  const targetPath = routePath[0] === '/' ? routePath.slice(1) : routePath;
+// export function createRouteNameFromPath(routePath: string): string {
+//   const targetPath = routePath[0] === '/' ? routePath.slice(1) : routePath;
 
-  return targetPath.replace(/\//g, '.').replace(/:/g, '');
-}
+//   return targetPath.replace(/\//g, '.').replace(/:/g, '');
+// }
 
 function checkInRouteRegistryOrCreateRoute(registry: RouteRegistry, targetRoute: routerJSRouteDefinition) {
   const routeName = targetRoute.name;
-  const foundRoute = registry[targetRoute.name];
+  const foundRoute = registry[routeName];
 
   if (!foundRoute) {
     registry[routeName] = targetRoute;

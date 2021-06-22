@@ -25,7 +25,7 @@ interface FreeObject {
 export default class EmberXComponent<Args extends FreeObject = {}> extends Component<Args> {
   static compiled = false;
   static includes = {};
-  static template?: string;
+  static template: string;
   static setTemplate(sourceCode: string) {
     let scope = Object.assign(this.includes, {
       fn,

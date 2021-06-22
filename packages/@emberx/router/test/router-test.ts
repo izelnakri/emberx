@@ -46,19 +46,19 @@ module('@emberx/router | Public API', function (hooks) {
 
     assert.propEqual(router.ROUTE_REGISTRY, targetFlatRegistry);
     assert.ok(router);
-    assert.deepEqual(Object.keys(router.ROUTER_SERVICE), [
+    assert.deepEqual(Object.keys(router.ROUTER_SERVICE).sort(), [
+      '_changedQueryParams',
       '_lastQueryParams',
-      'state',
-      'oldState',
       'activeTransition',
       'currentRouteInfos',
-      '_changedQueryParams',
       'currentSequence',
-      'log',
-      'recognizer',
-      'testing',
       'locationBar',
+      'log',
+      'oldState',
       'path',
+      'recognizer',
+      'state',
+      'testing',
     ]);
 
     // TODO: check default route content

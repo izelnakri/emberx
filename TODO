@@ -1,3 +1,5 @@
+- RSVP library is buggy/build strangely(QunitX url & wait based tests failing due to some _state error. Solve it. Tests pass on webpack)
+
 queryParams implementation needed for examples/blog/routes/preview/user.ts
 
 

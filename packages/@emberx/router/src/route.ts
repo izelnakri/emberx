@@ -51,9 +51,6 @@ export default class Route<Args extends FreeObject = {}> extends EmberXComponent
   }
 
   get routeName(): string {
-    const routeNames = this.router.recognizer.recognize(document.location.pathname); // TODO: probably change this
-
-    // @ts-ignore
-    return routeNames ? (routeNames[routeNames.length - 1].handler as string) : 'not-found';
+    return this.router.currentRouteName as string;
   }
 }

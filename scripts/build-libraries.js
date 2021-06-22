@@ -1,6 +1,7 @@
 import fs from 'fs/promises';
 import { promisify } from 'util';
 import { exec } from 'child_process';
+import lookup from 'recursive-lookup';
 import './dedupe-glimmer-validator.js';
 import './make-glimmer-compiler-universal.js';
 
@@ -31,10 +32,22 @@ async function buildPackage(packageName) {
   await fs.mkdir(`${targetFolder}/dist`, { recursive: true });
 
   try {
-    // await shell(`node_modules/.bin/esbuild $(find 'packages/${packageName}/src' -type f)  --outdir="./packages/${packageName}/dist"`);
-    await shell(`node_modules/.bin/tsc $(find 'packages/${packageName}/src' -name "*.ts" -type f) --outDir packages/${packageName}/dist --target ES2018 --moduleResolution node --experimentalDecorators true -d --allowJs`);
+    if (process.env.ENVIRONMENT === 'development') {
+      let paths = await lookup(`packages/${packageName}/src`, (path) => path.endsWith('.ts') || path.endsWith('.js'));
 
-    // This includes "rollup-plugin-dts" // rollup -c rollup.config.js src/**/*.ts -d dist
+      await Promise.all(paths.map((absolutePath) => {
+        let targetPath = absolutePath.replace(`${packageName}/src`, `${packageName}/dist`);
+        return shell(`node_modules/.bin/babel ${absolutePath} --config-file ${process.cwd()}/.babelrc -o ${targetPath}`);
+      }));
+    } else {
+      await shell(`node_modules/.bin/tsc $(find 'packages/${packageName}/src' -type f ) --outDir packages/${packageName}/dist --module es2020 --target ES2018 --moduleResolution node --allowSyntheticDefaultImports true --experimentalDecorators true -d --allowJs`);
+
+      let fileAbsolutePaths = await lookup(`packages/${packageName}/dist`, (path) => path.endsWith('.js'));
+
+      await Promise.all(fileAbsolutePaths.map((fileAbsolutePath) => {
+        return shell(`node_modules/.bin/babel ${fileAbsolutePath} --presets @babel/preset-typescript -o ${fileAbsolutePath}`);
+      }));
+    }
   } catch (error) {
     console.error(error);
   }

@@ -5,7 +5,7 @@ RUN apt-get update && \
 
 WORKDIR /code/
 
-ADD tsconfig.json package.json package-lock.json webpack.config.js /code/
+ADD .babelrc tsconfig.json package.json package-lock.json webpack.config.js /code/
 
 RUN npm install
 

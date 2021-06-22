@@ -1,4 +1,5 @@
 import { module, test } from 'qunitx';
+import { and } from '@emberx/helper';
 import { hbs } from '@emberx/component';
 import { setupRenderingTest, render } from '@emberx/test-helpers';
 
@@ -6,7 +7,9 @@ module('@emberx/helper | "and" helper', function (hooks) {
   setupRenderingTest(hooks);
 
   test('boolean values', async function (assert) {
-    await render(hbs`[{{and true true}}] [{{and true false}}] [{{and false true}}] [{{and false false}}]`);
+    await render(hbs`[{{and true true}}] [{{and true false}}] [{{and false true}}] [{{and false false}}]`, {
+      and,
+    });
 
     assert.equal(
       this.element.textContent,
@@ -16,19 +19,19 @@ module('@emberx/helper | "and" helper', function (hooks) {
   });
 
   test('integer values', async function (assert) {
-    await render(hbs`[{{and 1 1}}] [{{and 1 0}}] [{{and 0 1}}] [{{and 0 0}}]`);
+    await render(hbs`[{{and 1 1}}] [{{and 1 0}}] [{{and 0 1}}] [{{and 0 0}}]`, { and });
 
     assert.equal(this.element.textContent, '[1] [0] [0] [0]', 'value should be "[1] [0] [0] [0]"');
   });
 
   test('string values', async function (assert) {
-    await render(hbs`[{{and " " " "}}] [{{and " " ""}}] [{{and "" " "}}] [{{and "" ""}}]`);
+    await render(hbs`[{{and " " " "}}] [{{and " " ""}}] [{{and "" " "}}] [{{and "" ""}}]`, { and });
 
     assert.equal(this.element.textContent, '[ ] [] [] []', 'value should be "[ ] [] [] []"');
   });
 
   test('undefined list length and boolean', async function (assert) {
-    await render(hbs`[{{and this.array.length 1}}]`);
+    await render(hbs`[{{and this.array.length 1}}]`, { and });
 
     assert.equal(this.element.textContent, '[]', 'value should be "[]"');
   });
@@ -36,7 +39,7 @@ module('@emberx/helper | "and" helper', function (hooks) {
   test('null list length and boolean', async function (assert) {
     this.array = null;
 
-    await render(hbs`[{{and this.array.length 1}}]`);
+    await render(hbs`[{{and this.array.length 1}}]`, { and });
 
     assert.equal(this.element.textContent, '[]', 'value should be "[]"');
   });
@@ -44,7 +47,7 @@ module('@emberx/helper | "and" helper', function (hooks) {
   test('empty list length and boolean false case', async function (assert) {
     this.array = [];
 
-    await render(hbs`[{{and this.array.length 1}}]`);
+    await render(hbs`[{{and this.array.length 1}}]`, { and });
 
     assert.equal(this.element.textContent, '[0]', 'value should be "[0]"');
   });
@@ -52,7 +55,7 @@ module('@emberx/helper | "and" helper', function (hooks) {
   test('empty list length and boolean intended case when empty list', async function (assert) {
     this.array = [];
 
-    await render(hbs`[{{and this.array.length 0}}]`);
+    await render(hbs`[{{and this.array.length 0}}]`, { and });
 
     assert.equal(this.element.textContent, '[0]', 'value should be "[0]"');
   });
@@ -60,7 +63,7 @@ module('@emberx/helper | "and" helper', function (hooks) {
   test('non-empty list length and boolean', async function (assert) {
     this.array = ['a'];
 
-    await render(hbs`[{{and this.array.length 2}}]`);
+    await render(hbs`[{{and this.array.length 2}}]`, { and });
 
     assert.equal(this.element.textContent, '[2]', 'value should be "[2]"');
   });
@@ -68,7 +71,7 @@ module('@emberx/helper | "and" helper', function (hooks) {
   test('non-empty list length and correct length', async function (assert) {
     this.array = ['a'];
 
-    await render(hbs`[{{and this.array.length 1}}]`);
+    await render(hbs`[{{and this.array.length 1}}]`, { and });
 
     assert.equal(this.element.textContent, '[1]', 'value should be "[2]"');
   });

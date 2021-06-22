@@ -1,4 +1,5 @@
 import { module, test } from 'qunitx';
+import { not } from '@emberx/helper';
 import { setupRenderingTest, render, hbs } from '@emberx/test-helpers';
 
 module('@emberx/helper | "not" helper', function (hooks) {
@@ -6,7 +7,8 @@ module('@emberx/helper | "not" helper', function (hooks) {
 
   test('simple test 1', async function (assert) {
     await render(
-      hbs`[{{not true}}] [{{not false}}] [{{not null}}] [{{not undefined}}] [{{not ''}}] [{{not ' '}}]`
+      hbs`[{{not true}}] [{{not false}}] [{{not null}}] [{{not undefined}}] [{{not ''}}] [{{not ' '}}]`,
+      { not }
     );
 
     assert.equal(
@@ -18,7 +20,8 @@ module('@emberx/helper | "not" helper', function (hooks) {
 
   test('simple test 2', async function (assert) {
     await render(
-      hbs`[{{not true false}}] [{{not true false}}] [{{not null null false null}}] [{{not false null ' ' true}}]`
+      hbs`[{{not true false}}] [{{not true false}}] [{{not null null false null}}] [{{not false null ' ' true}}]`,
+      { not }
     );
 
     assert.equal(

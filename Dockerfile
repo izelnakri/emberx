@@ -9,6 +9,7 @@ ADD .babelrc tsconfig.json package.json package-lock.json webpack.config.js /cod
 
 RUN npm install
 
+ADD examples /code/examples
 ADD scripts /code/scripts/
 ADD packages /code/packages/
 ADD test /code/test

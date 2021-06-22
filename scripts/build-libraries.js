@@ -3,6 +3,7 @@ import { promisify } from 'util';
 import { exec } from 'child_process';
 import lookup from 'recursive-lookup';
 import './dedupe-glimmer-validator.js';
+import './fix-rsvp-module-reference.js';
 import './make-glimmer-compiler-universal.js';
 
 const shell = promisify(exec);

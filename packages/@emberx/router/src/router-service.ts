@@ -1,35 +1,39 @@
-import Router, { Route } from 'router_js';
+import router, { Route } from 'router_js';
 import EmberXRouter from './index';
 import { tracked } from '@emberx/component';
 import DefaultRoute from './route';
 import LocationBar from './vendor/location-bar';
 
+// @ts-ignore
+let Router = router.default ? router.default : router;
+
 interface FreeObject {
   [propName: string]: any;
 }
 
-// currentRoute
-// currentRouteName
-// currentURL
 // isDestroyed
 // isDestroying
 // location
 // mergedProperties
 // rootURL
-// routeWillChange
+// routeWillChange handler
+// routeDidChange handler
 
 // recognize
 // replaceWith
 // transitionTo
 // urlFor
+
+// handleURL accepts slash-less URLs
+// route recognize and recognizeAndLoad
 export default class RouterJSRouter extends Router<Route> {
   // @ts-ignore
   testing: boolean = !!globalThis.QUnit;
   locationBar: any;
   path: string | null = null;
 
-  @tracked currentRoute: string | undefined;
-  @tracked currentRouteName: string | undefined;
+  @tracked currentRoute: string | undefined; // NOTE: there is already probably a routeName already
+  @tracked currentRouteName: string | undefined; // NOTE: there is already probably a routeName already
   @tracked currentURL: string | undefined; // TODO: this as well
 
   get currentPath() {
@@ -48,8 +52,8 @@ export default class RouterJSRouter extends Router<Route> {
     return;
   }
 
-  replaceURL(): void {
-    return;
+  replaceURL(name: string): void {
+    return this.updateURL(name);
   }
 
   transitionDidError(error: any, transition: any) {

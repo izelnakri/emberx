@@ -31,6 +31,7 @@ export default class extends Component<{
   }
 
   constructor(owner: any, args: any) {
+    // @ts-ignore
     super(owner, args);
 
     if (!args.route) {

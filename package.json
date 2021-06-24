@@ -18,7 +18,7 @@
   ],
   "scripts": {
     "lint": "eslint . --ext=js,ts --cache",
-    "build": "npm run libs:build",
+    "build": "npm run libs:build && npm run libs:build-tests-for-node",
     "changelog:unreleased": "node_modules/.bin/auto-changelog --stdout --commit-limit false --package --unreleased-only --hide-credit --sort-commits date-desc",
     "changelog:preview": "node_modules/.bin/auto-changelog --stdout --commit-limit false --package -u --sort-commits date-desc",
     "changelog:update": "node_modules/.bin/auto-changelog --commit-limit false --package --sort-commits date-desc",
@@ -36,7 +36,7 @@
     "test:browser": "ENVIRONMENT=development npm run test:browser:ci",
     "test:browser:ci": "node_modules/.bin/qunitx test/index.ts --browser --failFast",
     "test:node": "ENVIRONMENT=development npm run test:node:ci",
-    "test:node:ci": "npm run libs:build-tests-for-node && qunitx $ADD_HERE_NODE_JS_TESTS",
+    "test:node:ci": "npm run libs:build-tests-for-node && qunitx tmp/@emberx/string/**/*.js",
     "typecheck": "tsc --project tsconfig.json --noEmit --skipLibCheck"
   },
   "dependencies": {

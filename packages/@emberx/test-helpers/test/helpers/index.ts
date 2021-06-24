@@ -4,7 +4,5 @@ import { setupRenderingTest as upstreamSetupRenderingTest } from '@emberx/test-h
 
 export function setupRenderingTest(hooks, startRouter) {
   setup(QUnit.assert);
-  upstreamSetupRenderingTest(hooks, startRouter)
+  upstreamSetupRenderingTest(hooks, startRouter);
 }
-
-

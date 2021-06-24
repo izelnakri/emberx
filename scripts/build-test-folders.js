@@ -9,7 +9,7 @@ let targetPackages = [
   '@emberx/helper',
   '@emberx/component',
   '@emberx/string',
-  '@emberx/router',
+  // '@emberx/router',
   '@emberx/test-helpers',
   // '@emberx/ssr'
 ];

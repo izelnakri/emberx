@@ -31,12 +31,12 @@
     "release:alpha": "node_modules/.bin/release-it --preRelease=alpha --no-git.requireUpstream -V",
     "release:beta": "node_modules/.bin/release-it --preRelease=beta --no-git.requireUpstream -V",
     "release": "node_modules/.bin/release-it -V",
-    "test": "ENVIRONMENT=development npm run build && npm run test:browser",
-    "test:ci": "npm run build && npm run test:browser:ci",
+    "test": "ENVIRONMENT=development npm run build && npm run test:browser && npm run test:node",
+    "test:ci": "npm run build && npm run test:browser:ci && npm run test:node:ci",
     "test:browser": "ENVIRONMENT=development npm run test:browser:ci",
     "test:browser:ci": "node_modules/.bin/qunitx test/index.ts --browser --failFast",
     "test:node": "ENVIRONMENT=development npm run test:node:ci",
-    "test:node:ci": "npm run libs:build-tests-for-node && qunitx tmp/@emberx/string/**/*.js",
+    "test:node:ci": "npm run libs:build-tests-for-node && qunitx tmp/@emberx/string tmp/@emberx/helper tmp/@emberx/component --before='test/setup-dom.js'",
     "typecheck": "tsc --project tsconfig.json --noEmit --skipLibCheck"
   },
   "dependencies": {

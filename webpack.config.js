@@ -27,6 +27,7 @@ const sharedConfig = {
         use: {
           loader: 'babel-loader',
           options: {
+            babelrc: false,
             presets: [
               '@babel/preset-typescript',
             ],

@@ -3,7 +3,7 @@ import { hbs } from '@emberx/component';
 import { fn } from '@glimmer/helper';
 import { module, test } from 'qunitx';
 import { render, blur, focus } from '@emberx/test-helpers';
-import { setupRenderingTest } from '../helpers';
+import { setupRenderingTest } from '../helpers/index';
 
 function setupEventStepListeners(assert, element) {
   ['focus', 'focusin', 'blur', 'focusout'].forEach((eventName) => {

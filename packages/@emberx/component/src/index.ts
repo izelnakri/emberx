@@ -1,12 +1,14 @@
-import Component from '@glimmer/component';
-import {
-  didRender,
-  setComponentTemplate,
-  getOwner,
-  templateOnlyComponent,
-  renderComponent as glimmerRenderComponent,
-  RenderComponentOptions,
-} from '@glimmer/core';
+// TODO: This type of importing was needed to support both node.js(intra) and esbuild(bundle) environments.
+// @glimmer/core has no default export error on esbuild. This can be fixed by making @glimmer/core ESM dist node.js compatible
+// or removing the modules key in package.json
+import glimmerComponent from '@glimmer/component';
+import glimmerCore from '@glimmer/core';
+
+// @ts-ignore
+let Component = glimmerComponent.default ? glimmerComponent.default : glimmerComponent;
+let { didRender, setComponentTemplate, getOwner, templateOnlyComponent } = glimmerCore;
+let glimmerRenderComponent = glimmerCore.renderComponent;
+
 import { fn, hash, array, get, concat, on } from '@glimmer/runtime';
 import { and, or, not, eq, neq, gt, gte, lt, lte } from '@emberx/helper';
 import createTemplate from './create-template';
@@ -93,11 +95,8 @@ export function action(context, value, descriptor) {
 //   ComponentClass: typeof EmberXComponent,
 //   element: HTMLElement
 // ): Promise<void>;
-async function renderComponent(
-  ComponentClass: typeof EmberXComponent,
-  optionsOrElement: RenderComponentOptions | HTMLElement
-): Promise<void> {
-  const options: RenderComponentOptions =
+async function renderComponent(ComponentClass: typeof EmberXComponent, optionsOrElement: any): Promise<void> {
+  const options: any =
     optionsOrElement instanceof HTMLElement ? { element: optionsOrElement } : optionsOrElement;
 
   traverseAndCompileAllComponents(ComponentClass);
@@ -149,6 +148,7 @@ function traverseAndCompileAllComponents(ComponentClass: typeof EmberXComponent)
 
 export {
   didRender,
+  createTemplate,
   setComponentTemplate,
   getOwner,
   templateOnlyComponent,

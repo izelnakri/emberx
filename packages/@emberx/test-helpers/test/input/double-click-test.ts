@@ -1,7 +1,7 @@
 import { hbs } from '@emberx/component';
 import { module, test } from 'qunitx';
 import { render, doubleClick, find } from '@emberx/test-helpers';
-import { setupRenderingTest } from '../helpers';
+import { setupRenderingTest } from '../helpers/index';
 
 function setupEventStepListeners(assert, input) {
   input.addEventListener('mousedown', () => assert.step('mousedown'));

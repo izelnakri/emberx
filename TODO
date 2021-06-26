@@ -1,3 +1,7 @@
+- @emberx/test-helper tests not runnable on node.js!: routerjs/vendor location-bar prevents the app to be runable on node.js.
+- Create an issue + PR on @glimmer/core(remove module flag or make it work with a better export). Also make it work with
+explicit paths.
+
 - RSVP library is buggy/build strangely(QunitX url & wait based tests failing due to some _state error. Solve it. Tests pass on webpack)
 
 queryParams implementation needed for examples/blog/routes/preview/user.ts

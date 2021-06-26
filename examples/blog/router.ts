@@ -2,7 +2,7 @@ import AdminPostsPostRoute from './routes/admin/posts/post';
 import LoginRoute from './routes/login';
 import PreviewUserPostsPostRoute from './routes/preview/user/posts/post';
 import PreviewUserRoute from './routes/preview/user';
-import PublicIndexRoute from './routes/public/index';
+import PublicRoute from './routes/public';
 import PublicBlogPostRoute from './routes/public/blog-post';
 import LocaleService from './services/intl';
 import Router from '@emberx/router';
@@ -47,12 +47,13 @@ export default function startApplication() {
     this.route('logout');
   };
 
-  return Router.start(
+  window.Router = Router.start(
     [
       {
         path: '/',
-        route: PublicIndexRoute,
-        name: 'public.index',
+        name: 'public',
+        route: PublicRoute,
+        indexRoute: PublicRoute,
       },
       {
         path: '/:slug',
@@ -87,4 +88,6 @@ export default function startApplication() {
     ],
     oldRouterMap
   );
+
+  return window.Router;
 }

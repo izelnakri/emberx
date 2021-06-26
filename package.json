@@ -18,7 +18,7 @@
   ],
   "scripts": {
     "lint": "eslint . --ext=js,ts --cache",
-    "build": "npm run libs:build",
+    "build": "npm run libs:build && npm run libs:build-tests-for-node",
     "changelog:unreleased": "node_modules/.bin/auto-changelog --stdout --commit-limit false --package --unreleased-only --hide-credit --sort-commits date-desc",
     "changelog:preview": "node_modules/.bin/auto-changelog --stdout --commit-limit false --package -u --sort-commits date-desc",
     "changelog:update": "node_modules/.bin/auto-changelog --commit-limit false --package --sort-commits date-desc",
@@ -31,12 +31,12 @@
     "release:alpha": "node_modules/.bin/release-it --preRelease=alpha --no-git.requireUpstream -V",
     "release:beta": "node_modules/.bin/release-it --preRelease=beta --no-git.requireUpstream -V",
     "release": "node_modules/.bin/release-it -V",
-    "test": "ENVIRONMENT=development npm run build && npm run test:browser",
-    "test:ci": "npm run build && npm run test:browser:ci",
+    "test": "ENVIRONMENT=development npm run build && npm run test:browser && npm run test:node",
+    "test:ci": "npm run build && npm run test:browser:ci && npm run test:node:ci",
     "test:browser": "ENVIRONMENT=development npm run test:browser:ci",
     "test:browser:ci": "node_modules/.bin/qunitx test/index.ts --browser --failFast",
     "test:node": "ENVIRONMENT=development npm run test:node:ci",
-    "test:node:ci": "npm run libs:build-tests-for-node && qunitx $ADD_HERE_NODE_JS_TESTS",
+    "test:node:ci": "npm run libs:build-tests-for-node && qunitx tmp/@emberx/string tmp/@emberx/helper tmp/@emberx/component --before='test/setup-dom.js'",
     "typecheck": "tsc --project tsconfig.json --noEmit --skipLibCheck"
   },
   "dependencies": {
@@ -66,6 +66,7 @@
     "babel-loader": "^8.2.2",
     "babel-plugin-module-extension-resolver": "^1.0.0-rc.2",
     "bootstrap": "^5.0.1",
+    "eslint": "^7.29.0",
     "qunit-dom": "^1.6.0",
     "qunitx": "^0.2.2",
     "recursive-lookup": "^1.0.0",

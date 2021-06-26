@@ -27,6 +27,7 @@ const sharedConfig = {
         use: {
           loader: 'babel-loader',
           options: {
+            babelrc: false,
             presets: [
               '@babel/preset-typescript',
             ],
@@ -46,6 +47,14 @@ const devConfig = {
   name: 'devserver',
   ...sharedConfig,
   devServer: {
+    onAfterSetupMiddleware(server) {
+      server.app.get('/preview/examples/blog.bundle.js', (req, res) => {
+        return res.sendFile(`${process.cwd()}/dist/examples/blog.bundle.js`);
+      });
+      server.app.get('/*', (req, res) => {
+        return res.sendFile(`${process.cwd()}/public/blog.html`);
+      });
+    },
     hot: false,
     static: [
       path.resolve(process.cwd(), 'public'),

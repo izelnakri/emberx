@@ -14,6 +14,7 @@ export default async function render(templateString: string, includes: object = 
     static includes = includes;
 
     constructor(owner: object, args: Args) {
+      // @ts-ignore
       super(owner, args);
 
       Object.assign(this, context); // NOTE: this isnt ideal for performance in testing, but backwards compatible with existing ember testing
@@ -26,6 +27,7 @@ export default async function render(templateString: string, includes: object = 
 
   container.innerHTML = '';
 
+  // @ts-ignore
   return await renderComponent(TemplateOnlyComponent, {
     element: container,
     owner: {

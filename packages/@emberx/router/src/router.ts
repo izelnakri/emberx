@@ -31,6 +31,7 @@ export interface routerJSRouteDefinition {
 // NOTE: there is this.recognizer.add (when recognizer is an instance via new RouteRecognizer())
 // TODO: { path: '/' } resets the path, by default route($segment) is { path: /$segment }, also people can use '/:dynamic' or ':dynamic';
 export default class Router {
+  // queryParams
   static LOG_ROUTES = true;
   static LOG_MODELS = true;
   static SERVICES: FreeObject = {};
@@ -41,25 +42,40 @@ export default class Router {
   //   return !!globalThis.QUnit;
   // }
 
-  static visit() {
+  static visit(url: string) {
     // @ts-ignore
-    return this.ROUTER_SERVICE.visit(...arguments);
+    try {
+      this.ROUTER_SERVICE.visit(url);
+    } catch (error) {
+      debuger;
+    }
   }
 
   static start(arrayOfRouteDefinitions: Array<RouteDefinition> = [], routeMap: any = undefined): Router {
     this.ROUTE_REGISTRY = {};
 
     let routeMapRegistry = routeMap ? this.map(routeMap) : {}; // move this to super.map since it just mutates the module
-    let registry = this.definitionsToRegistry(arrayOfRouteDefinitions);
-    let routerJSRouteArray = this.convertToRouterJSRouteArray(Object.assign(routeMapRegistry, registry));
+    let ROUTE_REGISTRY = this.convertDefinitionsToRegistry(arrayOfRouteDefinitions);
+    let routerJSRouteArray = this.convertToRouterJSRouteArray(
+      Object.assign(routeMapRegistry, ROUTE_REGISTRY)
+    );
 
     this.ROUTER_SERVICE = new RouterService();
-    this.ROUTER_SERVICE.map(function (match) {
+    this.ROUTER_SERVICE.map(function (match: any) {
       RouteMapContext.map(RouteMapContext.map, match, routerJSRouteArray);
     });
     this.SERVICES.router = this.ROUTER_SERVICE;
 
     return this;
+  }
+
+  static map(routerDefinition: () => {}): RouteRegistry {
+    this.ROUTE_REGISTRY = {};
+    RouteMapContext.ROUTE_REGISTRY = this.ROUTE_REGISTRY;
+
+    routerDefinition.apply(RouteMapContext); // routerDefinition.apply(this); // TODO: this uses this.route
+
+    return this.ROUTE_REGISTRY;
   }
 
   static reset() {
@@ -68,37 +84,46 @@ export default class Router {
     });
   }
 
-  static definitionsToRegistry(arrayOfRouteDefinitions: Array<RouteDefinition> = []): RouteRegistry {
+  static convertDefinitionsToRegistry(arrayOfRouteDefinitions: Array<RouteDefinition> = []): RouteRegistry {
     arrayOfRouteDefinitions.forEach((routeDefinition: RouteDefinition) => {
       if (!routeDefinition.path) {
         throw new Error('One of the RouteDefinition on Router.start(RouteDefinition[]) misses "path" key');
+      } else if (!routeDefinition.path.startsWith('/')) {
+        throw new Error(`RouteDefinition paths must start with "/". Eg: { path: /${routeDefinition.path} }`);
       } else if (!routeDefinition.name) {
         throw new Error('One of the RouteDefinition on Router.start(RouteDefinition[]) misses "name" key');
+      } else if (routeDefinition.name.endsWith('.index')) {
+        let routeName = routeDefinition.name;
+        let parentRouteName = routeName.slice(0, routeName.length - 6);
+
+        throw new Error(
+          `RouteDefinition{ name: ${routeName} } cannot end with ".index". Instead specify it as "indexRoute" of its parent route: ${parentRouteName}`
+        );
       }
 
       let routeName = routeDefinition.name; // || createRouteNameFromRouteClass(routeDefinition.route); // || createRouteNameFromPath(routeDefinition.path as string); // NOTE: when /create-user type of paths are defined create a better routeName guess, should I replace order?
       let routeNameSegments = routeName.split('.');
+      let routePathSegments = routeDefinition.path.slice(1).split('/');
 
-      let normalizedPath = routeDefinition.path.startsWith('/')
-        ? routeDefinition.path.slice(1)
-        : routeDefinition.path;
-      let routePathSegments = normalizedPath.split('/');
-
-      routeNameSegments.reduce((currentSegment, routeSegment, index) => {
-        const targetSegmentName = currentSegment ? `${currentSegment}.${routeSegment}` : routeSegment;
-        const targetIndex = index >= routePathSegments.length ? routePathSegments.length - 1 : index;
+      // 'public.posts.post.index'
+      // NOTE: iterate through the route name segments so route parent lookup is easier:
+      routeNameSegments.reduce((parentSegment, routeSegment, index) => {
+        const targetSegmentName = parentSegment ? `${parentSegment}.${routeSegment}` : routeSegment;
+        const targetRouteSegmentIndex =
+          index < routePathSegments.length ? index : routePathSegments.length - 1; // TODO: didnt get this one, read it again
 
         checkInRouteRegistryOrCreateRoute(this.ROUTE_REGISTRY, {
           name: targetSegmentName,
-          options: { path: `/${routePathSegments[targetIndex]}` },
+          options: { path: `/${routePathSegments[targetRouteSegmentIndex]}` },
           route: index === routeNameSegments.length - 1 ? routeDefinition.route : undefined,
         } as routerJSRouteDefinition);
 
-        if (currentSegment && !this.ROUTE_REGISTRY[`${currentSegment}.index`]) {
-          this.ROUTE_REGISTRY[`${currentSegment}.index`] = {
-            name: `${currentSegment}.index`,
+        if (parentSegment && !this.ROUTE_REGISTRY[`${parentSegment}.index`]) {
+          // TODO: this lazily registers index routes, than actual definition has to be registered during mapping
+          this.ROUTE_REGISTRY[`${parentSegment}.index`] = {
+            name: `${parentSegment}.index`,
             options: { path: '/' },
-            route: undefined, // TODO: add index route from parent by default
+            route: undefined,
           };
         }
 
@@ -154,42 +179,9 @@ export default class Router {
       }, []);
   }
 
-  static map(routerDefinition: () => {}): RouteRegistry {
-    this.ROUTE_REGISTRY = {};
-    RouteMapContext.ROUTE_REGISTRY = this.ROUTE_REGISTRY;
-
-    routerDefinition.apply(RouteMapContext); // routerDefinition.apply(this); // TODO: this uses this.route
-
-    return this.ROUTE_REGISTRY;
-  }
-
   // NOTE: add to registry by demand
   // NOTE: add to actual router by demand
 }
-
-// export function createRouteNameFromRouteClass(routeClass: Route | void): string | void {
-//   if (routeClass) {
-//     // @ts-ignore
-//     return routeClass.name
-//       .replace(/Route$/g, '')
-//       .split('')
-//       .reduce((result: string[], character: string, index: number) => {
-//         if (index === 0) {
-//           return character.toLowerCase();
-//         } else if (character.toUpperCase() === character) {
-//           return `${result}.${character.toLowerCase()}`;
-//         }
-
-//         return `${result}${character}`;
-//       }, '');
-//   }
-// }
-
-// export function createRouteNameFromPath(routePath: string): string {
-//   const targetPath = routePath[0] === '/' ? routePath.slice(1) : routePath;
-
-//   return targetPath.replace(/\//g, '.').replace(/:/g, '');
-// }
 
 function checkInRouteRegistryOrCreateRoute(registry: RouteRegistry, targetRoute: routerJSRouteDefinition) {
   const routeName = targetRoute.name;
@@ -222,5 +214,29 @@ function findNestedRoute(routerJSRouteArray: Array<routerJSRouteDefinition>, rou
     return target.find((routeObject: routerJSRouteDefinition) => routeObject.name === targetRouteName);
   }, {} as FreeObject);
 }
+
+// export function createRouteNameFromRouteClass(routeClass: Route | void): string | void {
+//   if (routeClass) {
+//     // @ts-ignore
+//     return routeClass.name
+//       .replace(/Route$/g, '')
+//       .split('')
+//       .reduce((result: string[], character: string, index: number) => {
+//         if (index === 0) {
+//           return character.toLowerCase();
+//         } else if (character.toUpperCase() === character) {
+//           return `${result}.${character.toLowerCase()}`;
+//         }
+
+//         return `${result}${character}`;
+//       }, '');
+//   }
+// }
+
+// export function createRouteNameFromPath(routePath: string): string {
+//   const targetPath = routePath[0] === '/' ? routePath.slice(1) : routePath;
+
+//   return targetPath.replace(/\//g, '.').replace(/:/g, '');
+// }
 
 // window.Router = Router;

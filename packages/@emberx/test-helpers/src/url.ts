@@ -12,6 +12,7 @@ export async function visit(path: string): Promise<void> {
   try {
     await context.Router.visit(path);
   } catch (error) {
+    throw error;
     debugger;
   }
 }
@@ -39,5 +40,5 @@ export function currentURL(): string {
     );
   }
 
-  return context.Router.ROUTER_SERVICE.path;
+  return context.Router.ROUTER_SERVICE.currentURL;
 }

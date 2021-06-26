@@ -217,18 +217,18 @@ module('@emberx/router | <LinkTo> tests', function (hooks) {
   });
 
   // TODO: do these
-  // module('<LinkTo/> transition class tests', function (hooks) {
-  //   test('only active links should have active class', async function (assert) {
-  //     await visit('/preview/11');
+  module('<LinkTo/> transition class tests', function (hooks) {
+    test('only active links should have active class', async function (assert) {
+      await visit('/preview/11');
 
-  //     await this.pauseTest();
-  //     assert.equal(currentURL(), '/preview/11');
-  //     // assert.dom('a.active').exists({ count: 1 });
-  //     // assert.dom('a.active').hasText('Something');
-  //   });
+      // await this.pauseTest();
+      assert.equal(currentURL(), '/preview/11');
+      // assert.dom('a.active').exists({ count: 1 });
+      // assert.dom('a.active').hasText('Something');
+    });
 
-  //   // test('only transitioning links should have the correct transitioning classes', function (hooks) {});
+    //   // test('only transitioning links should have the correct transitioning classes', function (hooks) {});
 
-  //   // test('loading class appers correctly', function (hooks) {});
-  // });
+    //   // test('loading class appers correctly', function (hooks) {});
+  });
 });

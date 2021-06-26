@@ -2,15 +2,21 @@
 // @glimmer/core has no default export error on esbuild. This can be fixed by making @glimmer/core ESM dist node.js compatible
 // or removing the modules key in package.json
 import glimmerComponent from '@glimmer/component';
-import glimmerCore from '@glimmer/core';
+import {
+  renderComponent as glimmerRenderComponent,
+  didRender,
+  setComponentTemplate,
+  getOwner,
+  templateOnlyComponent,
+} from '@glimmer/core';
 
 // @ts-ignore
 let Component = glimmerComponent.default ? glimmerComponent.default : glimmerComponent;
-let { didRender, setComponentTemplate, getOwner, templateOnlyComponent } = glimmerCore;
-let glimmerRenderComponent = glimmerCore.renderComponent;
+// let { didRender, setComponentTemplate, getOwner, templateOnlyComponent } = glimmerCore;
+// let glimmerRenderComponent = glimmerCore.renderComponent;
 
 import { fn, hash, array, get, concat, on } from '@glimmer/runtime';
-import { and, or, not, eq, neq, gt, gte, lt, lte } from '@emberx/helper';
+import { and, debug, or, not, eq, neq, gt, gte, lt, lte } from '@emberx/helper';
 import createTemplate from './create-template';
 
 import { tracked } from '@glimmer/tracking';
@@ -37,6 +43,7 @@ export default class EmberXComponent<Args extends FreeObject = {}> extends Compo
       concat,
       on,
       and,
+      debug,
       or,
       not,
       eq: eq,
@@ -87,14 +94,6 @@ export function action(context, value, descriptor) {
   return glimmerAction(context, value, descriptor);
 }
 
-// async function renderComponent(
-//   ComponentClass: typeof EmberXComponent,
-//   options: RenderComponentOptions
-// ): Promise<void>;
-// async function renderComponent(
-//   ComponentClass: typeof EmberXComponent,
-//   element: HTMLElement
-// ): Promise<void>;
 async function renderComponent(ComponentClass: typeof EmberXComponent, optionsOrElement: any): Promise<void> {
   const options: any =
     optionsOrElement instanceof HTMLElement ? { element: optionsOrElement } : optionsOrElement;

@@ -52,6 +52,9 @@ export default class extends Component<{
 
     let linkWithParams = new URLSearchParams('');
 
+    // TODO: filter out existing queryParams based on the route
+    // also set them to the linkWithParams
+
     Object.keys(this.args.query as object).forEach((key) => {
       // @ts-ignore
       linkWithParams.set(key, this.args.query[key]);
@@ -89,13 +92,16 @@ export default class extends Component<{
   get models() {
     // NOTE: maybe optimize rendering if there is no dynamic segments?
     // @ts-ignore
-    let dynamicSegments = this.router.recognizer.names[this.args.route].handlers.reduce((result, handlerFunc) => {
-      if (handlerFunc.shouldDecodes.length > 0) {
-        result.push(handlerFunc.names);
-      }
+    let dynamicSegments = this.router.recognizer.names[this.args.route].handlers.reduce(
+      (result, handlerFunc) => {
+        if (handlerFunc.shouldDecodes.length > 0) {
+          result.push(handlerFunc.names);
+        }
 
-      return result;
-    }, []);
+        return result;
+      },
+      []
+    );
 
     if (this.args.models) {
       // @ts-ignore

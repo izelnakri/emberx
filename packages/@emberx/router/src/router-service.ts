@@ -1,21 +1,18 @@
-import router, { Route } from 'router_js';
+import router, { Route as RouterJSRoute } from 'router_js';
 import EmberXRouter from './index';
 import { tracked } from '@emberx/component';
-import DefaultRoute from './route';
+import Route from './route';
 import LocationBar from './vendor/location-bar';
 
 // @ts-ignore
 let Router = router.default ? router.default : router;
 
+class DefaultRoute extends Route {}
+
 interface FreeObject {
   [propName: string]: any;
 }
 
-// isDestroyed
-// isDestroying
-// location
-// mergedProperties
-// rootURL
 // routeWillChange handler
 // routeDidChange handler
 
@@ -26,20 +23,14 @@ interface FreeObject {
 
 // handleURL accepts slash-less URLs
 // route recognize and recognizeAndLoad
-export default class RouterJSRouter extends Router<Route> {
+export default class RouterJSRouter extends Router<RouterJSRoute> {
   // @ts-ignore
   testing: boolean = !!globalThis.QUnit;
   locationBar: any;
-  path: string | null = null;
 
-  @tracked currentRoute: string | undefined; // NOTE: there is already probably a routeName already
-  @tracked currentRouteName: string | undefined; // NOTE: there is already probably a routeName already
-  @tracked currentURL: string | undefined; // TODO: this as well
-
-  get currentPath() {
-    // NOTE: maybe just have currentPath instead of path
-    return this.path;
-  }
+  @tracked currentRoute: string | undefined;
+  @tracked currentRouteName: string | undefined;
+  @tracked currentURL: string | undefined;
 
   constructor() {
     super();
@@ -48,12 +39,38 @@ export default class RouterJSRouter extends Router<Route> {
     this.locationBar.start({ pushState: true });
   }
 
-  triggerEvent(): void {
-    return;
+  triggerEvent(handlerInfos: any[], _ignoreFailure: boolean, name: string, args: any[]) {
+    console.log('triggerEvent name>', name, args);
+    if (['finalizeQueryParamChange', 'queryParamsDidChange'].includes(name)) {
+      handlerInfos.forEach((currentHandlerInfo) => {
+        let currentHandler = currentHandlerInfo.route;
+
+        // If there is no handler, it means the handler hasn't resolved yet which
+        // means that we should trigger the event later when the handler is available
+        if (!currentHandler) {
+          currentHandlerInfo.routePromise!.then(function (resolvedHandler: any) {
+            resolvedHandler.events![name].apply(resolvedHandler, args);
+          });
+        } else if (currentHandler.events[name]) {
+          currentHandler.events[name].apply(currentHandler, args);
+        }
+      });
+    }
   }
 
   replaceURL(name: string): void {
+    // TODO: check if additional history storage code needed
     return this.updateURL(name);
+  }
+
+  // NOTE: is there handleURL(?)
+  updateURL(url: string): void {
+    console.log('updateURL call', url);
+    this.currentURL = url;
+
+    if (!this.testing) {
+      this.locationBar.update(url);
+    }
   }
 
   transitionDidError(error: any, transition: any) {
@@ -85,7 +102,6 @@ export default class RouterJSRouter extends Router<Route> {
 
     this.currentRoute = targetRouteInfo._route;
     this.currentRouteName = targetRouteInfo.name;
-    this.currentURL = targetRouteInfo.router.path;
   }
 
   didTransition(routeInfos: any) {
@@ -93,54 +109,50 @@ export default class RouterJSRouter extends Router<Route> {
 
     this.currentRoute = targetRouteInfo._route;
     this.currentRouteName = targetRouteInfo.name;
-    this.currentURL = targetRouteInfo.router.path;
   }
 
   getRoute(name: string): any {
     if (EmberXRouter.LOG_ROUTES) {
-      console.log('iz debug', name);
+      console.log('[EmberXRouter debug]:', name);
+    }
+
+    if (name.endsWith('.index')) {
+      let targetRoute =
+        EmberXRouter.ROUTE_REGISTRY[name].route ||
+        EmberXRouter.ROUTE_REGISTRY[name.slice(0, name.length - 6)].route ||
+        DefaultRoute;
+
+      return Object.assign(targetRoute, EmberXRouter.SERVICES);
     }
 
     let targetRoute = EmberXRouter.ROUTE_REGISTRY[name].route || DefaultRoute;
 
-    return Object.assign(targetRoute, EmberXRouter.SERVICES); // NOTE: maybe optimize this in future
+    return Object.assign(targetRoute, EmberXRouter.SERVICES);
   }
 
-  updateURL(url: string): void {
-    this.path = url;
-
-    if (!this.testing) {
-      this.locationBar.update(url);
-    }
-  }
-
+  // TODO: this doesn't work when app is not booted!!
+  // test with queryParams
   async visit(path: string): Promise<void> {
-    const targetHandlers = this.recognizer.recognize(path);
+    const targetHandlers = this.recognizer.recognize(path); // this gives RecognizeResults[0, 1, 2, queryParams]
+    const params = Array.from(targetHandlers).reduce((result: any[], handler) => {
+      return result.concat(Object.values(handler.params));
+    }, []);
+
+    if (EmberXRouter.LOG_ROUTES) {
+      console.log('Router.visit() recognized route handlers:', targetHandlers);
+      console.log('Router.visit() recognized route params:', params);
+    }
 
     if (targetHandlers) {
-      const targetHandler: FreeObject = targetHandlers[targetHandlers.length - 1] as FreeObject;
-      const params = Object.keys(targetHandler.params);
-
-      if (params.length > 0) {
-        const handler: string = targetHandler.handler;
-        // TODO: params is an object but it needs just the value it needs
-        let targetParams = [handler].concat(params.map((key) => targetHandler.params[key]));
-
+      let targetHandler: FreeObject = targetHandlers[targetHandlers.length - 1] as FreeObject;
+      let transitionParams = [targetHandler.handler].concat(params);
+      // @ts-ignore
+      console.log('transitionParams', transitionParams);
+      try {
         // @ts-ignore
-        console.log('targetParams', targetParams);
-        try {
-          // @ts-ignore
-          await this.transitionTo(...targetParams);
-        } catch (error) {
-          debugger;
-        }
-      } else {
-        console.log('targetHandler', targetHandler);
-        try {
-          await this.transitionTo(targetHandler.handler);
-        } catch (error) {
-          debugger;
-        }
+        await this.transitionTo(...transitionParams);
+      } catch (error) {
+        debugger;
       }
     } else {
       console.log(

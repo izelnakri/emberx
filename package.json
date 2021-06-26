@@ -66,6 +66,7 @@
     "babel-loader": "^8.2.2",
     "babel-plugin-module-extension-resolver": "^1.0.0-rc.2",
     "bootstrap": "^5.0.1",
+    "eslint": "^7.29.0",
     "qunit-dom": "^1.6.0",
     "qunitx": "^0.2.2",
     "recursive-lookup": "^1.0.0",

@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import { promisify } from 'util';
 import { exec } from 'child_process';
 import recursiveLookup from 'recursive-lookup';
+import './fix-qunit-dom-import.js';
 
 const shell = promisify(exec);
 

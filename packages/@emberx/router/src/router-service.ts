@@ -16,7 +16,6 @@ interface FreeObject {
 
 // recognize
 // replaceWith
-// transitionTo
 // urlFor
 
 // handleURL accepts slash-less URLs
@@ -27,33 +26,39 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
   locationBar: any;
 
   Resolver = DefaultResolver;
+
+  @tracked queryParams: FreeObject = {};
   @tracked currentRoute: string | undefined;
   @tracked currentRouteName: string | undefined;
   @tracked currentURL: string | undefined;
 
-  constructor() {
+  constructor(options: FreeObject | undefined) {
     super();
+
+    if (options) {
+      Object.entries(options).forEach(([key, value]) => {
+        this[key] = value;
+      });
+    }
 
     this.locationBar = new LocationBar();
     this.locationBar.start({ pushState: true });
   }
 
   triggerEvent(handlerInfos: any[], _ignoreFailure: boolean, name: string, args: any[]) {
-    console.log('triggerEvent name>', name, args);
     if (['finalizeQueryParamChange', 'queryParamsDidChange'].includes(name)) {
-      handlerInfos.forEach((currentHandlerInfo) => {
-        let currentHandler = currentHandlerInfo.route;
+      let currentHandlerInfo = handlerInfos[handlerInfos.length - 1];
+      let currentHandler = currentHandlerInfo.route;
 
-        // If there is no handler, it means the handler hasn't resolved yet which
-        // means that we should trigger the event later when the handler is available
-        if (!currentHandler) {
-          currentHandlerInfo.routePromise!.then(function (resolvedHandler: any) {
-            resolvedHandler.events![name].apply(resolvedHandler, args);
-          });
-        } else if (currentHandler.events[name]) {
-          currentHandler.events[name].apply(currentHandler, args);
-        }
-      });
+      // If there is no handler, it means the handler hasn't resolved yet which
+      // means that we should trigger the event later when the handler is available
+      if (!currentHandler) {
+        currentHandlerInfo.routePromise!.then(function (resolvedHandler: any) {
+          resolvedHandler.events![name].apply(resolvedHandler, args);
+        });
+      } else if (currentHandler.events[name]) {
+        currentHandler.events[name].apply(currentHandler, args);
+      }
     }
   }
 
@@ -64,7 +69,7 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
 
   // NOTE: is there handleURL(?)
   updateURL(url: string): void {
-    console.log('updateURL call', url);
+    // console.log('updateURL call', url);
     this.currentURL = url;
 
     if (!this.testing) {
@@ -101,6 +106,7 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
 
     this.currentRoute = targetRouteInfo._route;
     this.currentRouteName = targetRouteInfo.name;
+    this.currentURL = transition.intent.url;
   }
 
   didTransition(routeInfos: any) {
@@ -123,35 +129,9 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
     return Object.assign(targetRoute, EmberXRouter.SERVICES);
   }
 
-  // TODO: this doesn't work when app is not booted!!
-  // test with queryParams
+  // NOTE: test with queryParams
   async visit(path: string): Promise<void> {
-    const targetHandlers = this.recognizer.recognize(path); // this gives RecognizeResults[0, 1, 2, queryParams]
-    const params = Array.from(targetHandlers).reduce((result: any[], handler) => {
-      return result.concat(Object.values(handler.params));
-    }, []);
-
-    if (EmberXRouter.LOG_ROUTES) {
-      console.log('Router.visit() recognized route handlers:', targetHandlers);
-      console.log('Router.visit() recognized route params:', params);
-    }
-
-    if (targetHandlers) {
-      let targetHandler: FreeObject = targetHandlers[targetHandlers.length - 1] as FreeObject;
-      let transitionParams = [targetHandler.handler].concat(params);
-      // @ts-ignore
-      console.log('transitionParams', transitionParams);
-      try {
-        // @ts-ignore
-        await this.transitionTo(...transitionParams);
-      } catch (error) {
-        debugger;
-      }
-    } else {
-      console.log(
-        'NO ROUTE FOUND. This is probably a bug, please report it to: https://github.com/izelnakri/emberx/issues/new'
-      );
-    }
+    return this.transitionTo(path);
   }
 
   // transitionTo(routeName: string, params: object, options: object): object {

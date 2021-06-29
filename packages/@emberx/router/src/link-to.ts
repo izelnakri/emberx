@@ -45,31 +45,28 @@ export default class extends Component<{
 
   get link() {
     let link = this.router.recognizer.generate(this.args.route, this.models);
-
-    if (!this.args.query) {
-      return link;
-    }
-
     let linkWithParams = new URLSearchParams('');
 
-    // TODO: filter out existing queryParams based on the route
-    // also set them to the linkWithParams
-
-    Object.keys(this.args.query as object).forEach((key) => {
+    let allParams = Object.assign({}, null, this.args.query); // TODO: this needs to only apply to targeted routes
+    Object.keys(allParams as object).forEach((key) => {
       // @ts-ignore
-      linkWithParams.set(key, this.args.query[key]);
+      linkWithParams.set(key, allParams[key]);
     });
 
     return `${link}?${linkWithParams.toString()}`;
   }
 
   get isLoading() {
+    if (!this.isActive) {
+      return false;
+    }
+
     return (
-      this.isActive &&
-      (isMissing(this.args.route) ||
-        Object.keys(this.models)
-          .map((key) => this.models[key])
-          .some((model) => isMissing(model)))
+      isMissing(this.args.route) ||
+      this.willBeActive ||
+      Object.keys(this.models)
+        .map((key) => this.models[key])
+        .some((model) => isMissing(model))
     );
   }
 
@@ -78,12 +75,8 @@ export default class extends Component<{
   }
 
   get willBeActive() {
-    // NOTE: router needs a tracked property to be able to track it most likely
     if (this.router.activeTransition) {
-      // console.log(this.router.activeTransition);
-      // console.log('a', this.router.activeTransition.targetName);
-      // console.log('b', this.args.route);
-      return this.router.activeTransition.targetName.startsWith(this.args.route); // TODO: should also include params and queryParams
+      return this.router.activeTransition.intent.url === this.link;
     }
 
     return false;
@@ -129,10 +122,18 @@ export default class extends Component<{
     return {};
   }
 
+  get class() {
+    return [
+      this.args.disabled ? 'disabled' : null,
+      this.isActive ? 'active' : null,
+      this.isLoading ? 'loading' : null,
+      !this.isActive && this.willBeActive ? 'ember-transitioning-in' : null,
+      this.isActive && !this.willBeActive ? 'ember-transitioning-out' : null,
+    ].join(' ');
+  }
+
   static template = hbs`
-    <a href="{{this.link}}" {{on "click" this.transition}}
-      class="{{if @disabled 'disabled'}} {{if this.isActive 'active'}} {{if this.isLoading 'loading'}} {{if (and this.willBeActive (not this.isActive)) 'ember-transitioning-in'}} {{if (and this.isActive (not this.willBeActive)) 'ember-transitioning-out'}}"
-      ...attributes>
+    <a href="{{this.link}}" {{on "click" this.transition}} class="emberx-link {{this.class}}" ...attributes>
       {{yield}}
     </a>
   `;
@@ -160,13 +161,11 @@ export default class extends Component<{
           .transitionTo(this.link, { queryParams: this.args.query }, true)
           .method('replace');
         this.willBeActive;
-        // console.log(this.willBeActive);
         return promise;
       }
 
       let promise = this.router.transitionTo(this.link, { queryParams: this.args.query }, true);
       this.willBeActive;
-      // console.log(this.willBeActive);
       return promise;
     }
   }

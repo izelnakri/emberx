@@ -92,28 +92,31 @@ export default class Route extends EmberXComponent<FreeObject> {
   }
 
   static events = {
-    finalizeQueryParamChange(params: string[], finalParams: FreeObject[]): boolean {
+    finalizeQueryParamChange(queryParams: string[], finalQueryParams: FreeObject[]): boolean {
       // NOTE: what is the default implementation of this?
       // NOTE: gets called on transition, finalParams is what gets shown on the route?
       // NOTE: this makes to registered to router.state.queryParams ?
       console.log('finalizeQueryParamChange call');
-      console.log('params:', params);
-      console.log('finalParams:', finalParams);
-      for (let key in params) {
-        if (params[key] === null) {
-          delete params[key];
+      console.log('queryParams:', queryParams);
+      console.log('finalQueryParams:', finalQueryParams);
+      // TODO: cast parameters here correctly
+      for (let key in queryParams) {
+        let value = castCorrectValueFromString(queryParams[key]);
+        if (value === null) {
+          delete queryParams[key];
+          delete finalQueryParams[key];
+          delete this.router.queryParams[key];
+        } else {
+          Object.assign(this.router.queryParams, { [key]: value });
+          finalQueryParams.push({ key: key, value });
         }
-
-        finalParams.push({ key: key, value: params[key] });
       }
 
       return true;
     },
+    // TODO: refresh problem, sometimes it refreshes something it doesnt probably a problem with the transitionTo handler
     queryParamsDidChange(changed: FreeObject, all: FreeObject) {
-      console.log('queryParamsDidChange call');
-      console.log('changed:', changed);
-      console.log('all:', all);
-
+      console.log('queryParamsDidChange', 'changed:', changed, 'all:', all);
       return true;
     },
   };
@@ -125,4 +128,32 @@ export default class Route extends EmberXComponent<FreeObject> {
   get model(): any {
     return this.args.model;
   }
+}
+
+function castCorrectValueFromString(value) {
+  if (Array.isArray(value)) {
+    return value.map((element) => castCorrectValueFromString(element));
+  } else if (Number(value) && parseInt(value, 10)) {
+    return Number(value);
+  } else if (value === 'false') {
+    return false;
+  } else if (value === 'true') {
+    return true;
+  } else if (['null', 'undefined'].includes(value)) {
+    return null;
+  }
+
+  return nilifyStrings(value);
+}
+
+function nilifyStrings(value) {
+  if (value !== null && typeof value === 'object') {
+    return Object.keys(value).reduce((object, key) => {
+      return Object.assign(object, { [key]: nilifyStrings(value[key]) });
+    }, {});
+  } else if (value === '') {
+    return null;
+  }
+
+  return value;
 }

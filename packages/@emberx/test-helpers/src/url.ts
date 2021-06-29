@@ -1,3 +1,4 @@
+import { didRender } from '@emberx/component';
 import { getContext } from './context';
 
 export async function visit(path: string): Promise<void> {
@@ -11,6 +12,7 @@ export async function visit(path: string): Promise<void> {
 
   try {
     await context.Router.visit(path);
+    await didRender();
   } catch (error) {
     throw error;
     debugger;

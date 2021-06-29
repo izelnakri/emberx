@@ -1,20 +1,14 @@
 import { Route, LinkTo, hbs } from '@emberx/router';
 
+// TODO: we want to add replace behavior, defaultValue behavior(?), and refresh?() - should happen all the time
 export default class PreviewUserRoute extends Route {
   // @service intl;
 
-  // static queryParams = {
-  //   reviewed: {
-  //     replace: true,
-  //   },
-  //   status: {
-  //     default: 'something'
-  //   }
-  // }
-
-  static model(params, abc) {
-    console.log('params are', params);
-    console.log('abc is', abc);
+  static model(params, transition) {
+    if (this.router.LOG_ROUTES) {
+      console.log('params are', params);
+      console.log('transition is', transition);
+    }
 
     let comments = [
       {
@@ -37,9 +31,9 @@ export default class PreviewUserRoute extends Route {
       },
     ];
 
-    if (params.reviewed) {
+    if (params.queryParams.reviewed) {
       return { comments: comments.filter((comment) => comment.status === 'reviewed') };
-    } else if (params.status === 'pending') {
+    } else if (params.queryParams.status === 'pending') {
       return { comments: comments.filter((comment) => comment.status === 'pending') };
     }
 

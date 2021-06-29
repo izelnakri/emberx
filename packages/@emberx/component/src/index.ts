@@ -16,7 +16,7 @@ let Component = glimmerComponent.default ? glimmerComponent.default : glimmerCom
 // let glimmerRenderComponent = glimmerCore.renderComponent;
 
 import { fn, hash, array, get, concat, on } from '@glimmer/runtime';
-import { and, debug, or, not, eq, neq, gt, gte, lt, lte } from '@emberx/helper';
+import { and, or, not, eq, neq, gt, gte, lt, lte, assign, debug, drop, take } from '@emberx/helper';
 import createTemplate from './create-template';
 
 import { tracked } from '@glimmer/tracking';
@@ -43,7 +43,6 @@ export default class EmberXComponent<Args extends FreeObject = {}> extends Compo
       concat,
       on,
       and,
-      debug,
       or,
       not,
       eq: eq,
@@ -52,6 +51,10 @@ export default class EmberXComponent<Args extends FreeObject = {}> extends Compo
       gte,
       lt,
       lte,
+      assign,
+      debug,
+      drop,
+      take,
     });
     let templateFactory: any = createTemplate(sourceCode || ``, { strictMode: true }, scope);
 

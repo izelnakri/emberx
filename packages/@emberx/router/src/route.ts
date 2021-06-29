@@ -93,13 +93,10 @@ export default class Route extends EmberXComponent<FreeObject> {
 
   static events = {
     finalizeQueryParamChange(queryParams: string[], finalQueryParams: FreeObject[]): boolean {
-      // NOTE: what is the default implementation of this?
-      // NOTE: gets called on transition, finalParams is what gets shown on the route?
-      // NOTE: this makes to registered to router.state.queryParams ?
-      console.log('finalizeQueryParamChange call');
-      console.log('queryParams:', queryParams);
-      console.log('finalQueryParams:', finalQueryParams);
-      // TODO: cast parameters here correctly
+      if (this.router.activeTransition) {
+        this.router.queryParams = queryParams;
+      }
+
       for (let key in queryParams) {
         let value = castCorrectValueFromString(queryParams[key]);
         if (value === null) {
@@ -111,13 +108,10 @@ export default class Route extends EmberXComponent<FreeObject> {
           finalQueryParams.push({ key: key, value });
         }
       }
-
-      return true;
     },
-    // TODO: refresh problem, sometimes it refreshes something it doesnt probably a problem with the transitionTo handler
-    queryParamsDidChange(changed: FreeObject, all: FreeObject) {
-      console.log('queryParamsDidChange', 'changed:', changed, 'all:', all);
-      return true;
+
+    queryParamsDidChange(changed: FreeObject, all: FreeObject, removed: FreeObject) {
+      return this.router.refresh(); // NOTE: this might cause a history registry problem for some queryParam routes
     },
   };
 

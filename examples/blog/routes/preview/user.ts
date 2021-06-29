@@ -5,6 +5,7 @@ export default class PreviewUserRoute extends Route {
   // @service intl;
 
   static model(params, transition) {
+    console.log('!!!!!!!!!!!!!!!!MODEL CALLL!!!!!!!!!!!!');
     if (this.router.LOG_ROUTES) {
       console.log('params are', params);
       console.log('transition is', transition);
@@ -45,7 +46,7 @@ export default class PreviewUserRoute extends Route {
   static template = hbs`
     <LinkTo @route="preview" @model={{11}} data-test-preview-link>Main preview route</LinkTo>
     <LinkTo @route="preview.user" @query={{hash reviewed=true}} @model={{11}} data-test-preview-reviewed-comments-link>Last reviewed comments</LinkTo>
-    <LinkTo @route="preview.user" @query={{hash reviewed=true}} @model={{12}} data-test-preview-reviewed-comments-link>Last reviewed comments of user 12</LinkTo>
+    <LinkTo @route="preview.user" @query={{hash reviewed=true status="complete"}} @model={{12}} data-test-preview-reviewed-comments-link>Last reviewed comments of user 12</LinkTo>
     <LinkTo @route="preview.user" @query={{hash status="pending"}} @model={{11}} data-test-preview-pending-comments-link>Last pending comments</LinkTo>
 
     <LinkTo @route="preview.user" @model={{11}} data-test-preview-all-comments-link>All users comments</LinkTo>

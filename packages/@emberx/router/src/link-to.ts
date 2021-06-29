@@ -53,7 +53,8 @@ export default class extends Component<{
       linkWithParams.set(key, allParams[key]);
     });
 
-    return `${link}?${linkWithParams.toString()}`;
+    let queryParams = linkWithParams.toString();
+    return queryParams === '' ? link : `${link}?${queryParams}`;
   }
 
   get isLoading() {

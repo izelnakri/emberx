@@ -1,4 +1,7 @@
+import Memserver from './memserver/index';
 import startApplication from './router';
+
+window.Memserver = Memserver;
 
 const Router = startApplication();
 

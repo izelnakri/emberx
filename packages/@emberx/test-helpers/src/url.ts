@@ -14,8 +14,9 @@ export async function visit(path: string): Promise<void> {
     await context.Router.visit(path);
     await didRender();
   } catch (error) {
-    throw error;
+    await didRender();
     debugger;
+    throw error;
   }
 }
 

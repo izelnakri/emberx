@@ -4,6 +4,7 @@ import { render, click, currentURL, visit, waitFor } from '@emberx/test-helpers'
 import startApplication from '../../../../examples/blog/router';
 import { LinkTo } from '@emberx/router';
 import setupTest from './helpers/index';
+import setupMemserver from './helpers/setup-memserver';
 
 // TODO: make @replace={{true}} tests
 module('@emberx/router | <LinkTo> tests', function (hooks) {
@@ -216,19 +217,32 @@ module('@emberx/router | <LinkTo> tests', function (hooks) {
     });
   });
 
-  // TODO: do these
-  module('<LinkTo/> transition class tests', function (hooks) {
-    test('only active links should have active class', async function (assert) {
+  module('<LinkTo/> transition class test', function (hooks) {
+    setupMemserver(hooks);
+
+    test('only active links should have the correct active and loading classes', async function (assert) {
       await visit('/preview/11');
 
-      // await this.pauseTest();
       assert.equal(currentURL(), '/preview/11');
-      // assert.dom('a.active').exists({ count: 1 });
-      // assert.dom('a.active').hasText('Something');
+
+      assert.dom('a.active').exists({ count: 1 });
+      assert.dom('a.active').hasText('All users comments');
+      assert.dom('a[href="/preview/11?reviewed=true"]').hasNoClass('loading');
+
+      let promise = visit('/preview/12?reviewed=true&status=complete');
+
+      await waitFor('.loading');
+
+      assert.dom('a[href="/preview/12?reviewed=true&status=complete"]').hasClass('loading');
+
+      await promise;
+
+      assert.dom('a[href="/preview/12?reviewed=true&status=complete"]').hasNoClass('loading');
+      assert.equal(currentURL(), '/preview/12?reviewed=true&status=complete');
+
+      assert.dom('a.active').exists({ count: 1 });
+
+      assert.dom('a.active').hasText('Last reviewed comments of user 12');
     });
-
-    //   // test('only transitioning links should have the correct transitioning classes', function (hooks) {});
-
-    //   // test('loading class appers correctly', function (hooks) {});
   });
 });

@@ -47,7 +47,8 @@ export default class Router {
   static visit(url: string) {
     // @ts-ignore
     try {
-      this.ROUTER_SERVICE.visit(url);
+      let result = this.ROUTER_SERVICE.visit(url);
+      return result;
     } catch (error) {
       debuger;
     }

@@ -131,7 +131,7 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
 
   // NOTE: test with queryParams
   async visit(path: string): Promise<void> {
-    return this.transitionTo(path);
+    return this.transitionTo(path).followRedirects();
   }
 
   // transitionTo(routeName: string, params: object, options: object): object {

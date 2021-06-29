@@ -1,4 +1,19 @@
+import RSVP from 'rsvp';
 import { Route, LinkTo, hbs } from '@emberx/router';
+
+class CommentStore {
+  static async findAll(queryParams) {
+    let targetQueryParams = Object.keys(queryParams).reduce((result, key) => {
+      result.set(key, queryParams[key]);
+
+      return result;
+    }, new URLSearchParams());
+    let fullURL =
+      targetQueryParams.toString() === '' ? `/comments` : `/comments?${targetQueryParams.toString()}`;
+    let response = await fetch(fullURL);
+    return await response.json();
+  }
+}
 
 // TODO: we want to add replace behavior, defaultValue behavior(?), and refresh?() - should happen all the time
 export default class PreviewUserRoute extends Route {
@@ -11,34 +26,7 @@ export default class PreviewUserRoute extends Route {
       console.log('transition is', transition);
     }
 
-    let comments = [
-      {
-        id: 1,
-        content: 'This is great',
-        status: 'reviewed',
-        postedAt: '2021-06-21T19:24:46.264Z',
-      },
-      {
-        id: 2,
-        content: 'Awesome',
-        status: 'pending',
-        postedAt: '2021-06-20T19:24:46.264Z',
-      },
-      {
-        id: 3,
-        content: 'Wow!',
-        status: 'pending',
-        postedAt: '2021-06-19T19:24:46.264Z',
-      },
-    ];
-
-    if (params.queryParams.reviewed) {
-      return { comments: comments.filter((comment) => comment.status === 'reviewed') };
-    } else if (params.queryParams.status === 'pending') {
-      return { comments: comments.filter((comment) => comment.status === 'pending') };
-    }
-
-    return { comments };
+    return RSVP.hash({ comments: CommentStore.findAll(params.queryParams || {}) });
   }
 
   static includes = { LinkTo };

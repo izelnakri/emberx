@@ -77,7 +77,7 @@ export default class extends Component<{
 
   get willBeActive() {
     if (this.router.activeTransition) {
-      return this.router.activeTransition.intent.url === this.link;
+      return this.router.currentURL === this.link;
     }
 
     return false;

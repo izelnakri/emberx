@@ -92,7 +92,7 @@ export default class Route extends EmberXComponent<FreeObject> {
   }
 
   static events = {
-    finalizeQueryParamChange(queryParams: string[], finalQueryParams: FreeObject[]): boolean {
+    finalizeQueryParamChange(queryParams: string[], finalQueryParams: FreeObject[]): void {
       if (this.router.activeTransition) {
         this.router.queryParams = queryParams;
       }
@@ -110,7 +110,7 @@ export default class Route extends EmberXComponent<FreeObject> {
       }
     },
 
-    queryParamsDidChange(changed: FreeObject, all: FreeObject, removed: FreeObject) {
+    queryParamsDidChange(changed: FreeObject, all: FreeObject, _removed: FreeObject) {
       return this.router.refresh(); // NOTE: this might cause a history registry problem for some queryParam routes
     },
   };

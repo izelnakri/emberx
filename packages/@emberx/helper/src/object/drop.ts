@@ -1,3 +1,4 @@
+// @ts-nocheck
 import helper from '../helper';
 
 const drop = helper(function ([object, keysToDrop]) {

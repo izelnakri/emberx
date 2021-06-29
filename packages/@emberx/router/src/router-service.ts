@@ -22,6 +22,7 @@ interface FreeObject {
 // route recognize and recognizeAndLoad
 export default class RouterJSRouter extends Router<RouterJSRoute> {
   // @ts-ignore
+  activeTransition: FreeObject;
   testing: boolean = !!globalThis.QUnit;
   locationBar: any;
 

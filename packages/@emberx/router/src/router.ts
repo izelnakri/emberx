@@ -50,7 +50,7 @@ export default class Router {
       let result = this.ROUTER_SERVICE.visit(url);
       return result;
     } catch (error) {
-      debuger;
+      // debuger;
     }
   }
 

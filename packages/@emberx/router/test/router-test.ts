@@ -47,6 +47,7 @@ module('@emberx/router | Public API', function (hooks) {
     assert.propEqual(router.ROUTE_REGISTRY, targetFlatRegistry);
     assert.ok(router);
     assert.deepEqual(Object.keys(router.ROUTER_SERVICE).sort(), [
+      'Resolver',
       '_changedQueryParams',
       '_lastQueryParams',
       'activeTransition',

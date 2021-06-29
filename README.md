@@ -88,7 +88,7 @@ This API also will allow custom resolvers that can resolve current ember routers
 import Router from '@emberx/router';
 import SomeCustomResolver from './custom-resolver';
 
-Router.resolver = SomeCustomResolver;
+Router.Resolver = SomeCustomResolver;
 
 let existingMapDefinition = Router.map(function () {
   this.route("public", { path: "/" }, function () {

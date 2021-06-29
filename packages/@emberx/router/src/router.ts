@@ -2,6 +2,7 @@ export { hbs } from '@emberx/component';
 import RouterService from './router-service';
 import Route from './route';
 import RouteMapContext from './route-map-context';
+import DefaultResolver from './resolvers/default';
 
 export interface FreeObject {
   [propName: string]: any;
@@ -32,6 +33,7 @@ export interface routerJSRouteDefinition {
 // TODO: { path: '/' } resets the path, by default route($segment) is { path: /$segment }, also people can use '/:dynamic' or ':dynamic';
 export default class Router {
   // queryParams
+  static Resolver = DefaultResolver;
   static LOG_ROUTES = true;
   static LOG_MODELS = true;
   static SERVICES: FreeObject = {};
@@ -60,7 +62,7 @@ export default class Router {
       Object.assign(routeMapRegistry, ROUTE_REGISTRY)
     );
 
-    this.ROUTER_SERVICE = new RouterService();
+    this.ROUTER_SERVICE = new RouterService({ Resolver: this.Resolver });
     this.ROUTER_SERVICE.map(function (match: any) {
       RouteMapContext.map(RouteMapContext.map, match, routerJSRouteArray);
     });

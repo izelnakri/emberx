@@ -1,13 +1,11 @@
+import DefaultResolver from './resolvers/default';
 import router, { Route as RouterJSRoute } from 'router_js';
 import EmberXRouter from './index';
 import { tracked } from '@emberx/component';
-import Route from './route';
 import LocationBar from './vendor/location-bar';
 
 // @ts-ignore
 let Router = router.default ? router.default : router;
-
-class DefaultRoute extends Route {}
 
 interface FreeObject {
   [propName: string]: any;
@@ -28,6 +26,7 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
   testing: boolean = !!globalThis.QUnit;
   locationBar: any;
 
+  Resolver = DefaultResolver;
   @tracked currentRoute: string | undefined;
   @tracked currentRouteName: string | undefined;
   @tracked currentURL: string | undefined;
@@ -116,16 +115,10 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
       console.log('[EmberXRouter debug]:', name);
     }
 
-    if (name.endsWith('.index')) {
-      let targetRoute =
-        EmberXRouter.ROUTE_REGISTRY[name].route ||
-        EmberXRouter.ROUTE_REGISTRY[name.slice(0, name.length - 6)].route ||
-        DefaultRoute;
-
-      return Object.assign(targetRoute, EmberXRouter.SERVICES);
-    }
-
-    let targetRoute = EmberXRouter.ROUTE_REGISTRY[name].route || DefaultRoute;
+    let targetRoute =
+      EmberXRouter.ROUTE_REGISTRY[name].route ||
+      (name.endsWith('.index') ? EmberXRouter.ROUTE_REGISTRY[name.slice(0, name.length - 6)].route : null) ||
+      this.Resolver.resolve(name);
 
     return Object.assign(targetRoute, EmberXRouter.SERVICES);
   }

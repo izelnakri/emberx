@@ -28,6 +28,17 @@ npm install && parcel examples/blog/index.html
 Although the project is not production-ready one can still experiment with it using the blog example as a guide.
 `@emberx` packages are distributed on npm
 
+### Differences between ember and emberx:
+
+- Everything is resolvable without a build system on node.js or JS module bundlers.
+- No controller abstraction, you can simply use the route object.
+- No runloop, we dont need it anymore.
+- test helpers(`click()`, `keyPress()` etc.) wait without a waiter when the fired action returns a promise during tests.
+- Explicit and flexible routes declarations with @emberx/router.
+- Ember Route `model`, `beforeModel` and `afterModel` hooks are static properties instead of instance methods.
+- No sticky queryParams, instead link building is explicit with `<LinkTo @query={{hash param=value}}/>` or with object helpers `<LinkTo @query={{assign (hash active=true) this.router.queryParams}}/>`.
+- Easily sharable/downloadable/distributable emberx components and routes with npm.
+
 ### API Design
 
 What if `@ember/routing/router` & `@ember/routing/route` were a tiny and explicitly resolvable router you could import from npm.

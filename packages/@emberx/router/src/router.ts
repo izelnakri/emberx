@@ -34,15 +34,19 @@ export interface routerJSRouteDefinition {
 export default class Router {
   // queryParams
   static Resolver = DefaultResolver;
+  static owner = { services: {} };
   static LOG_ROUTES = true;
   static LOG_MODELS = true;
-  static SERVICES: FreeObject = {};
   static ROUTE_REGISTRY: RouteRegistry = {};
   static ROUTER_SERVICE: RouterService;
 
   // static IS_TESTING() {
   //   return !!globalThis.QUnit;
   // }
+
+  static addServices(object) {
+    return Object.assign(this.owner.services, object);
+  }
 
   static visit(url: string) {
     // @ts-ignore
@@ -67,7 +71,7 @@ export default class Router {
     this.ROUTER_SERVICE.map(function (match: any) {
       RouteMapContext.map(RouteMapContext.map, match, routerJSRouteArray);
     });
-    this.SERVICES.router = this.ROUTER_SERVICE;
+    this.addServices({ router: this.ROUTER_SERVICE });
 
     return this;
   }
@@ -82,7 +86,7 @@ export default class Router {
   }
 
   static reset() {
-    [this.SERVICES, this.ROUTE_REGISTRY, this.ROUTER_SERVICE].forEach((object) => {
+    [this.owner.services, this.ROUTE_REGISTRY, this.ROUTER_SERVICE].forEach((object) => {
       for (var key in object) delete object[key];
     });
   }

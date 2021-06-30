@@ -15,7 +15,6 @@ export async function visit(path: string): Promise<void> {
     await didRender();
   } catch (error) {
     await didRender();
-    debugger;
     throw error;
   }
 }

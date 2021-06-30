@@ -37,7 +37,7 @@
     "test:browser:dev": "qunitx test/index.ts --browser --watch",
     "test:browser:ci": "node_modules/.bin/qunitx test/index.ts --browser --failFast",
     "test:node": "ENVIRONMENT=development npm run test:node:ci",
-    "test:node:ci": "npm run libs:build-tests-for-node && qunitx tmp/@emberx/string tmp/@emberx/helper tmp/@emberx/component --before='test/setup-dom.js'",
+    "test:node:ci": "npm run libs:build-tests-for-node && qunitx tmp/@emberx/string tmp/@emberx/component --before='test/setup-dom.js'",
     "typecheck": "tsc --project tsconfig.json --noEmit --skipLibCheck"
   },
   "dependencies": {

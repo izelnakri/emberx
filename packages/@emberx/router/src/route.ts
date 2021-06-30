@@ -32,7 +32,6 @@ export default class Route extends EmberXComponent<FreeObject> {
   static modelFor(routeKey: string) {
     let transition = this.router.activeTransition;
     if (!transition || !transition.resolvedModels[routeKey]) {
-      debugger;
       throw new Error(`@emberx/router Route: ${routeKey} not found on current transition!`);
     }
 
@@ -82,11 +81,10 @@ export default class Route extends EmberXComponent<FreeObject> {
     containerElement.innerHTML = ''; // TODO: temporary solution, clear previously rendered route
 
     if (transition.routeInfos[transition.routeInfos.length - 1]._route === this) {
-      debugger;
       await renderComponent(this, {
         element: containerElement as HTMLElement, // containerElement,
         args: { model: model || {}, params: this.getParams(), queryParams: this.getQueryParams() },
-        owner: { services: Router.SERVICES },
+        owner: Router.owner,
       });
     }
   }

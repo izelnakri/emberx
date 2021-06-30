@@ -9,6 +9,7 @@ import setupMemserver from './helpers/setup-memserver';
 // TODO: make @replace={{true}} tests
 module('@emberx/router | <LinkTo> tests', function (hooks) {
   setupTest(hooks, startApplication);
+  setupMemserver(hooks);
 
   test('it throws when @route param is missing', async function (assert) {
     try {
@@ -167,7 +168,6 @@ module('@emberx/router | <LinkTo> tests', function (hooks) {
     test('it works for a route with @model as object', async function (assert) {
       this.user = { id: 620, firstName: 'Izel', lastName: 'Nakri' };
 
-      debugger;
       await render(
         hbs`<LinkTo @route="preview.user" @model={{this.user}} data-test-link>Go to user {{this.user.id}}</LinkTo>`,
         { LinkTo }
@@ -218,8 +218,6 @@ module('@emberx/router | <LinkTo> tests', function (hooks) {
   });
 
   module('<LinkTo/> transition class test', function (hooks) {
-    setupMemserver(hooks);
-
     test('only active links should have the correct active and loading classes', async function (assert) {
       await visit('/preview/11');
 

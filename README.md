@@ -53,9 +53,9 @@ import PostsRoute from './routes/posts/route.ts';
 import PostsIndexRoute from './routes/posts/index/route.ts';
 import PostsPostRoute from './routes/posts/post/route.ts';
 
-Router.SERVICES = {
+Router.addServices({
   intl: new LocaleService(),
-};
+});
 
 let router = Router.start([
   {

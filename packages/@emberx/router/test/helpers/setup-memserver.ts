@@ -42,7 +42,6 @@ export default function setupMemserver(hooks) {
     } catch (error) {
       debugger;
     }
-    debugger;
   });
 
   hooks.afterEach(function () {

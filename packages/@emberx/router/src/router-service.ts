@@ -127,7 +127,7 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
       (name.endsWith('.index') ? EmberXRouter.ROUTE_REGISTRY[name.slice(0, name.length - 6)].route : null) ||
       this.Resolver.resolve(name);
 
-    return Object.assign(targetRoute, EmberXRouter.SERVICES);
+    return Object.assign(targetRoute, EmberXRouter.owner.services);
   }
 
   // NOTE: test with queryParams

@@ -23,7 +23,6 @@ export default function () {
   this.get('/comments', (req, res) => {
     let queryParams = req.queryParams;
 
-    debugger;
     if (queryParams.reviewed) {
       return COMMENTS.filter((comment) => comment.status === 'reviewed');
     } else if (queryParams.status === 'pending') {

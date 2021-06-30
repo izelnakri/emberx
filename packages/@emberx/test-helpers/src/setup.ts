@@ -64,6 +64,7 @@ export function setupRenderingTest(hooks: QUnitHooks, startRouter?: any): void {
     Router.reset();
     if (startRouter) {
       this.Router = startRouter();
+      this.owner = this.Router.owner;
     }
   });
 

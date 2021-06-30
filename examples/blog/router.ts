@@ -17,9 +17,9 @@ declare global {
 // initializers(array<function>)[cant I put this Router.init() somewhere instead),
 
 export default function startApplication() {
-  Router.SERVICES = {
+  Router.addServices({
     intl: new LocaleService(),
-  };
+  });
 
   const oldRouterMap = function () {
     // NOTE: Router below adds this:

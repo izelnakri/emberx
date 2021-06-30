@@ -24,7 +24,7 @@ module('@emberx/router | Public API', function (hooks) {
     assert.true(Router.LOG_ROUTES);
     assert.true(Router.LOG_MODELS);
     assert.deepEqual(Router.ROUTE_REGISTRY, {});
-    assert.deepEqual(Router.SERVICES, {});
+    assert.deepEqual(Router.owner.services, {});
 
     assert.ok(Router.map);
     assert.ok(Router.start);

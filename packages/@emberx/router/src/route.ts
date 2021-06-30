@@ -30,6 +30,9 @@ export default class Route extends EmberXComponent<FreeObject> {
     </div>
   `;
 
+  // TODO:
+  // static paramsFor(routeName) {
+  // }
   static modelFor(routeKey: string) {
     let transition = this.router.activeTransition;
     if (!transition || !transition.resolvedModels[routeKey]) {

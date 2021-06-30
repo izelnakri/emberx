@@ -72,7 +72,7 @@ export default class Router {
   }
 
   static map(routerDefinition: () => {}): RouteRegistry {
-    routerDefinition.apply(RouteMapContext); // routerDefinition.apply(this); // TODO: this uses this.route
+    routerDefinition.apply(RouteMapContext); // TODO: this uses this.route
 
     return Owner.routes;
   }

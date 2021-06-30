@@ -47,7 +47,7 @@ export default function startApplication() {
     this.route('logout');
   };
 
-  window.Router = Router.start(
+  return Router.start(
     [
       {
         path: '/',
@@ -88,6 +88,4 @@ export default function startApplication() {
     ],
     oldRouterMap
   );
-
-  return window.Router;
 }

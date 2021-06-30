@@ -34,6 +34,7 @@
     "test": "ENVIRONMENT=development npm run build && npm run test:browser && npm run test:node",
     "test:ci": "npm run build && npm run test:browser:ci && npm run test:node:ci",
     "test:browser": "ENVIRONMENT=development npm run test:browser:ci",
+    "test:browser:dev": "qunitx test/index.ts --browser --watch",
     "test:browser:ci": "node_modules/.bin/qunitx test/index.ts --browser --failFast",
     "test:node": "ENVIRONMENT=development npm run test:node:ci",
     "test:node:ci": "npm run libs:build-tests-for-node && qunitx tmp/@emberx/string tmp/@emberx/helper tmp/@emberx/component --before='test/setup-dom.js'",

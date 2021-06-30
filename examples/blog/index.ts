@@ -5,9 +5,9 @@ window.Memserver = Memserver;
 
 const Router = startApplication();
 
-window.Router = Router;
+Router.LOG_ROUTES = false;
+Router.LOG_MODELS = false;
 
-window.Router.LOG_ROUTES = false;
-window.Router.LOG_MODELS = false;
+window.BlogRouter = Router;
 
 export default Router.visit(`${document.location.pathname}/${document.location.search}`);

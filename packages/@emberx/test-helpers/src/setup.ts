@@ -1,4 +1,4 @@
-import Router from '@emberx/router';
+import Router, { Owner } from '@emberx/router';
 import { setContext } from './context';
 
 declare global {
@@ -15,7 +15,7 @@ interface QUnitHooks {
   after: (assert) => {};
 }
 
-export function setupTest(hooks: QUnitHooks): void {
+export function setupTest(hooks: QUnitHooks, startRouter?: any): void {
   hooks.before(function (assert) {
     this.resumeTest = function resumeTest() {
       if (!window.resume) {
@@ -50,6 +50,7 @@ export function setupTest(hooks: QUnitHooks): void {
     container.appendChild(containerPage);
 
     this.element = containerPage;
+    this.owner = Owner;
   });
 
   hooks.afterEach(function () {
@@ -58,22 +59,15 @@ export function setupTest(hooks: QUnitHooks): void {
 }
 
 export function setupRenderingTest(hooks: QUnitHooks, startRouter?: any): void {
-  setupTest(hooks);
+  setupTest(hooks, startRouter);
 
   hooks.beforeEach(function () {
-    Router.reset();
     if (startRouter) {
       this.Router = startRouter();
-      this.owner = this.Router.owner;
     }
-  });
-
-  hooks.afterEach(function () {
-    this.Router ? this.Router.reset() : null;
   });
 }
 
-// TODO: also set this.owner, this.owner.lookup
 export function setupApplicationTest(hooks: QUnitHooks, startRouter?: any): void {
   setupRenderingTest(hooks, startRouter);
 }

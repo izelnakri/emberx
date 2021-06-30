@@ -18,12 +18,12 @@ function removeRoute(routeRegistry, targetKey) {
 module('@emberx/router | Public API', function (hooks) {
   setupTest(hooks);
 
-  test('Router.map creates route registry without Router.start()', async (assert) => {
+  test('Router.map creates route registry without Router.start()', async function (assert) {
     Router.reset();
 
     assert.true(Router.LOG_ROUTES);
     assert.true(Router.LOG_MODELS);
-    assert.deepEqual(Router.ROUTE_REGISTRY, {});
+    assert.deepEqual(Router.owner.routes, {});
     assert.deepEqual(Router.owner.services, {});
 
     assert.ok(Router.map);
@@ -31,7 +31,7 @@ module('@emberx/router | Public API', function (hooks) {
 
     let routeRegistry = Router.map(oldRouterMap);
 
-    assert.deepEqual(Router.ROUTE_REGISTRY, removeRoute(targetFlatRegistry, 'not-found'));
+    assert.deepEqual(Router.owner.routes, removeRoute(targetFlatRegistry, 'not-found'));
     assert.deepEqual(routeRegistry, removeRoute(targetFlatRegistry, 'not-found'));
   });
 
@@ -41,12 +41,13 @@ module('@emberx/router | Public API', function (hooks) {
     assert.propEqual(Router.convertToRouterJSRouteArray(targetFlatRegistry), targetRouterJSArray);
   });
 
-  test('Router.start with only map create route registry correctly', async (assert) => {
+  test('Router.start with only map create route registry correctly', async function (assert) {
     let router = Router.start([], oldRouterMap);
+    let routerService = router.owner.lookup('service:router');
 
-    assert.propEqual(router.ROUTE_REGISTRY, targetFlatRegistry);
+    assert.propEqual(router.owner.routes, targetFlatRegistry);
     assert.ok(router);
-    assert.deepEqual(Object.keys(router.ROUTER_SERVICE).sort(), [
+    assert.deepEqual(Object.keys(routerService).sort(), [
       'Resolver',
       '_changedQueryParams',
       '_lastQueryParams',
@@ -64,7 +65,7 @@ module('@emberx/router | Public API', function (hooks) {
     // TODO: check default route content
   });
 
-  test('Router.start with array of routeDefinitions create route registry correctly', async (assert) => {
+  test('Router.start with array of routeDefinitions create route registry correctly', async function (assert) {
     let router = Router.start([
       { path: '/admin', name: 'admin' },
       { path: '/admin/content', name: 'admin.content' },
@@ -82,13 +83,13 @@ module('@emberx/router | Public API', function (hooks) {
 
     delete targetFlatRegistry['admin.posts'].options.resetNamespace;
 
-    assert.propEqual(Router.ROUTE_REGISTRY, targetFlatRegistry);
+    assert.propEqual(Router.owner.routes, targetFlatRegistry);
     assert.ok(router);
 
     targetFlatRegistry['admin.posts'].options = oldOptions; // NOTE: resets targetRegistry
   });
 
-  test('Router.start with array of routeDefinitions and map create route registry correctly', async (assert) => {
+  test('Router.start with array of routeDefinitions and map create route registry correctly', async function (assert) {
     let router = Router.start(
       [
         { path: '/admin', name: 'admin' },
@@ -102,7 +103,7 @@ module('@emberx/router | Public API', function (hooks) {
       oldRouterMap
     );
 
-    assert.propEqual(Router.ROUTE_REGISTRY, targetFlatRegistry);
+    assert.propEqual(Router.owner.routes, targetFlatRegistry);
     assert.ok(router);
   });
 });

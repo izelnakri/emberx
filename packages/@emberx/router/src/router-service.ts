@@ -1,5 +1,6 @@
 import DefaultResolver from './resolvers/default';
 import router, { Route as RouterJSRoute } from 'router_js';
+import Owner from './owner';
 import EmberXRouter from './index';
 import { tracked } from '@emberx/component';
 import LocationBar from './vendor/location-bar';
@@ -122,12 +123,9 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
       console.log('[EmberXRouter debug]:', name);
     }
 
-    let targetRoute =
-      EmberXRouter.ROUTE_REGISTRY[name].route ||
-      (name.endsWith('.index') ? EmberXRouter.ROUTE_REGISTRY[name.slice(0, name.length - 6)].route : null) ||
-      this.Resolver.resolve(name);
+    let targetRoute = this.Resolver.resolve(name);
 
-    return Object.assign(targetRoute, EmberXRouter.owner.services);
+    return Object.assign(targetRoute, Owner.services);
   }
 
   // NOTE: test with queryParams

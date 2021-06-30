@@ -28,7 +28,7 @@ export function currentRouteName(): string {
     );
   }
 
-  const routes = context.Router.ROUTER_SERVICE.currentRouteInfos;
+  const routes = context.Router.owner.lookup('service:router').currentRouteInfos;
 
   return routes && routes[routes.length - 1].name;
 }
@@ -42,5 +42,5 @@ export function currentURL(): string {
     );
   }
 
-  return context.Router.ROUTER_SERVICE.currentURL;
+  return context.Router.owner.lookup('service:router').currentURL;
 }

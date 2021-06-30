@@ -1,10 +1,10 @@
-import type { RouteRegistry, routerJSRouteDefinition } from './router';
+import Owner from './owner';
+import type { routerJSRouteDefinition } from './router';
 interface FreeObject {
   [propName: string]: any;
 }
 
 export default class RouteMapContext {
-  static ROUTE_REGISTRY: RouteRegistry = {};
   static _parentRoute: string | null = null;
 
   static map(
@@ -36,16 +36,15 @@ export default class RouteMapContext {
     if (targetSubRoute) {
       targetSubRoute.apply(this);
 
-      const existingIndexRoute = this.ROUTE_REGISTRY[`${this._parentRoute}.index`];
-
-      this.ROUTE_REGISTRY[`${this._parentRoute}.index`] = existingIndexRoute || {
+      let existingIndexRoute = Owner.routes[`${this._parentRoute}.index`];
+      Owner.routes[`${this._parentRoute}.index`] = existingIndexRoute || {
         name: `${this._parentRoute}.index`,
         options: { path: '/' },
         route: undefined,
       };
     }
 
-    this.ROUTE_REGISTRY[this._parentRoute] = {
+    Owner.routes[this._parentRoute] = {
       name: this._parentRoute,
       options: targetOptions,
       route: undefined,
@@ -57,7 +56,7 @@ export default class RouteMapContext {
 
     this._parentRoute = segments.join('.');
 
-    return this.ROUTE_REGISTRY;
+    return Owner.routes;
   }
 }
 

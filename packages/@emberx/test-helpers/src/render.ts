@@ -1,4 +1,4 @@
-import Router from '@emberx/router';
+import { Owner } from '@emberx/router';
 import Component, { renderComponent } from '@emberx/component';
 import { getContext } from './context';
 
@@ -8,9 +8,6 @@ interface FreeObject {
 
 export default async function render(templateString: string, includes: object = {}): Promise<void> {
   let context = getContext();
-  if (!context.Router) {
-    context.Router = Router.start([]);
-  }
 
   class TemplateOnlyComponent<Args extends FreeObject = {}> extends Component<Args> {
     static includes = includes;
@@ -18,7 +15,13 @@ export default async function render(templateString: string, includes: object = 
     constructor(owner: object, args: Args) {
       // @ts-ignore
       super(owner, args);
-      Object.assign(this, context); // NOTE: this isnt ideal for performance in testing, but backwards compatible with existing ember testing
+
+      // TODO: maybe figure out a way to optimize this
+      Object.keys(context).forEach((key) => {
+        if (!['Router', 'Server', 'owner', 'pauseTest', 'resumeTest', 'element'].includes(key)) {
+          Object.assign(this, { [key]: context[key] });
+        }
+      });
     }
   }
 
@@ -31,6 +34,6 @@ export default async function render(templateString: string, includes: object = 
   // @ts-ignore
   return await renderComponent(TemplateOnlyComponent, {
     element: container,
-    owner: context.Router.owner,
+    owner: Owner,
   });
 }

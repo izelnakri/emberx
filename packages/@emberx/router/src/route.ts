@@ -3,6 +3,7 @@
 // TODO: make this sticky params if needed
 import RouterService from './router-service';
 import Router from './index';
+import Owner from './owner';
 import EmberXComponent, { renderComponent, service } from '@emberx/component';
 
 interface FreeObject {
@@ -84,7 +85,7 @@ export default class Route extends EmberXComponent<FreeObject> {
       await renderComponent(this, {
         element: containerElement as HTMLElement, // containerElement,
         args: { model: model || {}, params: this.getParams(), queryParams: this.getQueryParams() },
-        owner: Router.owner,
+        owner: Owner,
       });
     }
   }

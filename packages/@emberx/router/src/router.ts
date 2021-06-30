@@ -1,6 +1,7 @@
 export { hbs } from '@emberx/component';
 import RouterService from './router-service';
 import Route from './route';
+import Owner, { RouteRegistry } from './owner';
 import RouteMapContext from './route-map-context';
 import DefaultResolver from './resolvers/default';
 
@@ -16,10 +17,6 @@ export interface RouteDefinition {
   indexRoute?: Route;
 }
 
-export interface RouteRegistry {
-  [propName: string]: RouteDefinition;
-}
-
 export interface routerJSRouteDefinition {
   path?: string;
   route: Route | undefined;
@@ -30,28 +27,28 @@ export interface routerJSRouteDefinition {
 
 // NOTE: check Route.toReadOnlyRouteInfo
 // NOTE: there is this.recognizer.add (when recognizer is an instance via new RouteRecognizer())
-// TODO: { path: '/' } resets the path, by default route($segment) is { path: /$segment }, also people can use '/:dynamic' or ':dynamic';
 export default class Router {
-  // queryParams
   static Resolver = DefaultResolver;
-  static owner = { services: {} };
   static LOG_ROUTES = true;
   static LOG_MODELS = true;
-  static ROUTE_REGISTRY: RouteRegistry = {};
-  static ROUTER_SERVICE: RouterService;
 
-  // static IS_TESTING() {
-  //   return !!globalThis.QUnit;
-  // }
+  static get owner() {
+    return Owner;
+  }
 
-  static addServices(object) {
-    return Object.assign(this.owner.services, object);
+  static addServices(object: FreeObject): Owner {
+    Object.keys(object).forEach((key) => {
+      Owner.register(`service:${key}`, object[key]);
+    });
+
+    return Owner;
   }
 
   static visit(url: string) {
     // @ts-ignore
     try {
-      let result = this.ROUTER_SERVICE.visit(url);
+      debugger;
+      let result = Owner.lookup('service:router').visit(url);
       return result;
     } catch (error) {
       // debuger;
@@ -59,36 +56,34 @@ export default class Router {
   }
 
   static start(arrayOfRouteDefinitions: Array<RouteDefinition> = [], routeMap: any = undefined): Router {
-    this.ROUTE_REGISTRY = {};
+    Owner.clear('routes');
 
-    let routeMapRegistry = routeMap ? this.map(routeMap) : {}; // move this to super.map since it just mutates the module
+    let routeMapRegistry = routeMap ? this.map(routeMap) : Owner.routes; // NOTE: move this to super.map since it just mutates the module
     let ROUTE_REGISTRY = this.convertDefinitionsToRegistry(arrayOfRouteDefinitions);
     let routerJSRouteArray = this.convertToRouterJSRouteArray(
       Object.assign(routeMapRegistry, ROUTE_REGISTRY)
     );
-
-    this.ROUTER_SERVICE = new RouterService({ Resolver: this.Resolver });
-    this.ROUTER_SERVICE.map(function (match: any) {
+    let routerService = Owner.register('service:router', new RouterService({ Resolver: this.Resolver }));
+    routerService.map(function (match: any) {
       RouteMapContext.map(RouteMapContext.map, match, routerJSRouteArray);
     });
-    this.addServices({ router: this.ROUTER_SERVICE });
 
     return this;
   }
 
   static map(routerDefinition: () => {}): RouteRegistry {
-    this.ROUTE_REGISTRY = {};
-    RouteMapContext.ROUTE_REGISTRY = this.ROUTE_REGISTRY;
-
     routerDefinition.apply(RouteMapContext); // routerDefinition.apply(this); // TODO: this uses this.route
 
-    return this.ROUTE_REGISTRY;
+    return Owner.routes;
   }
 
   static reset() {
-    [this.owner.services, this.ROUTE_REGISTRY, this.ROUTER_SERVICE].forEach((object) => {
-      for (var key in object) delete object[key];
-    });
+    Owner.clear('routes');
+    Owner.clear('services');
+    Owner.clear('components');
+    Owner.clear('helpers');
+
+    return this;
   }
 
   static convertDefinitionsToRegistry(arrayOfRouteDefinitions: Array<RouteDefinition> = []): RouteRegistry {
@@ -109,25 +104,22 @@ export default class Router {
       }
 
       let routeName = routeDefinition.name; // || createRouteNameFromRouteClass(routeDefinition.route); // || createRouteNameFromPath(routeDefinition.path as string); // NOTE: when /create-user type of paths are defined create a better routeName guess, should I replace order?
-      let routeNameSegments = routeName.split('.');
-      let routePathSegments = routeDefinition.path.slice(1).split('/');
+      let routeNameSegments = routeName.split('.') as string[]; // eg: 'public.posts.post.index'
+      let routePathSegments = routeDefinition.path.slice(1).split('/') as string[]; // eg: ['posts', ':post_id']
 
-      // 'public.posts.post.index'
-      // NOTE: iterate through the route name segments so route parent lookup is easier:
       routeNameSegments.reduce((parentSegment, routeSegment, index) => {
-        const targetSegmentName = parentSegment ? `${parentSegment}.${routeSegment}` : routeSegment;
-        const targetRouteSegmentIndex =
-          index < routePathSegments.length ? index : routePathSegments.length - 1; // TODO: didnt get this one, read it again
+        let targetSegmentName = parentSegment ? `${parentSegment}.${routeSegment}` : routeSegment;
+        let targetRouteSegmentIndex = index < routePathSegments.length ? index : routePathSegments.length - 1;
 
-        checkInRouteRegistryOrCreateRoute(this.ROUTE_REGISTRY, {
+        checkInRouteRegistryOrCreateRoute(Owner.routes, {
           name: targetSegmentName,
           options: { path: `/${routePathSegments[targetRouteSegmentIndex]}` },
           route: index === routeNameSegments.length - 1 ? routeDefinition.route : undefined,
         } as routerJSRouteDefinition);
 
-        if (parentSegment && !this.ROUTE_REGISTRY[`${parentSegment}.index`]) {
-          // TODO: this lazily registers index routes, than actual definition has to be registered during mapping
-          this.ROUTE_REGISTRY[`${parentSegment}.index`] = {
+        if (parentSegment && !Owner.routes[`${parentSegment}.index`]) {
+          // NOTE: this lazily registers index routes, than actual definition has to be registered during mapping:
+          Owner.routes[`${parentSegment}.index`] = {
             name: `${parentSegment}.index`,
             options: { path: '/' },
             route: undefined,
@@ -138,7 +130,7 @@ export default class Router {
       }, null);
 
       if (routeDefinition.indexRoute && routeName !== 'index') {
-        this.ROUTE_REGISTRY[`${routeName}.index`] = {
+        Owner.routes[`${routeName}.index`] = {
           name: `${routeName}.index`,
           options: { path: '/' },
           route: routeDefinition.indexRoute,
@@ -148,7 +140,7 @@ export default class Router {
 
     // @ts-ignore
     if (!arrayOfRouteDefinitions.find((routeDefinition) => routeDefinition.path.startsWith('/*'))) {
-      this.ROUTE_REGISTRY['not-found'] = {
+      Owner.routes['not-found'] = {
         name: 'not-found',
         options: { path: '/*slug' },
         // @ts-ignore
@@ -156,7 +148,7 @@ export default class Router {
       };
     }
 
-    return this.ROUTE_REGISTRY;
+    return Owner.routes;
   }
 
   static convertToRouterJSRouteArray(routerRegistry: RouteRegistry): Array<routerJSRouteDefinition> {

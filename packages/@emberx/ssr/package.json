@@ -1,7 +1,7 @@
 {
   "name": "@emberx/ssr",
   "description": "",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "type": "module",
   "author": "Izel Nakri",
   "files": [
@@ -16,6 +16,6 @@
     "test": "tests"
   },
   "dependencies": {
-    "@glimmer/ssr": "^2.0.0-beta.16"
+    "@glimmer/ssr": "^2.0.0-beta.17"
   }
 }

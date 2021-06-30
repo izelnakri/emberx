@@ -1,14 +1,14 @@
 import { module, test } from 'qunitx';
 import { hbs } from '@emberx/component';
 import { render, click, currentURL, visit, waitFor } from '@emberx/test-helpers';
-import startApplication from '@examples/blog/router';
+import startRouter from '@examples/blog/start-router';
 import { LinkTo } from '@emberx/router';
 import setupTest from './helpers/index';
 import setupMemserver from './helpers/setup-memserver';
 
 // TODO: make @replace={{true}} tests
 module('@emberx/router | <LinkTo> tests', function (hooks) {
-  setupTest(hooks, startApplication);
+  setupTest(hooks, startRouter);
   setupMemserver(hooks);
 
   test('it throws when @route param is missing', async function (assert) {

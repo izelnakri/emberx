@@ -1,9 +1,9 @@
 import Memserver from './memserver/index';
-import startApplication from './router';
+import startRouter from './start-router';
 
 window.Memserver = Memserver;
 
-const Router = startApplication();
+const Router = startRouter();
 
 Router.LOG_ROUTES = false;
 Router.LOG_MODELS = false;

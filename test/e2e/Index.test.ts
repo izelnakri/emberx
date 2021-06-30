@@ -1,12 +1,12 @@
 import { module, test } from 'qunitx';
 import { visit, currentURL } from '../../src/test-helpers';
 import { setupApplicationTest } from '../../src/test-helpers/setup';
-import Application from '../../examples/blog/router';
+import startRouter from '@examples/blog/start-router';
 
 // window.QUnit.config.notrycatch = true;
 
 module('E2E | /', function (hooks) {
-  setupApplicationTest(hooks, Application); // TODO: how should this start silently?
+  setupApplicationTest(hooks, startRouter); // TODO: how should this start silently?
 
   test('visiting / renders the content', async function (assert) {
     assert.ok(true);

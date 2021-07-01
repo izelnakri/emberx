@@ -1,7 +1,7 @@
 {
   "name": "@emberx/ssr",
   "description": "",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "type": "module",
   "author": "Izel Nakri",
   "files": [

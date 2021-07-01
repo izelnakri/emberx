@@ -38,6 +38,7 @@ Although the project is not production-ready one can still experiment with it us
 - Ember Route `model`, `beforeModel` and `afterModel` hooks are static properties instead of instance methods.
 - No sticky queryParams, instead link building is explicit with `<LinkTo @query={{hash param=value}}/>` or with object helpers `<LinkTo @query={{assign (hash active=true) this.router.queryParams}}/>`.
 - No `{{outlet}}`, instead parent routes included in the child route template with `{{yield}}`. This allows compiling individual route files for the browser without a magical build step.
+- No need for initializers and instance initializers, all code runs in module file import and execution order.
 - Easily sharable/downloadable/distributable emberx components and routes with npm.
 
 ### API Design

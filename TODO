@@ -1,30 +1,11 @@
-- queryParam change should rerun model() hook
-- queryParams should be sticky, and all params and queryParams should be returned on the resolutions
 - history back doesnt resolve the routes currently
-
 - @emberx/test-helper tests not runnable on node.js!: routerjs/vendor location-bar prevents the app to be runable on node.js.
-- Create an issue + PR on @glimmer/core(remove module flag or make it work with a better export). Also make it work with
-explicit paths.
-
-- RSVP library is buggy/build strangely(QunitX url & wait based tests failing due to some _state error. Solve it. Tests pass on webpack)
-
-queryParams implementation needed for examples/blog/routes/preview/user.ts
-
-
-then do router tests
 
 // NOTE: @emberx/rsvp: RSVP.defer(); NOTE: probably should just use rsvp npm package.
 // NOTE: @emberx/runloop: later, once, next, cancel, debounce, throttle, currentLoop(?) NO, more importantly and a test-waiter system to register test events
 
-// I need something like await settled() for next queue; and and API to declare it in the app code.
-// all rsvp? because it has RSVP.hash, RSVP.defer, RSVP.filter(?), RSVP.later
-// runloop: later, once(setTimeout, 0), next(), cancel, debounce, throttle, currentLoop(?),
-// merge runloop with RSVP.
-
 glimmer level dom change wait is hooked to global-context on @ember/application
-
 also wraps fetch to implement the similar behavior
-instead we will need to monkey-patch fetch? or implement our fetch
 
 - avoid running model hooks
 - Avoid running model hooks when redirecting in the middle of another transition.
@@ -34,7 +15,6 @@ instead we will need to monkey-patch fetch? or implement our fetch
 
 Ember.Application = boot, register services, reset state, viist, rootElement, unregister, resolver, lookup,
 autoboot: false
-
 
 test-helpers: this.owner
 

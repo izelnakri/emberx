@@ -20,7 +20,7 @@ const COMMENTS = [
 ];
 
 export default function () {
-  this.get('/comments', (req, res) => {
+  this.get('/comments', (req, _res) => {
     let queryParams = req.queryParams;
 
     if (queryParams.reviewed) {

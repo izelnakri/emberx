@@ -10,11 +10,33 @@ specific build system. You can run your tests by using [QunitX](https://github.c
 
 When stable, check examples folder for the documentation.
 
-```
-# will change:
-npm install && parcel examples/blog/index.html
+```sh
+npm ci          # or: make install
+make dev        # serves examples/blog on http://localhost:1234
 ```
 
+### Development
+
+Everything runs through `make`; run `make` on its own for the full list.
+
+| Command             | What it does                                             |
+| ------------------- | -------------------------------------------------------- |
+| `make check`        | format + lint + typecheck + tests — what CI runs         |
+| `make test`         | build, then the node suite, then the browser suite       |
+| `make test-node`    | `@emberx/string` and `@emberx/helper` under node + jsdom |
+| `make test-browser` | the full suite in a real browser (chromium)              |
+| `make coverage`     | browser-suite line coverage, written to `tmp/coverage/`  |
+| `make bench`        | runtime template-compilation and per-render benchmarks   |
+| `make build`        | bundle every package to `dist/` and emit `.d.ts`         |
+| `make dev`          | example app with watch rebuilds                          |
+
+The browser suite needs a Chrome/Chromium binary. It is picked up from `CHROME_BIN`,
+otherwise from your `PATH`:
+
+```sh
+export CHROME_BIN=$(which google-chrome-stable)
+make test-browser
+```
 
 ### Current Status
 
@@ -62,25 +84,33 @@ Router.addServices({
 let router = Router.start([
   {
     path: '/',
-    route: IndexRoute
+    name: 'index',
+    route: IndexRoute,
   },
   {
     path: '/posts',
+    name: 'posts',
     route: PostsRoute,
-    indexRoute: PostsIndexRoute
+    indexRoute: PostsIndexRoute,
   },
   {
     path: '/posts/:slug',
-    route: PostsPostRoute
+    name: 'posts.post',
+    route: PostsPostRoute,
   },
   {
     path: '/posts/:blog_post_id/comments',
-    route: PostsPostCommentsRoute
+    name: 'posts.post.comments',
+    route: PostsPostCommentsRoute,
   },
 ]);
 
 export default router;
 ```
+
+Every definition needs a `name`; it is what `<LinkTo @route="...">`, `transitionTo`
+and `modelFor` refer to. Nested routes use dotted names, and a route whose name ends
+in `.index` is created for you — declare it with `indexRoute` instead.
 
 This API also will allow custom resolvers that can resolve current ember routers(ie. routes in `Router.map(function() {})`) with a specific resolver definition(classic or MUD) in future:
 
@@ -93,30 +123,35 @@ import SomeCustomResolver from './custom-resolver';
 Router.Resolver = SomeCustomResolver;
 
 let existingMapDefinition = Router.map(function () {
-  this.route("public", { path: "/" }, function () {
-    this.route("index", { path: "/" });
-    this.route("blog-post", { path: "/:slug" });
+  this.route('public', { path: '/' }, function () {
+    this.route('index', { path: '/' });
+    this.route('blog-post', { path: '/:slug' });
   });
 
-  this.route("admin", function () {
-    this.route("index", { path: "/" });
+  this.route('admin', function () {
+    this.route('index', { path: '/' });
   });
 
-  this.route("settings");
-  this.route("login");
+  this.route('settings');
+  this.route('login');
 });
 
-let router = Router.start([
-  {
-    path: '/',
-    route: IndexRoute
-  },
-  {
-    path: '/posts',
-    route: PostsRoute,
-    indexRoute: PostsIndexRoute,
-  }
-], existingMapDefinition);
+let router = Router.start(
+  [
+    {
+      path: '/',
+      name: 'index',
+      route: IndexRoute,
+    },
+    {
+      path: '/posts',
+      name: 'posts',
+      route: PostsRoute,
+      indexRoute: PostsIndexRoute,
+    },
+  ],
+  existingMapDefinition,
+);
 
 export default router;
 ```
@@ -147,7 +182,7 @@ export default class IndexRoute extends Route {
   }
 
   static includes = {
-    Counter
+    Counter,
   };
 
   static model(): object {
@@ -195,10 +230,6 @@ class LocaleService {
 
   constructor(currentLocale: string) {
     this.currentLocale = currentLocale;
-  }
-
-  get currentLocale(): string {
-    return this.currentLocale;
   }
 
   @action
@@ -267,7 +298,6 @@ await renderComponent(MainComponent, {
   element: document.getElementById('ember-testing'),
   owner: { services: { locale: new LocaleService('en') } },
 });
-
 ```
 
 Template/Component imports are respecting typescript standards, thus can be easily run node.js with npm, allowing
@@ -282,11 +312,15 @@ Allows "npm your way to ember", from a React alternative(glimmer) to a full-fled
 
 ## Prerequisites
 
-You will need the following things properly installed on your computer.
+- [Git](https://git-scm.com/)
+- [Node.js](https://nodejs.org/) 24 or newer (with npm)
+- A Chrome/Chromium binary for the browser test suite — see [Development](#development)
 
-* [Git](https://git-scm.com/)
-* [Node.js](https://nodejs.org/) (with NPM)
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the development workflow, and
+[ROADMAP.md](ROADMAP.md) for what is planned on the way to v1.
 
 ## Further Reading / Useful Links
 
-* [glimmerx](http://github.com/glimmerjs/glimmer-experimental/)
+- [glimmerx](http://github.com/glimmerjs/glimmer-experimental/)

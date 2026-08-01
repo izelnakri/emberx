@@ -12,17 +12,17 @@ module('@emberx/string | camelize', () => {
     assert.equal(
       camelize('PrivateDocs/OwnerInvoice'),
       'privateDocs/ownerInvoice',
-      'camelize namespaced classified string'
+      'camelize namespaced classified string',
     );
     assert.equal(
       camelize('private_docs/owner_invoice'),
       'privateDocs/ownerInvoice',
-      'camelize namespaced underscored string'
+      'camelize namespaced underscored string',
     );
     assert.equal(
       camelize('private-docs/owner-invoice'),
       'privateDocs/ownerInvoice',
-      'camelize namespaced dasherized string'
+      'camelize namespaced dasherized string',
     );
   });
 });

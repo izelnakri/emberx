@@ -1,9 +1,20 @@
 import Component, { hbs, renderComponent, action, tracked } from '@emberx/component';
 import { module, test } from 'qunitx';
-import axios from 'axios';
 import { click, wait, waitFor } from '@emberx/test-helpers';
 import { setupRenderingTest } from './helpers/index';
 import setupMemserver from './helpers/setup-memserver';
+
+/** GET a JSON document over XMLHttpRequest, so the XHR path stays covered. */
+function getJSONWithXHR(url: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    let request = new XMLHttpRequest();
+
+    request.open('GET', url);
+    request.onload = () => resolve(JSON.parse(request.responseText));
+    request.onerror = () => reject(new Error(`XHR failed for ${url}`));
+    request.send();
+  });
+}
 
 module('@emberx/component | Action tests', function (hooks) {
   setupRenderingTest(hooks);
@@ -65,14 +76,17 @@ module('@emberx/component | Action tests', function (hooks) {
       }
     }
 
+    // Deliberately XMLHttpRequest, not fetch: auto-settling must work for any
+    // promise an @action returns, whichever transport produced it. Previously
+    // this used axios purely to get an XHR; a bare XHR keeps the coverage
+    // without the dependency.
     @action
     async fetchUserWithXHR(username: string): Promise<void> {
       this.user = null;
       this.loadingMessage = 'Loading user...';
 
       try {
-        let response = await axios.get(`/users?username=${username}`);
-        this.user = response.data;
+        this.user = await getJSONWithXHR(`/users?username=${username}`);
       } finally {
         this.loadingMessage = null;
       }

@@ -62,10 +62,6 @@ module('@emberx/helper | Public API', function (hooks) {
         this.currentLocale = currentLocale;
       }
 
-      get currentLocale(): string {
-        return this.currentLocale;
-      }
-
       @action
       setLocale(locale) {
         this.currentLocale = locale;
@@ -116,7 +112,7 @@ module('@emberx/helper | Public API', function (hooks) {
     assert
       .dom('#target-title')
       .hasText(
-        'some message - Param is some message, options are {"title":"Izel","message":"some message"}, locale is en'
+        'some message - Param is some message, options are {"title":"Izel","message":"some message"}, locale is en',
       );
     assert.dom('#target-text').hasText('some message');
     assert.dom('#change-msg-button').hasText('Change message');
@@ -126,7 +122,7 @@ module('@emberx/helper | Public API', function (hooks) {
     assert
       .dom('#target-title')
       .hasText(
-        'something else - Param is something else, options are {"title":"Izel","message":"something else"}, locale is en'
+        'something else - Param is something else, options are {"title":"Izel","message":"something else"}, locale is en',
       );
     assert.dom('#target-text').hasText('something else');
     assert.dom('#change-msg-button').hasText('Change message');
@@ -136,7 +132,7 @@ module('@emberx/helper | Public API', function (hooks) {
     assert
       .dom('#target-title')
       .hasText(
-        'something else - Param is something else, options are {"title":"Izel","message":"something else"}, locale is tr'
+        'something else - Param is something else, options are {"title":"Izel","message":"something else"}, locale is tr',
       );
     assert.dom('#target-text').hasText('something else');
     assert.dom('#change-msg-button').hasText('Change message');

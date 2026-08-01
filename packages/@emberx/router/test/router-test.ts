@@ -100,7 +100,7 @@ module('@emberx/router | Public API', function (hooks) {
         { path: '/logout', name: 'logout' },
         { path: '/', name: 'public' },
       ],
-      oldRouterMap
+      oldRouterMap,
     );
 
     assert.propEqual(Router.owner.routes, targetFlatRegistry);

@@ -12,7 +12,7 @@ module('@emberx/test-helpers | typeIn', function (hooks) {
 
       assert.rejects(
         typeIn('[data-test-some-test-div]', 'foo'),
-        /`typeIn` is only usable on form controls or contenteditable elements/
+        /`typeIn` is only usable on form controls or contenteditable elements/,
       );
     });
 
@@ -21,11 +21,11 @@ module('@emberx/test-helpers | typeIn', function (hooks) {
 
       assert.rejects(
         typeIn(`[data-test-some-input]`, 'foo'),
-        new Error("Can not `typeIn` disabled '[data-test-some-input]'.")
+        new Error("Can not `typeIn` disabled '[data-test-some-input]'."),
       );
       assert.rejects(
         typeIn(document.querySelector('[data-test-some-input]'), 'foo'),
-        new Error("Can not `typeIn` disabled '[object HTMLInputElement]'.")
+        new Error("Can not `typeIn` disabled '[object HTMLInputElement]'."),
       );
     });
 
@@ -34,18 +34,18 @@ module('@emberx/test-helpers | typeIn', function (hooks) {
 
       assert.rejects(
         typeIn(`[data-test-some-input]`, 'foo'),
-        new Error("Can not `typeIn` readonly '[data-test-some-input]'.")
+        new Error("Can not `typeIn` readonly '[data-test-some-input]'."),
       );
       assert.rejects(
         typeIn(document.querySelector('[data-test-some-input]'), 'foo'),
-        new Error("Can not `typeIn` readonly '[object HTMLInputElement]'.")
+        new Error("Can not `typeIn` readonly '[object HTMLInputElement]'."),
       );
     });
 
     test('rejects if selector is not found', async function (assert) {
       assert.rejects(
         typeIn(`#foo-bar-baz-not-here-ever-bye-bye`, 'foo'),
-        /Element not found when calling `typeIn\('#foo-bar-baz-not-here-ever-bye-bye'\)`/
+        /Element not found when calling `typeIn\('#foo-bar-baz-not-here-ever-bye-bye'\)`/,
       );
     });
 
@@ -168,7 +168,7 @@ module('@emberx/test-helpers | typeIn', function (hooks) {
       assert.equal(
         element.value,
         maxLengthString,
-        `typeIn respects input attribute [maxlength=${maxLengthString.length}]`
+        `typeIn respects input attribute [maxlength=${maxLengthString.length}]`,
       );
     });
 
@@ -189,11 +189,11 @@ module('@emberx/test-helpers | typeIn', function (hooks) {
               'keypress',
               'keypress',
               'keypress',
-            ])
+            ]),
           );
           assert.equal(element.value, 'emb');
         }),
-        new Error("Can not `typeIn` with text: 'embe' that exceeds maxlength: '3'.")
+        new Error("Can not `typeIn` with text: 'embe' that exceeds maxlength: '3'."),
       );
     });
 
@@ -224,7 +224,7 @@ module('@emberx/test-helpers | typeIn', function (hooks) {
       assert.equal(
         element.value,
         maxLengthString,
-        `typeIn respects textarea attribute [maxlength=${maxLengthString.length}]`
+        `typeIn respects textarea attribute [maxlength=${maxLengthString.length}]`,
       );
     });
 
@@ -245,11 +245,11 @@ module('@emberx/test-helpers | typeIn', function (hooks) {
               'keypress',
               'keypress',
               'keypress',
-            ])
+            ]),
           );
           assert.equal(element.value, 'emb');
         }),
-        new Error("Can not `typeIn` with text: 'embe' that exceeds maxlength: '3'.")
+        new Error("Can not `typeIn` with text: 'embe' that exceeds maxlength: '3'."),
       );
     });
   });

@@ -20,13 +20,13 @@ module('@emberx/helper | "or" helper', function (hooks) {
   test('simple test 3', async function (assert) {
     await render(
       hbs`[{{or false}}] [{{or true}}] [{{or 1}}] [{{or ''}}] [{{or false ''}}] [{{or true ''}}] [{{or '' true}}]`,
-      { or }
+      { or },
     );
 
     assert.equal(
       this.element.textContent,
       '[false] [true] [1] [] [] [true] [true]',
-      'value should be "[false] [true] [1] [] [] [true] [true]"'
+      'value should be "[false] [true] [1] [] [] [true] [true]"',
     );
   });
 
@@ -35,7 +35,7 @@ module('@emberx/helper | "or" helper', function (hooks) {
 
     await render(
       hbs`[{{or this.contextChild.valueA}}] [{{or this.contextChild.valueB}}] [{{or this.contextChild.valueB this.contextChild.valueA}}] [{{or this.contextChild.valueA this.contextChild.valueB}}]`,
-      { or }
+      { or },
     );
 
     assert.equal(this.element.textContent.trim(), '[] [] [] []', 'value should be "[] [] [] []"');
@@ -44,7 +44,7 @@ module('@emberx/helper | "or" helper', function (hooks) {
 
     await render(
       hbs`[{{or this.contextChild.valueA}}] [{{or this.contextChild.valueB}}] [{{or this.contextChild.valueB this.contextChild.valueA}}] [{{or this.contextChild.valueA this.contextChild.valueB}}]`,
-      { or }
+      { or },
     );
 
     assert.equal(this.element.textContent.trim(), '[] [] [] []', 'value should be "[] [] [] []"');
@@ -53,7 +53,7 @@ module('@emberx/helper | "or" helper', function (hooks) {
 
     await render(
       hbs`[{{or this.contextChild.valueA}}] [{{or this.contextChild.valueB}}] [{{or this.contextChild.valueB this.contextChild.valueA}}] [{{or this.contextChild.valueA this.contextChild.valueB}}]`,
-      { or }
+      { or },
     );
 
     assert.equal(this.element.textContent.trim(), '[] [] [] []', 'value should be "[] [] [] []"');
@@ -62,7 +62,7 @@ module('@emberx/helper | "or" helper', function (hooks) {
 
     await render(
       hbs`[{{or this.contextChild.valueA}}] [{{or this.contextChild.valueB}}] [{{or this.contextChild.valueB this.contextChild.valueA}}] [{{or this.contextChild.valueA this.contextChild.valueB}}]`,
-      { or }
+      { or },
     );
 
     assert.equal(this.element.textContent.trim(), '[ ] [] [ ] [ ]', 'value should be "[ ] [] [ ] [ ]"');
@@ -71,13 +71,13 @@ module('@emberx/helper | "or" helper', function (hooks) {
 
     await render(
       hbs`[{{or this.contextChild.valueA}}] [{{or this.contextChild.valueB}}] [{{or this.contextChild.valueB this.contextChild.valueA}}] [{{or this.contextChild.valueA this.contextChild.valueB}}]`,
-      { or }
+      { or },
     );
 
     assert.equal(
       this.element.textContent.trim(),
       '[ ] [yellow] [yellow] [ ]',
-      'value should be "[ ] [yellow] [yellow] [ ]"'
+      'value should be "[ ] [yellow] [yellow] [ ]"',
     );
   });
 

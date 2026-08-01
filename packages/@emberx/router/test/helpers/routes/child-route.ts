@@ -1,4 +1,4 @@
-import { Route, hbs, action, tracked, service } from '@emberx/router';
+import { Route, service } from '@emberx/router';
 
 // NOTE: used for /posts/:post_id
 export default class ChildRoute extends Route {

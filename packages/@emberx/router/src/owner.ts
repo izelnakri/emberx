@@ -58,6 +58,6 @@ function findRegistryNamespace(type: string, moduleKey: string): RegistryKeys {
   }
 
   throw new Error(
-    `${type} is an invalid registry key. Try for example: "service:${moduleKey}" or "route:${moduleKey}"`
+    `${type} is an invalid registry key. Try for example: "service:${moduleKey}" or "route:${moduleKey}"`,
   );
 }

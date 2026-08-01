@@ -9,7 +9,7 @@ interface TypeInOptions {
 export default async function typeIn(
   target: Target,
   text: string,
-  options: TypeInOptions = {}
+  options: TypeInOptions = {},
 ): Promise<void | Event> {
   await inputs.typeIn(target, text, options);
   await didRender();

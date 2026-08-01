@@ -33,7 +33,15 @@ export function glimmerCompilerCryptoPlugin() {
   return {
     name: 'emberx:glimmer-compiler-crypto',
     setup(build) {
-      build.onLoad({ filter: /@glimmer[\\/]compiler[\\/].*[\\/]lib[\\/]compiler\.js$/ }, async (args) => {
+      // Scoped to the ESM build only. @glimmer/compiler also ships a CommonJS
+      // copy under dist/commonjs/, whose `defaultId` is written as
+      // `exports.defaultId = ...` and would never match the markers below.
+      // Every emberx bundle resolves Glimmer through the `module` field, so the
+      // CommonJS copy is never loaded; matching it would only produce a
+      // confusing "upstream changed shape" failure.
+      const filter = /@glimmer[\\/]compiler[\\/]dist[\\/]modules[\\/].*[\\/]lib[\\/]compiler\.js$/;
+
+      build.onLoad({ filter }, async (args) => {
         const { readFile } = await import('node:fs/promises');
         const source = await readFile(args.path, 'utf8');
 

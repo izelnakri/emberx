@@ -6,7 +6,7 @@ BENCH_BASE ?=
 
 .PHONY: bench bench-check bench-print bench-update build build-dev check clean coverage \
         dev docker-build docker-test fix fmt format help install lint release setup test test-all-browsers \
-        test-browser test-browser-dev test-chrome test-firefox test-node test-webkit typecheck
+        test-browser test-browser-dev test-chrome test-firefox test-node test-release test-webkit typecheck
 
 # ── Build ─────────────────────────────────────────────────────────────────────
 
@@ -54,8 +54,8 @@ typecheck:
 test:
 	npm test
 
-# Pure-JS packages (@emberx/string, @emberx/helper) under node + jsdom.
-# Fast, no browser required.
+# @emberx/string, helper and component under plain node + jsdom. Proves the
+# packages resolve, render and run outside a browser. Fast, no browser required.
 test-node:
 	npm run test:node
 
@@ -81,6 +81,13 @@ test-all-browsers: test-browser test-firefox test-webkit
 # a terminal summary plus tmp/coverage/lcov.info and tmp/coverage/index.html.
 # Chromium only. The figure includes the test modules themselves, since
 # qunitx-cli only excludes the entry file (test/index.ts).
+# Packs all six packages, installs the tarballs into a throwaway directory, and
+# runs a consumer smoke test plus the node suite against what got installed, not
+# the checkout. Catches what source tests cannot: a missing `files` entry, a
+# wrong `exports` path, a dependency only declared at the root.
+test-release:
+	npm run test:release
+
 coverage: build-dev
 	npm run test:coverage
 
@@ -144,6 +151,7 @@ release:
 	fi
 	@npm whoami > /dev/null 2>&1 || npm login
 	$(MAKE) check
+	$(MAKE) test-release
 	$(MAKE) bench-check BENCH_BASE=$$(git describe --tags --abbrev=0 2>/dev/null)
 	node scripts/release.js $(LEVEL)
 	@VERSION=$$(node -p "require('./package.json').version"); \
@@ -177,12 +185,13 @@ help:
 	@echo "  lint              Lint sources (oxlint)"
 	@echo "  typecheck         tsc --noEmit over all package sources"
 	@echo "  test              Build, then node suite, then browser suite"
-	@echo "  test-node         @emberx/string + @emberx/helper under node+jsdom"
+	@echo "  test-node         string, helper and component under node + jsdom"
 	@echo "  test-browser      Full suite in chromium (alias: test-chrome)"
 	@echo "  test-browser-dev  Full suite in chromium, watching for changes"
 	@echo "  test-firefox      Full suite in firefox"
 	@echo "  test-webkit       Full suite in webkit"
 	@echo "  test-all-browsers chromium, then firefox, then webkit"
+	@echo "  test-release      Test the packed tarballs, not the checkout"
 	@echo "  coverage          Browser-suite line coverage -> tmp/coverage/"
 	@echo ""
 	@echo "Benchmarks"
@@ -195,7 +204,7 @@ help:
 	@echo "  docker-test       Build the image and run make check inside it"
 	@echo ""
 	@echo "Release"
-	@echo "  release           check + bench + bump + changelog + publish + tag + push"
+	@echo "  release           check + test-release + bench + bump + publish + tag + push"
 	@echo ""
 	@echo "Escape hatches"
 	@echo "  SKIP_BENCHMARK=true    skip bench-check (noisy machine)"

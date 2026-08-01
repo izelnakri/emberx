@@ -1,19 +1,35 @@
-FROM node:16.1.0
+# Reproducible environment for running the full emberx suite, browser included.
+# Used by `make docker-test` to reproduce the Linux CI leg on any machine.
+# Same Node as package.json's volta pin, which CI uses; a floating tag lets this
+# environment drift from the one it exists to reproduce. Bump them together.
+FROM node:24.21.0-bookworm-slim
 
-RUN apt-get update && \
-  apt-get install -y vim chromium
+# Chromium for the browser suite. qunitx-cli drives whatever CHROME_BIN points
+# at, so we install the distro package rather than letting playwright download
+# its own copy — smaller image, and it matches the arch of the base image.
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+       chromium \
+       ca-certificates \
+       fonts-liberation \
+       make \
+  && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /code/
+ENV CHROME_BIN=/usr/bin/chromium \
+    PLAYWRIGHT_SKIP_DOWNLOAD=true \
+    NODE_ENV=development
 
-ADD .babelrc tsconfig.json package.json package-lock.json webpack.config.js /code/
+WORKDIR /code
 
-RUN npm install
+COPY . .
 
-ADD examples /code/examples
-ADD scripts /code/scripts/
-ADD packages /code/packages/
-ADD test /code/test
+# One install after the full copy rather than a manifest-only layer before it.
+# npm ci with a workspace's package.json missing still exits 0, just without that
+# workspace, so a hand-kept list of manifests fails silently when it drifts. The
+# cache mount keeps npm's download cache across builds, so a source edit costs
+# an extract rather than a download. Requires BuildKit, Docker's default builder.
+RUN --mount=type=cache,target=/root/.npm npm ci --no-audit --no-fund
 
-RUN npm install && npm run build # registers workspaces
+RUN npm run build
 
-ENTRYPOINT "/bin/sh"
+CMD ["make", "check"]

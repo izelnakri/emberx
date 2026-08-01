@@ -1,4 +1,4 @@
-import { Route, hbs, action, tracked, service } from '@emberx/router';
+import { Route, hbs } from '@emberx/router';
 
 // NOTE: used for /posts/:post_id/comments/new
 export default class PostsPostCommentsNewRoute extends Route {

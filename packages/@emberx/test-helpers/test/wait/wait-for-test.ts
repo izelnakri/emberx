@@ -42,7 +42,7 @@ module('@emberx/test-helpers | waitFor', function (hooks) {
 
     assert.deepEqual(
       elements.map((e) => e.textContent),
-      ['Hi!', 'Bye!']
+      ['Hi!', 'Bye!'],
     );
   });
 

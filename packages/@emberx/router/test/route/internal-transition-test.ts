@@ -1,6 +1,6 @@
 import { module, test } from 'qunitx';
-import Router, { Route, RouterService } from '@emberx/router';
-import { visit, click, currentURL, waitFor } from '@emberx/test-helpers';
+import Router from '@emberx/router';
+import { visit, currentURL } from '@emberx/test-helpers';
 import setupTest from '../helpers/index';
 import setupMemserver from '../helpers/setup-memserver';
 import Session from '../helpers/services/session';

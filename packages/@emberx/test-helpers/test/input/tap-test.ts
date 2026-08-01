@@ -10,7 +10,7 @@ function setupEventStepListeners(assert, element, options?) {
         return assert.step(
           `${eventName} ${Object.keys(options)
             .map((key) => options[key])
-            .join(' ')}`
+            .join(' ')}`,
         );
       }
 
@@ -86,7 +86,7 @@ module('@emberx/test-helpers | tap', function (hooks) {
     test('rejects if selector is not found', async function (assert) {
       assert.rejects(
         tap(`#foo-bar-baz-not-here-ever-bye-bye`),
-        /Element not found when calling `tap\('#foo-bar-baz-not-here-ever-bye-bye'\)`/
+        /Element not found when calling `tap\('#foo-bar-baz-not-here-ever-bye-bye'\)`/,
       );
     });
   });
@@ -125,7 +125,7 @@ module('@emberx/test-helpers | tap', function (hooks) {
 
       assert.rejects(
         tap('[data-test-some-test-input]'),
-        new Error('Can not `tap` disabled [object HTMLInputElement]')
+        new Error('Can not `tap` disabled [object HTMLInputElement]'),
       );
     });
   });

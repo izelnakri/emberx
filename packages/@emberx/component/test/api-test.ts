@@ -1,4 +1,4 @@
-import Component, { hbs, service, renderComponent } from '@emberx/component';
+import Component, { renderComponent } from '@emberx/component';
 import { module, test } from 'qunitx';
 import { setupRenderingTest } from './helpers/index';
 

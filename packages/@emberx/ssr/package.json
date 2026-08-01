@@ -1,21 +1,31 @@
 {
   "name": "@emberx/ssr",
-  "description": "",
   "version": "0.0.14",
+  "description": "Server-side rendering for emberx components",
   "type": "module",
   "author": "Izel Nakri",
-  "files": [
-    "dist/*"
-  ],
-  "main": "dist/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/izelnakri/emberx.git",
+    "directory": "packages/@emberx/ssr"
   },
-  "license": "ISC",
-  "directories": {
-    "test": "tests"
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
   },
   "dependencies": {
-    "@glimmer/ssr": "^2.0.0-beta.17"
+    "@emberx/component": "0.0.14",
+    "@glimmer/ssr": "2.0.0-beta.21"
   }
 }

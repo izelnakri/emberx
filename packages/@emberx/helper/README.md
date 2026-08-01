@@ -13,7 +13,9 @@ const translate = helper(([key, intl], _hash, services) => {
 export default translate;
 
 // Helper usage:
-import Component, { service, tracked } from '@emberx/component';
+import Component, { service, action, renderComponent } from '@emberx/component';
+import { LinkTo } from '@emberx/router';
+import translate from './helpers/translate';
 
 export default class UserDisplay extends Component {
   @service intl;
@@ -25,11 +27,12 @@ export default class UserDisplay extends Component {
   };
 
   static includes = {
+    LinkTo,
     translate,
   };
   static template = `
     <div id="intro">
-      <LinkTo @route="user.posts" @model="{{this.user.id}}">{{translate "user-page.posts-link" this.user.firstName}}</LinkTo>
+      <LinkTo @route="user.posts" @model={{this.user.id}}>{{translate "user-page.posts-link" this.user.firstName}}</LinkTo>
 
       <h5>Current locale is: {{this.intl.currentLocale}}</h5>
       <button type="button" {{on "click" this.changeLocale}}>Change locale</button>

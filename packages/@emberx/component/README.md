@@ -47,7 +47,6 @@ class UserDisplay extends Component {
   }
 }
 
-
 // Usage:
 
 renderComponent(UserDisplay, { element: document.getElementById('app') });
@@ -65,46 +64,51 @@ class Table extends Component<{ headRows: object }> {
         {{#each @headRows as |headRow|}}
           <tr>
             {{#each headRow as |rowData|}}
-              <th scope="row">{{headRow[0]}}</th>
+              <th scope="row">{{rowData}}</th>
             {{/each}}
           </tr>
         {{/each}}
       </thead>
       {{yield}}
     </table>
-  `
+  `;
 }
 
-class UserTable extends Component<{ users: User[] }>{
+class UserTable extends Component<{ users: User[] }> {
   static includes = { Table };
 
   static template = hbs`
     <Table @headRows={{this.head}}>
       <tbody>
-        {{#each @users as |user|}}
+        {{#each this.users as |user|}}
           <tr {{on "click" (fn this.sortUsersByCreatedAt "createdAt")}}>
-            <td>{{user.firstname}}</td>
+            <td>{{user.firstName}}</td>
             <td>{{user.lastName}}</td>
             <td>{{user.createdAt}}</td>
           </tr>
         {{/each}}
       </tbody>
     </Table>
-  `
+  `;
 
   @tracked sortDirection = 'desc';
   @tracked sortedUsers: User[] | null = null;
 
+  get users() {
+    return this.sortedUsers ?? this.args.users;
+  }
+
   get head() {
-    return [
-      ['List of users'],
-      ['First name', 'Last name', 'Created at']
-    ];
+    return [['List of users'], ['First name', 'Last name', 'Created at']];
   }
 
   @action
   sortUsersByCreatedAt(sortProperty) {
-    this.users = this.users.sortBy(sortProperty, this.sortDirection);
+    let direction = this.sortDirection === 'desc' ? -1 : 1;
+
+    this.sortedUsers = [...this.args.users].sort(
+      (a, b) => (a[sortProperty] > b[sortProperty] ? 1 : -1) * direction,
+    );
     this.sortDirection = this.sortDirection === 'desc' ? 'asc' : 'desc';
   }
 }

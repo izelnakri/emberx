@@ -1,17 +1,29 @@
 {
   "name": "@emberx/test-helpers",
-  "description": "",
   "version": "0.0.14",
+  "description": "Test helpers for emberx: render, visit, DOM interaction and auto-settling without a runloop",
   "type": "module",
   "author": "Izel Nakri",
-  "files": [
-    "dist/*"
-  ],
-  "main": "dist/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/izelnakri/emberx.git",
+    "directory": "packages/@emberx/test-helpers"
   },
-  "license": "ISC",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "dependencies": {
     "@emberx/component": "0.0.14",
     "@emberx/router": "0.0.14",

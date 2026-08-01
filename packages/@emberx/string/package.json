@@ -1,16 +1,28 @@
 {
   "name": "@emberx/string",
-  "description": "",
   "version": "0.0.14",
+  "description": "Ember's string utilities (camelize, dasherize, classify, ...) as a standalone, dependency-free package",
   "type": "module",
   "author": "Izel Nakri",
-  "files": [
-    "dist/*"
-  ],
-  "main": "dist/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/izelnakri/emberx.git",
+    "directory": "packages/@emberx/string"
   },
-  "license": "ISC",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "dependencies": {}
 }

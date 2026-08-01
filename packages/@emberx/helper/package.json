@@ -1,19 +1,31 @@
 {
   "name": "@emberx/helper",
-  "description": "",
   "version": "0.0.14",
+  "description": "Template helpers for emberx, with owner services injected as a third argument",
   "type": "module",
   "author": "Izel Nakri",
-  "files": [
-    "dist/*"
-  ],
-  "main": "dist/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/izelnakri/emberx.git",
+    "directory": "packages/@emberx/helper"
   },
-  "license": "ISC",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "dependencies": {
-    "@glimmer/core": "2.0.0-beta.17",
-    "@glimmer/interfaces": "^0.80.0"
+    "@glimmer/core": "2.0.0-beta.21",
+    "@glimmer/interfaces": "0.84.0"
   }
 }

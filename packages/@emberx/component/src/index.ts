@@ -1,7 +1,3 @@
-// TODO: This type of importing was needed to support both node.js(intra) and esbuild(bundle) environments.
-// @glimmer/core has no default export error on esbuild. This can be fixed by making @glimmer/core ESM dist node.js compatible
-// or removing the modules key in package.json
-import glimmerComponent from '@glimmer/component';
 import {
   renderComponent as glimmerRenderComponent,
   didRender,
@@ -10,10 +6,9 @@ import {
   templateOnlyComponent,
 } from '@glimmer/core';
 
-// @ts-ignore
-let Component = glimmerComponent.default ? glimmerComponent.default : glimmerComponent;
-// let { didRender, setComponentTemplate, getOwner, templateOnlyComponent } = glimmerCore;
-// let glimmerRenderComponent = glimmerCore.renderComponent;
+// The Glimmer component base class, vendored in ./glimmer-component. See that
+// file for why it is not the `@glimmer/component` package.
+import Component from './glimmer-component';
 
 import { fn, hash, array, get, concat, on } from '@glimmer/runtime';
 import { and, or, not, eq, neq, gt, gte, lt, lte, assign, debug, drop, take } from '@emberx/helper';
@@ -30,7 +25,26 @@ interface FreeObject {
   [propName: string]: any;
 }
 
-export default class EmberXComponent<Args extends FreeObject = {}> extends Component<Args> {
+/**
+ * The static side of an emberx component class: the whole surface that
+ * `renderComponent` and `traverseAndCompileAllComponents` touch.
+ *
+ * This is deliberately structural rather than `typeof EmberXComponent`. The
+ * latter carries a *generic* construct signature (`new <Args>(...)`), which a
+ * subclass that pins its `Args` type argument — `@emberx/router`'s `Route`,
+ * whose constructor is `new (owner, args: FreeObject) => Route` — is not
+ * assignable to. Only the statics matter here, so only the statics are asked for.
+ */
+export interface EmberXComponentClass {
+  compiled: boolean;
+  includes: FreeObject;
+  template: string;
+  setTemplate(sourceCode: string): unknown;
+}
+
+export default class EmberXComponent<Args extends FreeObject = FreeObject> extends Component<{
+  Args: Args;
+}> {
   static compiled = false;
   static includes = {};
   static template: string;
@@ -97,7 +111,7 @@ export function action(context, value, descriptor) {
   return glimmerAction(context, value, descriptor);
 }
 
-async function renderComponent(ComponentClass: typeof EmberXComponent, optionsOrElement: any): Promise<void> {
+async function renderComponent(ComponentClass: EmberXComponentClass, optionsOrElement: any): Promise<void> {
   const options: any =
     optionsOrElement instanceof HTMLElement ? { element: optionsOrElement } : optionsOrElement;
 
@@ -111,7 +125,7 @@ function service(...args: any[]) {
 
   if (!target || !key) {
     throw new Error(
-      `You attempted to use @service with an argument, you can only use it with the owners exact service name. Example: @service locale`
+      `You attempted to use @service with an argument, you can only use it with the owners exact service name. Example: @service locale`,
     );
   }
 
@@ -135,7 +149,7 @@ function hbs(sourceCode: TemplateStringsArray): string {
   return sourceCode[0];
 }
 
-function traverseAndCompileAllComponents(ComponentClass: typeof EmberXComponent) {
+function traverseAndCompileAllComponents(ComponentClass: EmberXComponentClass) {
   if ('compiled' in ComponentClass && !ComponentClass.compiled) {
     if (ComponentClass.template) {
       ComponentClass.setTemplate(ComponentClass.template);
@@ -143,7 +157,7 @@ function traverseAndCompileAllComponents(ComponentClass: typeof EmberXComponent)
     ComponentClass.compiled = true;
 
     Object.entries(ComponentClass.includes).forEach(([_key, value]: [string, any]) =>
-      traverseAndCompileAllComponents(value)
+      traverseAndCompileAllComponents(value),
     );
   }
 }

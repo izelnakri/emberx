@@ -18,7 +18,12 @@ Ordered by what unblocks the most downstream work, not by size.
 | `@emberx/router`       | ⚠️ ~70% | Query params, substates and lifecycle hooks incomplete (see #2). |
 | `@emberx/ssr`          | ❌ 0%   | Untested, blocked on the router.                                 |
 
-271 tests pass (56 node, 215 browser).
+221 tests pass: 215 in the browser (the full suite) and 6 under plain node.
+
+The node suite is small because of the assertion library, not emberx: every
+suite other than `@emberx/string` asserts with `assert.dom(...)` from qunit-dom,
+which installs onto `QUnit.assert`, and under node qunitx delegates to
+`node:test` where no such object exists. See #3 and the DOM-assertion note there.
 
 ---
 
@@ -80,13 +85,19 @@ are the least exercised and most likely to hide v7→v8 differences.
 
 ---
 
-## 3. Make the router runnable in node
+## 3. Make the suite runnable in node
 
-`@emberx/router` instantiates `LocationBar` at construction, which touches `window`, so
-router and test-helper tests cannot run under node — which is why the node suite covers
-only two packages. Injecting the location strategy (a `history` implementation and a `none`
-implementation, as Ember has) would let the whole suite run headless, cut CI time
-substantially, and is a prerequisite for real SSR.
+Two independent blockers keep all but one package out of the node suite. Clearing both
+would let the whole suite run headless, cut CI time substantially, and is a prerequisite
+for real SSR.
+
+- **`@emberx/router` instantiates `LocationBar` at construction**, which touches `window`
+  before any test runs. Injecting the location strategy — a `history` implementation and a
+  `none` implementation, as Ember has — fixes this and is worth doing on its own merits.
+- **DOM assertions have no node path.** Every suite except `@emberx/string` asserts with
+  `assert.dom(...)` from qunit-dom, which installs onto `QUnit.assert`; under node qunitx
+  delegates to `node:test`, which has no such object. Either qunit-dom needs wiring to the
+  node assertion object, or the DOM assertions need a thin shim over jsdom.
 
 ---
 
@@ -120,6 +131,10 @@ what such a change would eliminate.
   updates. Either update memserver or replace the mock with something maintained.
 - **`browser-inputs@1.1.0`** is exact-pinned and unmaintained; `@emberx/test-helpers` is
   entirely built on it.
+- **`@memserver/model` imports `@emberx/string` without declaring it.** It resolves
+  through this repo's workspace link on every platform except Windows, where esbuild
+  cannot follow the junction — so the Windows CI leg runs the node suite only. Declaring
+  the dependency upstream, or replacing memserver, restores the full Windows matrix.
 - **TypeScript 7** is current; this repo is on 5.9 because the codebase leans on legacy
   (`experimentalDecorators`) decorators. Worth evaluating, together with a move to standard
   decorators.

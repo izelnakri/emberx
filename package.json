@@ -35,10 +35,10 @@
     "format:fix": "prettier --write .",
     "lint": "oxlint packages scripts benches test examples",
     "test": "npm run build:dev && npm run test:node && npm run test:browser",
-    "test:browser": "qunitx test/index.ts --browser=${QUNITX_BROWSER:-chromium}",
-    "test:browser:dev": "qunitx test/index.ts --browser=${QUNITX_BROWSER:-chromium} --watch",
+    "test:browser": "qunitx test/index.ts",
+    "test:browser:dev": "qunitx test/index.ts --watch",
     "test:coverage": "qunitx test/index.ts --coverage=lcov,html",
-    "test:node": "qunitx packages/@emberx/string/test/index.ts packages/@emberx/helper/test/index.ts --before=test/setup-dom.js",
+    "test:node": "node scripts/test-node.js",
     "typecheck": "tsc --project tsconfig.json --noEmit"
   },
   "devDependencies": {

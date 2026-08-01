@@ -19,16 +19,16 @@ make dev        # serves examples/blog on http://localhost:1234
 
 Everything runs through `make`; run `make` on its own for the full list.
 
-| Command             | What it does                                             |
-| ------------------- | -------------------------------------------------------- |
-| `make check`        | format + lint + typecheck + tests, the core CI checks    |
-| `make test`         | build, then the node suite, then the browser suite       |
-| `make test-node`    | `@emberx/string` and `@emberx/helper` under node + jsdom |
-| `make test-browser` | the full suite in a real browser (chromium)              |
-| `make coverage`     | browser-suite line coverage, written to `tmp/coverage/`  |
-| `make bench`        | runtime template-compilation and per-render benchmarks   |
-| `make build`        | bundle every package to `dist/` and emit `.d.ts`         |
-| `make dev`          | example app with watch rebuilds                          |
+| Command             | What it does                                            |
+| ------------------- | ------------------------------------------------------- |
+| `make check`        | format + lint + typecheck + tests, the core CI checks   |
+| `make test`         | build, then the node suite, then the browser suite      |
+| `make test-node`    | string, helper and component under node + jsdom         |
+| `make test-browser` | the full suite in a real browser (chromium)             |
+| `make coverage`     | browser-suite line coverage, written to `tmp/coverage/` |
+| `make bench`        | runtime template-compilation and per-render benchmarks  |
+| `make build`        | bundle every package to `dist/` and emit `.d.ts`        |
+| `make dev`          | example app with watch rebuilds                         |
 
 CI runs these same checks as separate jobs, and also runs the browser suite in Firefox and WebKit,
 a benchmark regression check and a package verification step.

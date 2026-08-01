@@ -1,0 +1,82 @@
+{
+  "runtime/helper: eq": {
+    "opsPerSecond": 455473510.57,
+    "jitter": 0.124
+  },
+  "runtime/helper: and (3 params)": {
+    "opsPerSecond": 94594438.09,
+    "jitter": 0.218
+  },
+  "runtime/helper: or (3 params)": {
+    "opsPerSecond": 126394194.32,
+    "jitter": 0.078
+  },
+  "runtime/helper: not": {
+    "opsPerSecond": 129020850.71,
+    "jitter": 0.087
+  },
+  "runtime/helper: gt": {
+    "opsPerSecond": 120803131.68,
+    "jitter": 0.028
+  },
+  "runtime/helper: assign (2 objects)": {
+    "opsPerSecond": 7344787.79,
+    "jitter": 0.066
+  },
+  "runtime/helper: take (query-param filtering)": {
+    "opsPerSecond": 2849516.13,
+    "jitter": 0.066
+  },
+  "runtime/Owner: register + lookup service": {
+    "opsPerSecond": 14221061.82,
+    "jitter": 0.078
+  },
+  "string/camelize (cache hit)": {
+    "opsPerSecond": 54163101.84,
+    "jitter": 0.192
+  },
+  "string/dasherize (cache hit)": {
+    "opsPerSecond": 56894911.9,
+    "jitter": 0.072
+  },
+  "string/classify (cache hit)": {
+    "opsPerSecond": 58196671.37,
+    "jitter": 0.066
+  },
+  "string/underscore (cache hit)": {
+    "opsPerSecond": 54497864.56,
+    "jitter": 0.056
+  },
+  "string/decamelize (cache hit)": {
+    "opsPerSecond": 54013239.91,
+    "jitter": 0.121
+  },
+  "string/capitalize (cache hit)": {
+    "opsPerSecond": 52475265.54,
+    "jitter": 0.074
+  },
+  "string/camelize (cache miss)": {
+    "opsPerSecond": 913962.58,
+    "jitter": 0.067
+  },
+  "template-compilation/precompileJSON: trivial (1 element)": {
+    "opsPerSecond": 24064.1,
+    "jitter": 0.441
+  },
+  "template-compilation/precompileJSON: typical component (~15 nodes)": {
+    "opsPerSecond": 1638.39,
+    "jitter": 0.66
+  },
+  "template-compilation/precompileJSON: large page (24 sections)": {
+    "opsPerSecond": 85.56,
+    "jitter": 0.787
+  },
+  "template-compilation/createTemplate: trivial (1 element)": {
+    "opsPerSecond": 27656.99,
+    "jitter": 0.325
+  },
+  "template-compilation/createTemplate: typical component (~15 nodes)": {
+    "opsPerSecond": 2558.69,
+    "jitter": 0.205
+  }
+}

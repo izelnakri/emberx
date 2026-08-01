@@ -1,0 +1,11 @@
+node_modules
+packages/@emberx/*/dist
+dist
+tmp
+.tmp
+package-lock.json
+CHANGELOG.md
+
+# Vendored verbatim from upstream; reformatting would obscure the diff against
+# the original. See the header in each file for provenance.
+packages/@emberx/router/src/vendor/

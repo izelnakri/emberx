@@ -1,0 +1,18 @@
+{
+  /* Declaration-only build. esbuild emits the JavaScript (see scripts/build.js);
+     tsc exists solely to produce the .d.ts files alongside it, which is the one
+     thing esbuild cannot do. */
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "emitDeclarationOnly": true,
+    "declaration": true,
+    "declarationMap": true,
+
+    /* Each package emits into its own dist/. `rootDir` is the packages
+       directory so the emitted tree mirrors packages/@emberx/<pkg>/src. */
+    "rootDir": "packages",
+    "outDir": ".tmp/types"
+  },
+  "include": ["packages/@emberx/*/src/**/*.ts"]
+}

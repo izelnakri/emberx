@@ -1,4 +1,4 @@
-import Component, { getOwner, hbs, service } from '@emberx/component';
+import Component, { hbs, service } from '@emberx/component';
 import { tracked } from '@glimmer/tracking';
 import { on, action } from '@glimmer/modifier';
 import helper from '@emberx/helper';
@@ -47,7 +47,7 @@ class MyComponent extends Component {
 
   @action
   changeLocale(): void {
-    this.locale.currentLocale === 'zh_CN' ? this.locale.setLocale('en_US') : this.locale.setLocale('zh_CN');
+    this.locale.setLocale(this.locale.currentLocale === 'zh_CN' ? 'en_US' : 'zh_CN');
   }
 }
 

@@ -1,4 +1,4 @@
-# @emberx/test-helpers - UI test methods for the browser and node.js
+# @emberx/test-helpers - UI test methods for the browser
 
 Fast & mature native browser user input simulators for frontend testing. Extracted from ember.js. These methods are
 `@action` promise aware, so when user inputs fire `@action` methods of emberx component or routers, they get waited
@@ -27,7 +27,7 @@ import {
 // Setup & URL helpers:
 import {
   setupTest, setupRenderingTest, setupApplicationTest,
-  render, visit, currentURL, currentRouteName
+  render, visit, currentURL, currentRouteName, hbs
 } from '@emberx/test-helpers';
 import { module, test } from 'qunitx';
 import Router, { Route } from '@emberx/router';
@@ -73,8 +73,5 @@ module('@emberx/test-helpers | url helpers', function (hooks) {
 });
 
 // Waiters and Query methods:
-import {
-  wait, waitUntil, settled, find, findAll
-  render, visit, currentURL, currentRouteName
-} from '@emberx/test-helpers';
+import { wait, waitFor, waitUntil, settled, find, findAll } from '@emberx/test-helpers';
 ```

@@ -1,7 +1,39 @@
 version: 2
 updates:
-  # Maintain dependencies for GitHub Actions
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  - package-ecosystem: 'github-actions'
+    directory: '/'
     schedule:
-      interval: "daily"
+      interval: 'weekly'
+    groups:
+      artifact-actions:
+        patterns:
+          - 'actions/upload-artifact'
+          - 'actions/download-artifact'
+
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    open-pull-requests-limit: 10
+    groups:
+      # The Glimmer VM packages are a single version-locked set: @glimmer/core
+      # pins its @glimmer/* siblings to one exact version, and any skew
+      # reintroduces duplicate @glimmer/validator copies — which means two
+      # autotracking registries and silently broken reactivity. They must move
+      # together or not at all.
+      glimmer:
+        patterns:
+          - '@glimmer/*'
+      dev-tooling:
+        patterns:
+          - 'esbuild'
+          - 'typescript'
+          - 'prettier'
+          - 'oxlint'
+          - 'git-cliff'
+      testing:
+        patterns:
+          - 'qunitx'
+          - 'qunitx-cli'
+          - 'qunit-dom'
+          - '@memserver/*'

@@ -1,0 +1,176 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Cancel superseded PR runs; let every main-branch run finish.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+# Same-repo PRs fire both `push` and `pull_request` for one SHA. The inlined
+# `if:` on lint/test/bench skips the pull_request leg, since push already covers
+# it. Forks still run, because pushes from forks do not trigger this workflow.
+jobs:
+  lint:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: package.json
+          cache: npm
+      - run: npm ci
+      - run: npm run format
+      - run: npm run lint
+      - run: npm run typecheck
+
+  test:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork
+    name: test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: ${{ matrix.os == 'ubuntu-latest' && 15 || 25 }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: package.json
+          cache: npm
+      - uses: browser-actions/setup-chrome@v2
+        id: setup-chrome
+      - run: npm ci
+      - run: npm run build
+      # The node suite covers the dependency-free packages under jsdom; the
+      # browser suite is the only place the renderer and router actually run.
+      - run: npm run test:node
+        env:
+          FORCE_COLOR: 0
+      - run: npm run test:browser
+        env:
+          CHROME_BIN: ${{ steps.setup-chrome.outputs.chrome-path }}
+          FORCE_COLOR: 0
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: junit-${{ matrix.os }}
+          path: tmp/junit.xml
+          retention-days: 3
+          if-no-files-found: ignore
+
+  # Firefox and WebKit are slower and less load-bearing than chromium, so they
+  # run as their own job rather than widening the matrix above.
+  browser-compat:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork
+    name: browser-compat (${{ matrix.browser }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [firefox, webkit]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: package.json
+          cache: npm
+      - run: npm ci
+      - name: Get Playwright version
+        id: pw-version
+        shell: bash
+        run: echo "version=$(node -p "require('playwright-core/package.json').version")" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v6
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ matrix.browser }}-${{ runner.os }}-${{ steps.pw-version.outputs.version }}
+      - if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright@${{ steps.pw-version.outputs.version }} install --with-deps ${{ matrix.browser }}
+      - if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright@${{ steps.pw-version.outputs.version }} install-deps ${{ matrix.browser }}
+      - run: npm run build
+      - run: npm run test:browser
+        env:
+          QUNITX_BROWSER: ${{ matrix.browser }}
+          FORCE_COLOR: 0
+
+  # Measures what emberx sells: runtime template compilation, the work other
+  # frameworks do at build time and emberx does on page load.
+  #
+  # Advisory, not blocking. benches/results.json is recorded on a developer
+  # machine, and a shared CI runner is easily 2-3x slower, so comparing the two
+  # produces false regressions. The number that gates a change is `make
+  # bench-check` on one machine, which `make release` runs. This job exists so
+  # the absolute figures are visible on every push and a 10x cliff is obvious in
+  # the log.
+  bench:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: package.json
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm run bench:check
+        env:
+          FORCE_COLOR: 0
+
+  # Verifies the packaged artefacts, not the checkout: packs each workspace,
+  # installs the tarballs into a throwaway consumer, and imports them. Catches
+  # `files`/`exports`/missing-dependency mistakes that source tests cannot see.
+  package:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: package.json
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: node scripts/verify-package.js
+
+  github-release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: package.json
+          cache: npm
+      - run: npm ci
+      # `make release` already wrote the CHANGELOG section and published to npm;
+      # this only mirrors that section onto the GitHub release. `--latest` is the
+      # section for the tag this run was triggered by — `--unreleased` would be
+      # empty here, since the tag already exists.
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          npm run changelog:latest > release-notes.md
+          gh release create "${GITHUB_REF_NAME}" --title "${GITHUB_REF_NAME}" --notes-file release-notes.md

@@ -75,13 +75,14 @@ module('@emberx/test-helpers | waitUntil', function (hooks) {
   });
 
   test('does not continue to wait if callback throws', async function (assert) {
+    // One assertion from the single callback call, one from the catch. A second
+    // call during the wait below would add a third and fail the expectation.
     assert.expect(2);
 
     try {
       await waitUntil(() => {
         assert.ok(true);
         throw new Error('error goes here');
-        assert.ok(false);
       });
     } catch (error) {
       assert.equal(error.message, 'error goes here', 'valid error was thrown');

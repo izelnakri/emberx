@@ -13,9 +13,9 @@ function setupEventStepListeners(assert, input) {
 }
 
 module('@emberx/test-helpers | doubleClick', function (hooks) {
-  module('non-focusable element types', function () {
-    setupRenderingTest(hooks);
+  setupRenderingTest(hooks);
 
+  module('non-focusable element types', function () {
     test('it executes registered doubleClick hooks', async function (assert) {
       assert.expect(11);
 
@@ -81,7 +81,7 @@ module('@emberx/test-helpers | doubleClick', function (hooks) {
 
       assert.rejects(
         doubleClick(`#foo-bar-baz-not-here-ever-bye-bye`),
-        /Element not found when calling `doubleClick\('#foo-bar-baz-not-here-ever-bye-bye'\)`/
+        /Element not found when calling `doubleClick\('#foo-bar-baz-not-here-ever-bye-bye'\)`/,
       );
     });
 
@@ -95,7 +95,7 @@ module('@emberx/test-helpers | doubleClick', function (hooks) {
 
       assert.rejects(
         doubleClick('[data-test-select-element]'),
-        new Error('Can not `doubleClick` disabled [object HTMLSelectElement]')
+        new Error('Can not `doubleClick` disabled [object HTMLSelectElement]'),
       );
     });
   });
@@ -126,7 +126,7 @@ module('@emberx/test-helpers | doubleClick', function (hooks) {
       assert.strictEqual(
         document.activeElement,
         document.querySelector('[data-test-some-test-input]'),
-        'activeElement updated'
+        'activeElement updated',
       );
     });
 
@@ -143,7 +143,7 @@ module('@emberx/test-helpers | doubleClick', function (hooks) {
       assert.strictEqual(
         document.activeElement,
         document.querySelector('[data-test-some-test-input]'),
-        'activeElement updated'
+        'activeElement updated',
       );
     });
 

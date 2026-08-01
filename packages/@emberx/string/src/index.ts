@@ -2,7 +2,6 @@
 @module @ember/string
 */
 
-import { getString } from './string-registry.js';
 export { getStrings as _getStrings, setStrings as _setStrings } from './string-registry';
 
 import Cache from './cache';
@@ -10,7 +9,7 @@ import Cache from './cache';
 const STRING_DASHERIZE_REGEXP = /[ _]/g;
 
 const STRING_DASHERIZE_CACHE = new Cache<string, string>(1000, (key) =>
-  decamelize(key).replace(STRING_DASHERIZE_REGEXP, '-')
+  decamelize(key).replace(STRING_DASHERIZE_REGEXP, '-'),
 );
 
 const STRING_CAMELIZE_REGEXP_1 = /(-|_|\.|\s)+(.)?/g;
@@ -19,7 +18,7 @@ const STRING_CAMELIZE_REGEXP_2 = /(^|\/)([A-Z])/g;
 const CAMELIZE_CACHE = new Cache<string, string>(1000, (key) =>
   key
     .replace(STRING_CAMELIZE_REGEXP_1, (_match, _separator, chr) => (chr ? chr.toUpperCase() : ''))
-    .replace(STRING_CAMELIZE_REGEXP_2, (match /*, separator, chr */) => match.toLowerCase())
+    .replace(STRING_CAMELIZE_REGEXP_2, (match /*, separator, chr */) => match.toLowerCase()),
 );
 
 const STRING_CLASSIFY_REGEXP_1 = /^(-|_)+(.)?/;
@@ -45,19 +44,19 @@ const STRING_UNDERSCORE_REGEXP_1 = /([a-z\d])([A-Z]+)/g;
 const STRING_UNDERSCORE_REGEXP_2 = /-|\s+/g;
 
 const UNDERSCORE_CACHE = new Cache<string, string>(1000, (str) =>
-  str.replace(STRING_UNDERSCORE_REGEXP_1, '$1_$2').replace(STRING_UNDERSCORE_REGEXP_2, '_').toLowerCase()
+  str.replace(STRING_UNDERSCORE_REGEXP_1, '$1_$2').replace(STRING_UNDERSCORE_REGEXP_2, '_').toLowerCase(),
 );
 
 const STRING_CAPITALIZE_REGEXP = /(^|\/)([a-z\u00C0-\u024F])/g;
 
 const CAPITALIZE_CACHE = new Cache<string, string>(1000, (str) =>
-  str.replace(STRING_CAPITALIZE_REGEXP, (match /*, separator, chr */) => match.toUpperCase())
+  str.replace(STRING_CAPITALIZE_REGEXP, (match /*, separator, chr */) => match.toUpperCase()),
 );
 
 const STRING_DECAMELIZE_REGEXP = /([a-z\d])([A-Z])/g;
 
 const DECAMELIZE_CACHE = new Cache<string, string>(1000, (str) =>
-  str.replace(STRING_DECAMELIZE_REGEXP, '$1_$2').toLowerCase()
+  str.replace(STRING_DECAMELIZE_REGEXP, '$1_$2').toLowerCase(),
 );
 
 /**
@@ -68,16 +67,6 @@ const DECAMELIZE_CACHE = new Cache<string, string>(1000, (str) =>
   @class String
   @public
 */
-
-function _fmt(str: string, formats: any[]) {
-  // first, replace any ORDERED replacements.
-  let idx = 0; // the current index for non-numerical replacements
-  return str.replace(/%@([0-9]+)?/g, (_s: string, argIndex: string) => {
-    const i = argIndex ? parseInt(argIndex, 10) - 1 : idx++;
-    const r = i < formats.length ? formats[i] : undefined;
-    return typeof r === 'string' ? r : r === null ? '(null)' : r === undefined ? '' : String(r);
-  });
-}
 
 /**
   Converts a camelized string into all lower case separated by underscores.

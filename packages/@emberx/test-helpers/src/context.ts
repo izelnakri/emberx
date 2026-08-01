@@ -4,7 +4,11 @@ interface FreeObject {
   [propName: string]: any;
 }
 
-let context;
+// NOTE: the definite-assignment assertion matches `getContext`'s existing
+// contract, which already promises a `FreeObject`. `setupTest`'s `beforeEach`
+// installs the context before any helper reads it; calling `getContext()` before
+// that still returns `undefined` at runtime.
+let context!: FreeObject;
 
 export function setContext(targetContext: FreeObject): FreeObject {
   context = targetContext;

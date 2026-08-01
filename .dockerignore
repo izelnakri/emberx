@@ -1,1 +1,8 @@
-packages/**/*/dist/
+node_modules
+packages/@emberx/*/dist
+dist
+tmp
+.tmp
+coverage
+.git
+*.tgz

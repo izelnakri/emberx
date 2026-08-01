@@ -1,7 +1,16 @@
 node_modules
-.parcel-cache
-tmp/*
+packages/@emberx/*/dist
 dist
-yarn-error.log
+tmp
+.tmp
+coverage
+*.tgz
+
 .eslintcache
-glimmer-core
+.oxlintcache
+npm-debug.log*
+yarn-error.log
+.DS_Store
+
+# Created by qunitx-cli's postinstall (deno install); not managed by this repo.
+deno.lock

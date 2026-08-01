@@ -54,8 +54,8 @@ typecheck:
 test:
 	npm test
 
-# Pure-JS packages (@emberx/string, @emberx/helper) under node + jsdom.
-# Fast, no browser required.
+# @emberx/string, helper and component under plain node + jsdom. Proves the
+# packages resolve, render and run outside a browser. Fast, no browser required.
 test-node:
 	npm run test:node
 
@@ -177,7 +177,7 @@ help:
 	@echo "  lint              Lint sources (oxlint)"
 	@echo "  typecheck         tsc --noEmit over all package sources"
 	@echo "  test              Build, then node suite, then browser suite"
-	@echo "  test-node         @emberx/string + @emberx/helper under node+jsdom"
+	@echo "  test-node         string, helper and component under node + jsdom"
 	@echo "  test-browser      Full suite in chromium (alias: test-chrome)"
 	@echo "  test-browser-dev  Full suite in chromium, watching for changes"
 	@echo "  test-firefox      Full suite in firefox"

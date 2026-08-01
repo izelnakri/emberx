@@ -18,7 +18,12 @@ Ordered by what unblocks the most downstream work, not by size.
 | `@emberx/router`       | ⚠️ ~70% | Query params, substates and lifecycle hooks incomplete (see #2). |
 | `@emberx/ssr`          | ❌ 0%   | Untested, blocked on the router.                                 |
 
-271 tests pass (56 node, 215 browser).
+221 tests pass: 215 in the browser (the full suite) and 6 under plain node.
+
+The node suite is small because of the assertion library, not emberx: every
+suite other than `@emberx/string` asserts with `assert.dom(...)` from qunit-dom,
+which installs onto `QUnit.assert`, and under node qunitx delegates to
+`node:test` where no such object exists. See #3 and the DOM-assertion note there.
 
 ---
 
@@ -80,13 +85,22 @@ are the least exercised and most likely to hide v7→v8 differences.
 
 ---
 
-## 3. Make the router runnable in node
+## 3. Make the suite runnable in node
 
-`@emberx/router` instantiates `LocationBar` at construction, which touches `window`, so
-router and test-helper tests cannot run under node — which is why the node suite covers
-only two packages. Injecting the location strategy (a `history` implementation and a `none`
-implementation, as Ember has) would let the whole suite run headless, cut CI time
-substantially, and is a prerequisite for real SSR.
+`@emberx/string`, `@emberx/helper` and `@emberx/component` run under node + jsdom. The
+router and test-helpers suites do not yet. Getting them there would let the whole suite
+run headless, and it is a prerequisite for real SSR.
+
+- **Router state outlives each test.** Every test that starts a router builds a new
+  `RouterService`, which starts a new `LocationBar` against `window` and never stops the
+  previous one; nothing tears the router down in `afterEach`. Transitions from a finished
+  test then render into a container the next test has already removed ("#app or
+  #ember-testing not found"). The browser tolerates this, but `node:test` reports it as a
+  failure. Fixes: a router teardown in `setupTest` (stop the `LocationBar`, reset the URL),
+  and an injectable location strategy — a `history` implementation and a `none`
+  implementation, as Ember has — which is worth doing on its own merits.
+- **The test-helpers suite hangs under node** for the same reason, plus event helpers that
+  lean on real layout. Revisit once the router tears down cleanly.
 
 ---
 
@@ -120,6 +134,10 @@ what such a change would eliminate.
   updates. Either update memserver or replace the mock with something maintained.
 - **`browser-inputs@1.1.0`** is exact-pinned and unmaintained; `@emberx/test-helpers` is
   entirely built on it.
+- **`@memserver/model` imports `@emberx/string` without declaring it.** It resolves
+  through this repo's workspace link on every platform except Windows, where esbuild
+  cannot follow the junction — so the Windows CI leg runs the node suite only. Declaring
+  the dependency upstream, or replacing memserver, restores the full Windows matrix.
 - **Published `@emberx/component` leaves `@glimmer/compiler` external**, so the
   `defaultId` patch in `scripts/lib/glimmer-compat.js` only applies to this repo's own
   bundles. A consumer's bundler sees upstream's bare `require`: esbuild (and so Vite's dev

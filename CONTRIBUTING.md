@@ -94,10 +94,10 @@ owner, because `@emberx/router`'s `Owner` is a static class.
 
 ## Tests
 
-| Suite   | Command             | Covers                                         |
-| ------- | ------------------- | ---------------------------------------------- |
-| node    | `make test-node`    | `@emberx/string`, `@emberx/helper` under jsdom |
-| browser | `make test-browser` | everything, including routing and rendering    |
+| Suite   | Command             | Covers                                          |
+| ------- | ------------------- | ----------------------------------------------- |
+| node    | `make test-node`    | string, helper and component under node + jsdom |
+| browser | `make test-browser` | everything, including routing and rendering     |
 
 The browser suite is the real one — the router, the renderer and `@emberx/test-helpers`
 only run there. Both must pass before a change lands.

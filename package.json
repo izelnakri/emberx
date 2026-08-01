@@ -23,6 +23,7 @@
   "scripts": {
     "bench": "node benches/index.js",
     "bench:check": "node benches/index.js --check",
+    "bench:compare": "node benches/compare.js",
     "bench:update": "node benches/index.js --save",
     "build": "node scripts/build.js",
     "build:dev": "ENVIRONMENT=development node scripts/build.js",

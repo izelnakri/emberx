@@ -1,0 +1,31 @@
+name: Dependabot auto-merge
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+    steps:
+      - uses: dependabot/fetch-metadata@v2
+        id: metadata
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      # Patch and minor bumps merge themselves once CI is green. Majors — and
+      # anything in the version-locked @glimmer group, where a coordinated bump
+      # can silently duplicate @glimmer/validator — always want a human.
+      - name: Enable auto-merge
+        if: |
+          steps.metadata.outputs.update-type != 'version-update:semver-major' &&
+          steps.metadata.outputs.dependency-group != 'glimmer'
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

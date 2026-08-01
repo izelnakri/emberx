@@ -1,7 +1,7 @@
 // TODO: test that redirect hook works and dont get called on parent routes
 // NOTE: params could be manipulated if needed during routeWillChange and routeDidChange
 // TODO: make this sticky params if needed
-import RouterService from './router-service';
+import RouterService, { type GlobalWithQUnit } from './router-service';
 import Router from './index';
 import Owner from './owner';
 import EmberXComponent, { renderComponent, service } from '@emberx/component';
@@ -9,6 +9,23 @@ import EmberXComponent, { renderComponent, service } from '@emberx/component';
 interface FreeObject {
   [propName: string]: any;
 }
+
+/**
+ * router_js does not call the `events` handlers as free functions: it looks them
+ * up on the resolved route and `.apply()`s them with that route as the receiver
+ * (see `RouterJSRouter#triggerEvent`). Since routes are resolved to the *class*,
+ * the receiver is the static side, which is where `router` lives.
+ */
+interface RouteEventContext {
+  router: RouterService;
+}
+
+/**
+ * Query-param values are genuinely dynamic: they arrive off the URL as strings,
+ * or as arrays/nested objects of strings, and leave as whatever JS value the
+ * string denoted — number, boolean, null, or the string itself.
+ */
+type QueryParamValue = any;
 
 // class Args implements FreeObject {};
 
@@ -71,14 +88,13 @@ export default class Route extends EmberXComponent<FreeObject> {
       console.log(`'${transition.targetName}' Route[transition] is`, transition);
     }
 
-    // @ts-ignore
-    const containerElement: HTMLElement = globalThis.QUnit
+    const containerElement: HTMLElement | null = (globalThis as GlobalWithQUnit).QUnit
       ? document.getElementById('ember-testing')
       : document.getElementById('app');
 
     if (!containerElement) {
       throw new Error(
-        '#app or #ember-testing not found for the @emberx/router to boot/render the application!'
+        '#app or #ember-testing not found for the @emberx/router to boot/render the application!',
       );
     }
 
@@ -94,7 +110,11 @@ export default class Route extends EmberXComponent<FreeObject> {
   }
 
   static events = {
-    finalizeQueryParamChange(queryParams: string[], finalQueryParams: FreeObject[]): void {
+    finalizeQueryParamChange(
+      this: RouteEventContext,
+      queryParams: FreeObject,
+      finalQueryParams: FreeObject[],
+    ): void {
       if (this.router.activeTransition) {
         this.router.queryParams = queryParams;
       }
@@ -103,7 +123,10 @@ export default class Route extends EmberXComponent<FreeObject> {
         let value = castCorrectValueFromString(queryParams[key]);
         if (value === null) {
           delete queryParams[key];
-          delete finalQueryParams[key];
+          // NOTE: `finalQueryParams` is router_js's array of `{ key, value }`
+          // records and `key` is a query-param name, not an index, so this
+          // delete does nothing. Kept verbatim; the cast only restates that.
+          delete (finalQueryParams as FreeObject)[key];
           delete this.router.queryParams[key];
         } else {
           Object.assign(this.router.queryParams, { [key]: value });
@@ -112,7 +135,12 @@ export default class Route extends EmberXComponent<FreeObject> {
       }
     },
 
-    queryParamsDidChange(changed: FreeObject, all: FreeObject, _removed: FreeObject) {
+    queryParamsDidChange(
+      this: RouteEventContext,
+      _changed: FreeObject,
+      _all: FreeObject,
+      _removed: FreeObject,
+    ) {
       return this.router.refresh(); // NOTE: this might cause a history registry problem for some queryParam routes
     },
   };
@@ -126,7 +154,7 @@ export default class Route extends EmberXComponent<FreeObject> {
   }
 }
 
-function castCorrectValueFromString(value) {
+function castCorrectValueFromString(value: QueryParamValue): QueryParamValue {
   if (Array.isArray(value)) {
     return value.map((element) => castCorrectValueFromString(element));
   } else if (Number(value) && parseInt(value, 10)) {
@@ -142,7 +170,7 @@ function castCorrectValueFromString(value) {
   return nilifyStrings(value);
 }
 
-function nilifyStrings(value) {
+function nilifyStrings(value: QueryParamValue): QueryParamValue {
   if (value !== null && typeof value === 'object') {
     return Object.keys(value).reduce((object, key) => {
       return Object.assign(object, { [key]: nilifyStrings(value[key]) });

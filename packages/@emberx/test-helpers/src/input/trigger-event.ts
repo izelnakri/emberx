@@ -5,7 +5,7 @@ import { settled } from '../wait';
 export default async function triggerEvent(
   target: Target,
   eventType: string,
-  options?: object
+  options?: object,
 ): Promise<void> {
   await inputs.triggerEvent(target, eventType, options);
   await didRender();

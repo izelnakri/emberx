@@ -6,7 +6,7 @@ export async function visit(path: string): Promise<void> {
 
   if (!context.Router) {
     throw new Error(
-      `visit(${path}) called in test without prior Router.start()!\n Did you pass the Router to this.Router or setupApplicationTest(hooks, startedRouter) ?`
+      `visit(${path}) called in test without prior Router.start()!\n Did you pass the Router to this.Router or setupApplicationTest(hooks, startedRouter) ?`,
     );
   }
 
@@ -24,7 +24,7 @@ export function currentRouteName(): string {
 
   if (!context.Router) {
     throw new Error(
-      `currentRouteName() called in tests without prior Router.start()!\n Did you pass the Router to setupApplicationTest(hooks, Router) ?`
+      `currentRouteName() called in tests without prior Router.start()!\n Did you pass the Router to setupApplicationTest(hooks, Router) ?`,
     );
   }
 
@@ -38,7 +38,7 @@ export function currentURL(): string {
 
   if (!context.Router) {
     throw new Error(
-      `currentURL() called in tests without prior Router.start()!\n Did you pass the Router to setupApplicationTest(hooks, Router) ?`
+      `currentURL() called in tests without prior Router.start()!\n Did you pass the Router to setupApplicationTest(hooks, Router) ?`,
     );
   }
 

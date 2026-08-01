@@ -13,7 +13,6 @@ export default async function render(templateString: string, includes: object = 
     static includes = includes;
 
     constructor(owner: object, args: Args) {
-      // @ts-ignore
       super(owner, args);
 
       // TODO: maybe figure out a way to optimize this
@@ -31,7 +30,6 @@ export default async function render(templateString: string, includes: object = 
 
   container.innerHTML = '';
 
-  // @ts-ignore
   return await renderComponent(TemplateOnlyComponent, {
     element: container,
     owner: Owner,

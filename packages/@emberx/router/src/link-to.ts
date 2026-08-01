@@ -10,6 +10,16 @@ function isMissing<T>(value: T): boolean {
   return value === null || value === undefined;
 }
 
+/**
+ * The shape route-recognizer stores under `recognizer.names[routeName].handlers`.
+ * Only the two fields <LinkTo /> reads are described here; everything else on it
+ * is router_js/route-recognizer internal bookkeeping.
+ */
+interface RecognizerHandler {
+  names: string[];
+  shouldDecodes: boolean[];
+}
+
 export default class extends Component<{
   models?: any[];
   model?: FreeObject;
@@ -31,14 +41,13 @@ export default class extends Component<{
   }
 
   constructor(owner: any, args: any) {
-    // @ts-ignore
     super(owner, args);
 
     if (!args.route) {
       throw new Error('<LinkTo /> component missing @route argument');
     } else if ('model' in this.args && 'models' in this.args) {
       throw new Error(
-        'You cannot provide both the `@model` and `@models` arguments to the <LinkTo> component.'
+        'You cannot provide both the `@model` and `@models` arguments to the <LinkTo> component.',
       );
     }
   }
@@ -87,14 +96,14 @@ export default class extends Component<{
     // NOTE: maybe optimize rendering if there is no dynamic segments?
     // @ts-ignore
     let dynamicSegments = this.router.recognizer.names[this.args.route].handlers.reduce(
-      (result, handlerFunc) => {
+      (result: string[][], handlerFunc: RecognizerHandler) => {
         if (handlerFunc.shouldDecodes.length > 0) {
           result.push(handlerFunc.names);
         }
 
         return result;
       },
-      []
+      [],
     );
 
     if (this.args.models) {
@@ -110,7 +119,7 @@ export default class extends Component<{
           (potentialKey) => {
             // @ts-ignore
             return potentialKey in this.args.model;
-          }
+          },
         );
 
         // @ts-ignore
@@ -152,7 +161,7 @@ export default class extends Component<{
       return;
     } else if (this.isLoading) {
       throw new Error(
-        'This link is in an inactive loading state because at least one of its models currently has a null/undefined value, or the provided route name is invalid.'
+        'This link is in an inactive loading state because at least one of its models currently has a null/undefined value, or the provided route name is invalid.',
       );
     }
 
@@ -161,12 +170,10 @@ export default class extends Component<{
         let promise = this.router
           .transitionTo(this.link, { queryParams: this.args.query }, true)
           .method('replace');
-        this.willBeActive;
         return promise;
       }
 
       let promise = this.router.transitionTo(this.link, { queryParams: this.args.query }, true);
-      this.willBeActive;
       return promise;
     }
   }

@@ -9,7 +9,7 @@ let templateId = 0;
 export default function createTemplate(
   templateSource: string,
   options: PrecompileOptions,
-  scopeValues: ScopeValues = {}
+  scopeValues: ScopeValues = {},
 ) {
   options.locals = options.locals ?? Object.keys(scopeValues ?? {});
 

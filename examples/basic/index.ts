@@ -22,5 +22,5 @@ document.addEventListener(
       },
     });
   },
-  { once: true }
+  { once: true },
 );

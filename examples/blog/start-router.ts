@@ -86,6 +86,6 @@ export default function startApplication() {
         name: '404',
       },
     ],
-    oldRouterMap
+    oldRouterMap,
   );
 }

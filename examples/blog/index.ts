@@ -10,4 +10,4 @@ Router.LOG_MODELS = false;
 
 window.BlogRouter = Router;
 
-export default Router.visit(`${document.location.pathname}/${document.location.search}`);
+export default Router.visit(`${document.location.pathname}${document.location.search}`);

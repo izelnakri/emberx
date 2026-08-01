@@ -1,10 +1,9 @@
-import { Route, tracked, action, on, LinkTo } from '@emberx/router';
-import t from '../helpers/t';
+import { Route, tracked, action, LinkTo, service } from '@emberx/router';
 
 import Counter from '../components/Counter';
 
 export default class IndexRoute extends Route {
-  // @service intl;
+  @service intl;
 
   @tracked dynamicObject;
 

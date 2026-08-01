@@ -1,10 +1,10 @@
 # @emberx/router: Fast, advanced, flexible routing library for browsers and node.js
 
 This is a futuristic take on the router of ember.js, which is the most advanced and mature
-routing solution I've seen so far in frontend development. It supports named routes, queryParameters,
-dynamic link segments, redirections, promise-aware route-template render delayin for SSR,
-parent-children route relationships. The router is fully testable with `visit` and `currentURL` helpers
-for `@emberx/test-helpers`.
+routing solution I've seen so far in frontend development. It supports named routes, dynamic link
+segments, promise-aware model hooks and parent-children route relationships. Query params and SSR
+are in progress, see [ROADMAP.md](../../../ROADMAP.md). The router is fully testable with `visit`
+and `currentURL` helpers for `@emberx/test-helpers`.
 
 ```ts
 // in index.ts:
@@ -13,7 +13,7 @@ import startRouter from './start-router';
 
 const Router = startRouter();
 
-export default Router.visit(`${document.location.pathname}/${document.location.search}`);
+export default Router.visit(`${document.location.pathname}${document.location.search}`);
 
 // ===================================================
 // in ./start-router.ts:
@@ -24,40 +24,40 @@ import PostsRoute from './routes/posts/route.ts';
 import PostsIndexRoute from './routes/posts/index/route.ts';
 import PostsPostRoute from './routes/posts/post/route.ts';
 
-Router.addServices({
-  intl: new LocaleService(),
-});
+export default function startRouter() {
+  Router.addServices({
+    intl: new LocaleService(),
+  });
 
-let router = Router.start([
-  {
-    path: '/',
-    name: 'index',
-    route: IndexRoute
-  },
-  {
-    path: '/posts',
-    name: 'posts',
-    route: PostsRoute,
-    indexRoute: PostsIndexRoute
-  },
-  {
-    path: '/posts/:slug',
-    name: 'posts.post',
-    route: PostsPostRoute
-  },
-  {
-    path: '/posts/:blog_post_id/comments',
-    name: 'posts.post.comments',
-    route: PostsPostCommentsRoute
-  },
-]);
-
-export default router;
+  return Router.start([
+    {
+      path: '/',
+      name: 'index',
+      route: IndexRoute,
+    },
+    {
+      path: '/posts',
+      name: 'posts',
+      route: PostsRoute,
+      indexRoute: PostsIndexRoute,
+    },
+    {
+      path: '/posts/:slug',
+      name: 'posts.post',
+      route: PostsPostRoute,
+    },
+    {
+      path: '/posts/:blog_post_id/comments',
+      name: 'posts.post.comments',
+      route: PostsPostCommentsRoute,
+    },
+  ]);
+}
 
 // ===================================================
-// in ./routes/index/route.ts:
+// in ./routes/posts/post/route.ts:
 
-import { Route, hbs, service } from '@emberx/router';
+import { Route, LinkTo, hbs, service, action } from '@emberx/router';
 import { WelcomeBanner } from './components/welcome-banner';
 import translate from './helpers/translate';
 import RSVP from 'rsvp';
@@ -69,7 +69,7 @@ export default class PostsPostRoute extends Route {
     return RSVP.hash({ comments: fetchComments() }); // NOTE: RSVP.hash() returns a promise that waits for promises inside the hash
   }
 
-  static includes = { WelcomeBanner, translate };
+  static includes = { LinkTo, WelcomeBanner, translate };
 
   static template = hbs`
     <WelcomeBanner />

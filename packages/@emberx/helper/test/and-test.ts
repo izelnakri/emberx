@@ -14,7 +14,7 @@ module('@emberx/helper | "and" helper', function (hooks) {
     assert.equal(
       this.element.textContent,
       '[true] [false] [false] [false]',
-      'value should be "[true] [false] [false] [false]"'
+      'value should be "[true] [false] [false] [false]"',
     );
   });
 

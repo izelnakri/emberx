@@ -9,18 +9,18 @@ module('@emberx/string | decamelize', () => {
     assert.equal(
       decamelize('innerHTML'),
       'inner_html',
-      'converts a camelized string into all lower case separated by underscores.'
+      'converts a camelized string into all lower case separated by underscores.',
     );
     assert.equal(decamelize('size160Url'), 'size160_url', 'decamelizes strings with numbers');
     assert.equal(
       decamelize('PrivateDocs/OwnerInvoice'),
       'private_docs/owner_invoice',
-      'decamelize namespaced classified string'
+      'decamelize namespaced classified string',
     );
     assert.equal(
       decamelize('privateDocs/ownerInvoice'),
       'private_docs/owner_invoice',
-      'decamelize namespaced camelized string'
+      'decamelize namespaced camelized string',
     );
   });
 });

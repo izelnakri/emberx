@@ -10,17 +10,17 @@ module('@emberx/string | underscore', () => {
     assert.equal(
       underscore('PrivateDocs/OwnerInvoice'),
       'private_docs/owner_invoice',
-      'underscore namespaced classified string'
+      'underscore namespaced classified string',
     );
     assert.equal(
       underscore('privateDocs/ownerInvoice'),
       'private_docs/owner_invoice',
-      'underscore namespaced camelized string'
+      'underscore namespaced camelized string',
     );
     assert.equal(
       underscore('private-docs/owner-invoice'),
       'private_docs/owner_invoice',
-      'underscore namespaced dasherized string'
+      'underscore namespaced dasherized string',
     );
   });
 });

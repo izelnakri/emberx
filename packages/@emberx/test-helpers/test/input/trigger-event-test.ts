@@ -18,7 +18,7 @@ module('@emberx/test-helpers | triggerEvent', function (hooks) {
 
       assert.rejects(
         triggerEvent(`#foo-bar-baz-not-here-ever-bye-bye`, 'mouseenter'),
-        /Element not found when calling `triggerEvent\('#foo-bar-baz-not-here-ever-bye-bye'/
+        /Element not found when calling `triggerEvent\('#foo-bar-baz-not-here-ever-bye-bye'/,
       );
     });
 
@@ -27,7 +27,7 @@ module('@emberx/test-helpers | triggerEvent', function (hooks) {
 
       assert.rejects(
         triggerEvent(document.querySelector('[data-test-some-div]')),
-        /Must provide an `eventType` to `triggerEvent`/
+        /Must provide an `eventType` to `triggerEvent`/,
       );
     });
 
@@ -36,7 +36,7 @@ module('@emberx/test-helpers | triggerEvent', function (hooks) {
 
       assert.rejects(
         triggerEvent('[data-test-some-textarea]', 'mouseenter'),
-        new Error('Can not `triggerEvent` on disabled [object HTMLTextAreaElement]')
+        new Error('Can not `triggerEvent` on disabled [object HTMLTextAreaElement]'),
       );
     });
   });

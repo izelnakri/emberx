@@ -14,7 +14,7 @@ module('@emberx/helper | "eq" helper', function (hooks) {
     assert.equal(
       this.element.textContent,
       '[true] [false] [false] [true]',
-      'value should be "[true] [false] [false] [true]"'
+      'value should be "[true] [false] [false] [true]"',
     );
   });
 
@@ -26,7 +26,7 @@ module('@emberx/helper | "eq" helper', function (hooks) {
 
     await render(
       hbs`[{{eq this.contextChild.valueA this.contextChild.valueB}}] [{{eq this.contextChild.valueB this.contextChild.valueA}}]`,
-      { eq }
+      { eq },
     );
 
     assert.equal(this.element.textContent, '[true] [true]', 'value should be "[true] [true]"');
@@ -35,7 +35,7 @@ module('@emberx/helper | "eq" helper', function (hooks) {
 
     await render(
       hbs`[{{eq this.contextChild.valueA this.contextChild.valueB}}] [{{eq this.contextChild.valueB this.contextChild.valueA}}]`,
-      { eq }
+      { eq },
     );
 
     assert.equal(this.element.textContent, '[false] [false]', 'value should be "[false] [false]"');
@@ -44,7 +44,7 @@ module('@emberx/helper | "eq" helper', function (hooks) {
 
     await render(
       hbs`[{{eq this.contextChild.valueA this.contextChild.valueB}}] [{{eq this.contextChild.valueB this.contextChild.valueA}}]`,
-      { eq }
+      { eq },
     );
 
     assert.equal(this.element.textContent, '[true] [true]', 'value should be "[true] [true]"');
@@ -54,7 +54,7 @@ module('@emberx/helper | "eq" helper', function (hooks) {
 
     await render(
       hbs`[{{eq this.contextChild.valueA this.contextChild.valueB}}] [{{eq this.contextChild.valueB this.contextChild.valueA}}]`,
-      { eq }
+      { eq },
     );
 
     assert.equal(this.element.textContent, '[true] [true]', 'value should be "[true] [true]"');

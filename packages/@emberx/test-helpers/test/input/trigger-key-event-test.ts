@@ -12,7 +12,7 @@ module('@emberx/test-helpers | triggerKeyEvent', function (hooks) {
 
       assert.rejects(
         triggerKeyEvent('[data-test-some-test-div]'),
-        /Must provide an `eventType` to `triggerKeyEvent`/
+        /Must provide an `eventType` to `triggerKeyEvent`/,
       );
     });
 
@@ -21,7 +21,7 @@ module('@emberx/test-helpers | triggerKeyEvent', function (hooks) {
 
       assert.rejects(
         triggerKeyEvent('[data-test-some-test-div]', 'mouseenter'),
-        /Must provide an `eventType` of keydown, keypress, keyup to `triggerKeyEvent` but you passed `mouseenter`./
+        /Must provide an `eventType` of keydown, keypress, keyup to `triggerKeyEvent` but you passed `mouseenter`./,
       );
     });
 
@@ -30,7 +30,7 @@ module('@emberx/test-helpers | triggerKeyEvent', function (hooks) {
 
       assert.rejects(
         triggerKeyEvent('[data-test-some-test-div]', 'keypress'),
-        /Must provide a `key` or `keyCode` to `triggerKeyEvent`/
+        /Must provide a `key` or `keyCode` to `triggerKeyEvent`/,
       );
     });
 
@@ -39,7 +39,7 @@ module('@emberx/test-helpers | triggerKeyEvent', function (hooks) {
 
       assert.rejects(
         triggerKeyEvent('[data-test-some-test-div]', 'keypress', ''),
-        /Must provide a `key` or `keyCode` to `triggerKeyEvent`/
+        /Must provide a `key` or `keyCode` to `triggerKeyEvent`/,
       );
     });
 
@@ -48,7 +48,7 @@ module('@emberx/test-helpers | triggerKeyEvent', function (hooks) {
 
       assert.rejects(
         triggerKeyEvent('[data-test-some-test-div]', 'keypress', 'enter'),
-        /Must provide a `key` to `triggerKeyEvent` that starts with an uppercase character but you passed `enter`./
+        /Must provide a `key` to `triggerKeyEvent` that starts with an uppercase character but you passed `enter`./,
       );
     });
 
@@ -57,7 +57,7 @@ module('@emberx/test-helpers | triggerKeyEvent', function (hooks) {
 
       assert.rejects(
         triggerKeyEvent('[data-test-some-test-div]', 'keypress', '13'),
-        /Must provide a numeric `keyCode` to `triggerKeyEvent` but you passed `13` as a string./
+        /Must provide a numeric `keyCode` to `triggerKeyEvent` but you passed `13` as a string./,
       );
     });
 
@@ -66,7 +66,7 @@ module('@emberx/test-helpers | triggerKeyEvent', function (hooks) {
 
       assert.rejects(
         triggerKeyEvent('[data-test-some-textarea]', 'keypress', '13'),
-        new Error('Can not `triggerKeyEvent` on disabled [object HTMLTextAreaElement]')
+        new Error('Can not `triggerKeyEvent` on disabled [object HTMLTextAreaElement]'),
       );
     });
   });

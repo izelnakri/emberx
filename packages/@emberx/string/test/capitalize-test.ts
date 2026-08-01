@@ -10,22 +10,22 @@ module('@emberx/string | capitalize', () => {
     assert.equal(
       capitalize('Capitalized string'),
       'Capitalized string',
-      'does nothing with capitalized string'
+      'does nothing with capitalized string',
     );
     assert.equal(
       capitalize('privateDocs/ownerInvoice'),
       'PrivateDocs/OwnerInvoice',
-      'capitalize namespaced camelized string'
+      'capitalize namespaced camelized string',
     );
     assert.equal(
       capitalize('private_docs/owner_invoice'),
       'Private_docs/Owner_invoice',
-      'capitalize namespaced underscored string'
+      'capitalize namespaced underscored string',
     );
     assert.equal(
       capitalize('private-docs/owner-invoice'),
       'Private-docs/Owner-invoice',
-      'capitalize namespaced dasherized string'
+      'capitalize namespaced dasherized string',
     );
     assert.equal(capitalize('šabc'), 'Šabc', 'capitalize string with accent character');
   });

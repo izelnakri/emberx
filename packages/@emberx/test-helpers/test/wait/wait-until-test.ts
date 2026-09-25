@@ -81,6 +81,10 @@ module('@emberx/test-helpers | waitUntil', function (hooks) {
       await waitUntil(() => {
         assert.ok(true);
         throw new Error('error goes here');
+        // Deliberately unreachable: with assert.expect(2) above, reaching this
+        // line would fail the test, proving waitUntil stops invoking the
+        // callback once it throws.
+        // eslint-disable-next-line no-unreachable
         assert.ok(false);
       });
     } catch (error) {

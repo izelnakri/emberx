@@ -45,14 +45,12 @@ export default class Router {
   }
 
   static visit(url: string) {
-    // @ts-ignore
-    try {
-      debugger;
-      let result = Owner.lookup('service:router').visit(url);
-      return result;
-    } catch (error) {
-      // debuger;
-    }
+    // Previously this body was wrapped in a try/catch containing a `debugger`
+    // statement and an empty handler, so every navigation failure was silently
+    // discarded and any user with devtools open hit a breakpoint on each visit.
+    // Errors now propagate to the caller, which is the only way a failed
+    // transition can be observed.
+    return Owner.lookup('service:router').visit(url);
   }
 
   static start(arrayOfRouteDefinitions: Array<RouteDefinition> = [], routeMap: any = undefined): Router {
@@ -61,7 +59,7 @@ export default class Router {
     let routeMapRegistry = routeMap ? this.map(routeMap) : Owner.routes; // NOTE: move this to super.map since it just mutates the module
     let ROUTE_REGISTRY = this.convertDefinitionsToRegistry(arrayOfRouteDefinitions);
     let routerJSRouteArray = this.convertToRouterJSRouteArray(
-      Object.assign(routeMapRegistry, ROUTE_REGISTRY)
+      Object.assign(routeMapRegistry, ROUTE_REGISTRY),
     );
     let routerService = Owner.register('service:router', new RouterService({ Resolver: this.Resolver }));
     routerService.map(function (match: any) {
@@ -99,7 +97,7 @@ export default class Router {
         let parentRouteName = routeName.slice(0, routeName.length - 6);
 
         throw new Error(
-          `RouteDefinition{ name: ${routeName} } cannot end with ".index". Instead specify it as "indexRoute" of its parent route: ${parentRouteName}`
+          `RouteDefinition{ name: ${routeName} } cannot end with ".index". Instead specify it as "indexRoute" of its parent route: ${parentRouteName}`,
         );
       }
 
@@ -195,7 +193,7 @@ function checkInRouteRegistryOrCreateRoute(registry: RouteRegistry, targetRoute:
   if (targetRoute.route) {
     if (foundRoute.route && foundRoute.name !== targetRoute.name) {
       console.log(
-        `[WARNING]: ${routeName}.route already has ${foundRoute.name}. You tried to overwrite ${routeName}.route with ${targetRoute.name}`
+        `[WARNING]: ${routeName}.route already has ${foundRoute.name}. You tried to overwrite ${routeName}.route with ${targetRoute.name}`,
       );
     }
 

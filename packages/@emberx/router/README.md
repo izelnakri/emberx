@@ -32,23 +32,23 @@ let router = Router.start([
   {
     path: '/',
     name: 'index',
-    route: IndexRoute
+    route: IndexRoute,
   },
   {
     path: '/posts',
     name: 'posts',
     route: PostsRoute,
-    indexRoute: PostsIndexRoute
+    indexRoute: PostsIndexRoute,
   },
   {
     path: '/posts/:slug',
     name: 'posts.post',
-    route: PostsPostRoute
+    route: PostsPostRoute,
   },
   {
     path: '/posts/:blog_post_id/comments',
     name: 'posts.post.comments',
-    route: PostsPostCommentsRoute
+    route: PostsPostCommentsRoute,
   },
 ]);
 

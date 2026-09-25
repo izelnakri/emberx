@@ -1,0 +1,32 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
+  "categories": {
+    "correctness": "error"
+  },
+  "rules": {
+    "no-debugger": "error",
+    "no-console": "off",
+    "no-undef": "off",
+
+    "no-extraneous-class": "off",
+    "no-underscore-dangle": "off",
+    "no-this-in-exported-function": "off",
+    "no-shadow": "off"
+  },
+  "overrides": [
+    {
+      "files": ["**/test/**", "**/*-test.ts", "benches/**"],
+      "rules": {
+        "no-unused-vars": "warn"
+      }
+    }
+  ],
+  "ignorePatterns": [
+    "**/dist/**",
+    "**/node_modules/**",
+    "tmp/**",
+    ".tmp/**",
+    "coverage/**",
+    "packages/@emberx/router/src/vendor/**"
+  ]
+}

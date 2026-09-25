@@ -1,49 +1,55 @@
 {
-  "ts-node": {
-    "transpileOnly": true
-  },
   "compilerOptions": {
-    "incremental": false,                   /* Enable incremental compilation */
-    "target": "ES2018",                          /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', 'ES2018', 'ES2019' or 'ESNEXT'. */
-    "module": "commonjs",
-    "declaration": true,                   /* Generates corresponding '.d.ts' file. */
-    "rootDir": "./packages",
-    "outDir": "./dist",                        /* Redirect output structure to the directory. */
-    "inlineSourceMap": true,
-    "inlineSources": true,
-    "moduleResolution": "node",
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+
+    /* Resolve sibling packages to their sources rather than their built dist/.
+       Without this, type-checking a clean checkout is a chicken-and-egg problem:
+       @emberx/router's types cannot resolve @emberx/component until
+       @emberx/component has been built, but building emits types. Import
+       specifiers are preserved verbatim in the emitted .d.ts, so published
+       packages still refer to each other by package name. */
+    "baseUrl": ".",
+    "paths": {
+      "@emberx/*": ["packages/@emberx/*/src/index.ts"]
+    },
+
+    /* emberx compiles templates at runtime and ships plain ESM; esbuild does the
+       emitting, so tsc is only ever used for checking and for .d.ts output. */
+    "noEmit": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": false,
+    "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "baseUrl": "./",                       /* Base directory to resolve non-absolute module names. */
+    "resolveJsonModule": true,
+    "allowJs": true,
+
+    /* Routes, components and helpers all use legacy (stage 1) decorators:
+       @tracked, @action, @service. */
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,         /* Enables experimental support for emitting type metadata for decorators. */
-    // Enhance Strictness
-    "noUnusedLocals": true,
-    "noImplicitThis": true,
-    // Enabling these breaks @glimmer/application, fix and reenable this
+    "emitDecoratorMetadata": true,
+    "useDefineForClassFields": false,
+
+    "strict": false,
     "noImplicitAny": true,
-    "suppressImplicitAnyIndexErrors": false,
-    "noUnusedParameters": true,
+    "noImplicitThis": true,
     "strictNullChecks": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "allowUnreachableCode": false,
     "noImplicitReturns": false,
+    "forceConsistentCasingInFileNames": true,
+
     "skipLibCheck": true,
-    "skipDefaultLibCheck": true,
+    "newLine": "lf",
 
-    "newLine": "LF",
-
-    "types": [
-      "qunit",
-      "node"
-    ]
+    /* No ambient @types packages. Every package source file is browser-targeted,
+       so DOM comes from `lib` above. Node-only code lives in scripts/ and
+       benches/, which this project does not type-check. */
+    "types": []
   },
-  "include": [
-    "packages/@emberx/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "tmp",
-    "test",
-    "dist",
-    "scripts"
-  ]
+  "include": ["packages/@emberx/*/src/**/*.ts"],
+  "exclude": ["node_modules", "tmp", "dist", "**/dist/**"]
 }

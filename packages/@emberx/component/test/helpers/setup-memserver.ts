@@ -2,15 +2,14 @@ import Memserver from '@memserver/server';
 
 export default function setupMemserver(hooks) {
   hooks.beforeEach(function () {
-    try {
-      this.Server = new Memserver({});
-    } catch (error) {
-      debugger;
-    }
-    debugger;
+    // Deliberately unguarded. This used to be a try/catch whose handler was a
+    // bare `debugger`, so a failure to boot was discarded and only surfaced
+    // later as "Cannot read properties of undefined (reading 'shutdown')" in
+    // afterEach, with the real cause gone.
+    this.Server = new Memserver({});
   });
 
   hooks.afterEach(function () {
-    this.Server.shutdown();
+    this.Server?.shutdown();
   });
 }

@@ -1,6 +1,5 @@
 // @ts-nocheck
 import { hbs } from '@emberx/component';
-import { fn } from '@glimmer/helper';
 import { module, test } from 'qunitx';
 import { render, blur, focus } from '@emberx/test-helpers';
 import { setupRenderingTest } from '../helpers/index';
@@ -40,7 +39,7 @@ module('@emberx/test-helpers | blur', function (hooks) {
     assert.equal(
       document.activeElement,
       document.querySelector('[data-test-some-input]'),
-      'activeElement updated'
+      'activeElement updated',
     );
     assert.dom('[data-test-some-input]').hasValue('Something');
 

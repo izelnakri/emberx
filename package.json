@@ -2,95 +2,67 @@
   "name": "emberx",
   "type": "module",
   "version": "0.0.14",
+  "private": true,
   "author": "Izel Nakri",
-  "description": "",
+  "description": "Explicitly resolvable, build-system-free Ember.js for SPAs",
   "license": "MIT",
   "engines": {
-    "node": ">= 15.0"
+    "node": ">=24.0.0"
+  },
+  "volta": {
+    "node": "24.21.0"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/izelnakri/emberx.git"
+    "url": "git+https://github.com/izelnakri/emberx.git"
   },
   "workspaces": [
     "packages/@emberx/*",
     "examples/*"
   ],
   "scripts": {
-    "lint": "eslint . --ext=js,ts --cache",
-    "build": "npm run libs:build && npm run libs:build-tests-for-node",
-    "build:dev": "ENVIRONMENT=development npm run build",
-    "changelog:unreleased": "node_modules/.bin/auto-changelog --stdout --commit-limit false --package --unreleased-only --hide-credit --sort-commits date-desc",
-    "changelog:preview": "node_modules/.bin/auto-changelog --stdout --commit-limit false --package -u --sort-commits date-desc",
-    "changelog:update": "node_modules/.bin/auto-changelog --commit-limit false --package --sort-commits date-desc",
-    "libs:build": "npm run libs:clean && node scripts/build-libraries.js",
-    "libs:build-tests-for-node": "rm -rf tmp && node scripts/build-test-folders.js",
-    "libs:clean": "node scripts/clean-libraries.js",
-    "libs:release": "node scripts/release-libraries.js",
-    "dev": "webpack-dev-server",
-    "prepack": "npm run build",
-    "release:alpha": "node_modules/.bin/release-it --preRelease=alpha --no-git.requireUpstream -V",
-    "release:beta": "node_modules/.bin/release-it --preRelease=beta --no-git.requireUpstream -V",
-    "release": "node_modules/.bin/release-it -V",
-    "test": "ENVIRONMENT=development npm run build && npm run test:browser && npm run test:node",
-    "test:ci": "npm run build && npm run test:browser:ci && npm run test:node:ci",
-    "test:browser": "ENVIRONMENT=development npm run test:browser:ci",
-    "test:browser:dev": "qunitx test/index.ts --browser --watch",
-    "test:browser:ci": "node_modules/.bin/qunitx test/index.ts --browser --failFast",
-    "test:node": "ENVIRONMENT=development npm run test:node:ci",
-    "test:node:ci": "npm run libs:build-tests-for-node && qunitx tmp/@emberx/string tmp/@emberx/component --before='test/setup-dom.js'",
-    "typecheck": "tsc --project tsconfig.json --noEmit --skipLibCheck"
-  },
-  "dependencies": {
-    "@glimmer/compiler": "^0.80.0",
-    "@glimmer/component": "2.0.0-beta.17",
-    "@glimmer/core": "2.0.0-beta.17",
-    "@glimmer/interfaces": "^0.80.0",
-    "@glimmer/modifier": "2.0.0-beta.17",
-    "@glimmer/opcode-compiler": "^0.80.0",
-    "@glimmer/runtime": "^0.80.0",
-    "@glimmer/ssr": "^2.0.0-beta.17",
-    "browser-inputs": "1.1.0",
-    "route-recognizer": "^0.3.4",
-    "router_js": "^7.3.0",
-    "rsvp": "^4.8.5"
+    "bench": "node benches/index.js",
+    "bench:check": "node benches/index.js --check",
+    "bench:update": "node benches/index.js --save",
+    "build": "node scripts/build.js",
+    "build:dev": "ENVIRONMENT=development node scripts/build.js",
+    "changelog:latest": "git-cliff --latest --strip all",
+    "changelog:preview": "git-cliff --unreleased",
+    "changelog:update": "git-cliff --unreleased --prepend CHANGELOG.md",
+    "clean": "node scripts/clean.js",
+    "dev": "node scripts/dev.js",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
+    "lint": "oxlint packages scripts benches test examples",
+    "test": "npm run build:dev && npm run test:node && npm run test:browser",
+    "test:browser": "qunitx test/index.ts",
+    "test:browser:dev": "qunitx test/index.ts --watch",
+    "test:coverage": "qunitx test/index.ts --coverage=lcov,html",
+    "test:node": "node scripts/test-node.js",
+    "typecheck": "tsc --project tsconfig.json --noEmit"
   },
   "devDependencies": {
-    "@babel/cli": "^7.14.3",
-    "@babel/plugin-proposal-decorators": "^7.14.2",
-    "@babel/preset-typescript": "^7.13.0",
-    "@glimmer/tracking": "2.0.0-beta.17",
     "@memserver/model": "2.5.3",
     "@memserver/response": "2.5.3",
     "@memserver/server": "2.5.3",
-    "auto-changelog": "^2.2.1",
-    "axios": "^0.21.1",
-    "babel-loader": "^8.2.2",
-    "babel-plugin-module-extension-resolver": "^1.0.0-rc.2",
-    "bootstrap": "^5.0.1",
-    "eslint": "^7.29.0",
-    "qunit-dom": "^1.6.0",
-    "qunitx": "^0.2.2",
-    "recursive-lookup": "^1.0.0",
-    "release-it": "^14.6.2",
-    "tsconfig-paths-webpack-plugin": "^3.5.1",
-    "typescript": "^4.3.2",
-    "webpack": "^5.41.1",
-    "webpack-cli": "^4.7.0",
-    "webpack-dev-server": "^4.0.0-beta.3"
+    "esbuild": "^0.28.2",
+    "git-cliff": "^2.14.2",
+    "oxlint": "^1.85.0",
+    "prettier": "^3.9.9",
+    "qunit-dom": "^3.6.0",
+    "qunitx": "^1.3.1",
+    "qunitx-cli": "^0.38.0",
+    "rsvp": "^4.8.5",
+    "typescript": "^5.9.3"
   },
-  "browserslist": {
-    "production": [
-      "last 1 Chrome version",
-      "last 1 Firefox version",
-      "last 1 Safari version"
-    ],
-    "development": [
-      "last 1 Chrome version",
-      "last 1 Firefox version",
-      "last 1 Safari version"
-    ]
+  "overrides": {
+    "pretender": "3.4.3"
   },
+  "browserslist": [
+    "last 2 Chrome versions",
+    "last 2 Firefox versions",
+    "last 2 Safari versions"
+  ],
   "prettier": {
     "printWidth": 110,
     "singleQuote": true
@@ -102,21 +74,11 @@
     "port": 1234,
     "htmlPaths": [
       "test/index.html"
-    ]
+    ],
+    "junit": "tmp/junit.xml"
   },
-  "release-it": {
-    "npm": false,
-    "publishConfig": {
-      "access": "public"
-    },
-    "git": {
-      "changelog": "npm run changelog:unreleased"
-    },
-    "github": {
-      "release": true
-    },
-    "hooks": {
-      "after:bump": "npm run changelog:update && npm run libs:release ${version}"
-    }
+  "allowScripts": {
+    "esbuild": false,
+    "qunitx-cli": false
   }
 }

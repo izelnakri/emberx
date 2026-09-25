@@ -36,7 +36,7 @@ module('@emberx/test-helpers | scrollTo', function (hooks) {
     assert.equal(
       currentScrollPosition,
       scrollAmount,
-      'After use of the `scrollTop` a paint cycle is triggered and the callback is called'
+      'After use of the `scrollTop` a paint cycle is triggered and the callback is called',
     );
   });
 
@@ -66,7 +66,7 @@ module('@emberx/test-helpers | scrollTo', function (hooks) {
     assert.equal(
       currentScrollPosition,
       scrollAmount,
-      'After use of the `scrollLeft` a paint cycle is triggered and the callback is called'
+      'After use of the `scrollLeft` a paint cycle is triggered and the callback is called',
     );
   });
 

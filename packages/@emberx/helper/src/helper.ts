@@ -5,14 +5,14 @@ type helperFunc<
   Positional extends readonly unknown[] = readonly unknown[],
   Named extends Dict<unknown> = Dict<unknown>,
   Services = unknown,
-  Result = unknown
+  Result = unknown,
 > = (positional: Positional, named: Named, services: Services) => Result;
 
 interface HelperBucket<
   Positional extends readonly unknown[] = readonly unknown[],
   Named extends Dict<unknown> = Dict<unknown>,
   Owner = unknown,
-  Result = unknown
+  Result = unknown,
 > {
   fn: helperFunc<Positional, Named, Owner, Result>;
   args: Arguments;

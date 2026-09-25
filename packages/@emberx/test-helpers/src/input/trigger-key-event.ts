@@ -21,7 +21,7 @@ export default async function triggerKeyEvent(
   target: Target,
   eventType: KeyboardEventType,
   key: number | string,
-  modifiers: KeyModifiers = DEFAULT_MODIFIERS
+  modifiers: KeyModifiers = DEFAULT_MODIFIERS,
 ): Promise<void> {
   await inputs.triggerKeyEvent(target, eventType, key, modifiers);
   await didRender();

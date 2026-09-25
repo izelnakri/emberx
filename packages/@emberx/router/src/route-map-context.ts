@@ -10,7 +10,7 @@ export default class RouteMapContext {
   static map(
     map: (any: any, match: any, routerJSRouteArray: FreeObject) => {},
     match: (param: any) => any,
-    routerJSRouteArray: FreeObject
+    routerJSRouteArray: FreeObject,
   ): Array<routerJSRouteDefinition> {
     return Object.keys(routerJSRouteArray).map((registryRoute) => {
       let route = routerJSRouteArray[registryRoute];

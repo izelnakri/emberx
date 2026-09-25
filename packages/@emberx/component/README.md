@@ -47,7 +47,6 @@ class UserDisplay extends Component {
   }
 }
 
-
 // Usage:
 
 renderComponent(UserDisplay, { element: document.getElementById('app') });
@@ -72,10 +71,10 @@ class Table extends Component<{ headRows: object }> {
       </thead>
       {{yield}}
     </table>
-  `
+  `;
 }
 
-class UserTable extends Component<{ users: User[] }>{
+class UserTable extends Component<{ users: User[] }> {
   static includes = { Table };
 
   static template = hbs`
@@ -90,16 +89,13 @@ class UserTable extends Component<{ users: User[] }>{
         {{/each}}
       </tbody>
     </Table>
-  `
+  `;
 
   @tracked sortDirection = 'desc';
   @tracked sortedUsers: User[] | null = null;
 
   get head() {
-    return [
-      ['List of users'],
-      ['First name', 'Last name', 'Created at']
-    ];
+    return [['List of users'], ['First name', 'Last name', 'Created at']];
   }
 
   @action

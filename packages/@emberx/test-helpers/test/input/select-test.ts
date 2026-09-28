@@ -27,19 +27,13 @@ module('@emberx/test-helpers | select', function (hooks) {
       select(element, undefined),
       /Must provide an `option` or `options` to select when calling `select`./,
     );
-    assert.rejects(
-      select(element, null),
-      /Must provide an `option` or `options` to select when calling `select`./,
-    );
+    assert.rejects(select(element, null), /Must provide an `option` or `options` to select when calling `select`./);
   });
 
   test('select with unfindable selector ', async function (assert) {
     await render(hbs`<div data-test-some-div></div>`);
 
-    assert.rejects(
-      select('#fake-selector', 'example'),
-      /Element not found when calling `select\('#fake-selector'\)`/,
-    );
+    assert.rejects(select('#fake-selector', 'example'), /Element not found when calling `select\('#fake-selector'\)`/);
   });
 
   test('select with element that is not a HTMLSelectElement', async function (assert) {

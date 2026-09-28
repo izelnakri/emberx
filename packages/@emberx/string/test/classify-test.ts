@@ -34,16 +34,8 @@ module('@emberx/string | classify', () => {
       '_Foo/_Bar',
       'classify underscore-prefixed-namespaced underscore-prefixed string',
     );
-    assert.equal(
-      classify('-foo/_bar'),
-      '_Foo/_Bar',
-      'classify dash-prefixed-namespaced underscore-prefixed string',
-    );
-    assert.equal(
-      classify('-foo/-bar'),
-      '_Foo/_Bar',
-      'classify dash-prefixed-namespaced dash-prefixed string',
-    );
+    assert.equal(classify('-foo/_bar'), '_Foo/_Bar', 'classify dash-prefixed-namespaced underscore-prefixed string');
+    assert.equal(classify('-foo/-bar'), '_Foo/_Bar', 'classify dash-prefixed-namespaced dash-prefixed string');
     assert.equal(classify('InnerHTML'), 'InnerHTML', 'does nothing with classified string');
     assert.equal(classify('_FooBar'), '_FooBar', 'does nothing with classified prefixed string');
   });

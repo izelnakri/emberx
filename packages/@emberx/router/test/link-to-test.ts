@@ -33,12 +33,9 @@ module('@emberx/router | <LinkTo> tests', function (hooks) {
   test('it works for a route with @model as object', async function (assert) {
     this.blogPost = { slug: '0d469c09-b6f6-4bce-999a-b7b528f86aac' };
 
-    await render(
-      hbs`<LinkTo @route="public.blog-post" @model={{this.blogPost}} data-test-link>Go to post</LinkTo>`,
-      {
-        LinkTo,
-      },
-    );
+    await render(hbs`<LinkTo @route="public.blog-post" @model={{this.blogPost}} data-test-link>Go to post</LinkTo>`, {
+      LinkTo,
+    });
 
     assert.dom('a').hasText('Go to post');
     assert.dom('a').hasAttribute('href', '/0d469c09-b6f6-4bce-999a-b7b528f86aac');

@@ -36,11 +36,7 @@ module('@emberx/test-helpers | blur', function (hooks) {
     await focus('[data-test-some-input]');
 
     assert.verifySteps(['focus', 'focusin']);
-    assert.equal(
-      document.activeElement,
-      document.querySelector('[data-test-some-input]'),
-      'activeElement updated',
-    );
+    assert.equal(document.activeElement, document.querySelector('[data-test-some-input]'), 'activeElement updated');
     assert.dom('[data-test-some-input]').hasValue('Something');
 
     await blur('[data-test-some-input]');

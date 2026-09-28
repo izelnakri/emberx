@@ -30,9 +30,7 @@ import { dirname, resolve } from 'node:path';
 import { readdirSync } from 'node:fs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const RESULTS_PATH = process.env.BENCH_RESULTS
-  ? resolve(process.env.BENCH_RESULTS)
-  : resolve(HERE, 'results.json');
+const RESULTS_PATH = process.env.BENCH_RESULTS ? resolve(process.env.BENCH_RESULTS) : resolve(HERE, 'results.json');
 
 const WARMUP_MS = 150;
 const SAMPLE_TARGET_MS = 60;
@@ -94,9 +92,7 @@ function measure(fn, context) {
     opsPerSecond: throughputs[Math.floor(throughputs.length / 2)],
     // Spread between fastest and slowest sample, as a fraction of the median.
     // A high value means the number is noise and should not gate anything.
-    jitter:
-      (throughputs[throughputs.length - 1] - throughputs[0]) /
-      throughputs[Math.floor(throughputs.length / 2)],
+    jitter: (throughputs[throughputs.length - 1] - throughputs[0]) / throughputs[Math.floor(throughputs.length / 2)],
   };
 }
 

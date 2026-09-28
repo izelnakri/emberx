@@ -7,11 +7,7 @@ module('@emberx/string | dasherize', () => {
     assert.equal(dasherize('css-class-name'), 'css-class-name', 'does nothing with dasherized string');
     assert.equal(dasherize('action_name'), 'action-name', 'dasherize underscored string');
     assert.equal(dasherize('innerHTML'), 'inner-html', 'dasherize camelcased string');
-    assert.equal(
-      dasherize('toString'),
-      'to-string',
-      'dasherize string that is the property name of Object.prototype',
-    );
+    assert.equal(dasherize('toString'), 'to-string', 'dasherize string that is the property name of Object.prototype');
     assert.equal(
       dasherize('PrivateDocs/OwnerInvoice'),
       'private-docs/owner-invoice',

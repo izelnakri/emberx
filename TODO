@@ -1,11 +1,9 @@
 scripts/lib/chrome-bench.js -> review it.
-scripts/lib/glimmer-compat.js -> review where its used.
+scripts/lib/esbuild-plugins.js -> review where its used (it replaces glimmer-compat.js, gone with #73).
 scripts/lib/test-bundle.js -> was needed because of @tracked, @service
 
-`scripts/lib/glimmer-compat.js` -> `@glimmer/compiler` has one top level `require` at import time to build a sha1 
-template id, check this. emberx never uses the upstream id — `create-template.ts`
-supplies its own — and the plugin throws loudly if upstream's shape changes rather than
-silently shipping a half-patched compiler.
+`@glimmer/compiler`'s top-level `require` (for a sha1 template id), which glimmer-compat.js patched out: gone with
+#73, since ember-source's compiler has no bare `require`.
 
 =============================
 In future(not now). Find a solution for 
@@ -182,8 +180,8 @@ replaces it wherever one can:
   as qunitx's test:doctests. The `// => value` comments become explicit assertions, which `deno test --doc`
   does not add for us.
 - dev.ts: done, esbuild's serve API now, with no hand-written node:http server. No qunitx counterpart (qunitx
-  has no app to serve). On this branch `esbuild ... --serve --serve-fallback=public/index.html
-  --alias:@emberx/string=./packages/@emberx/string/src/index.ts` would do in one line, but #73's ember-source
+  has no app to serve). On glimmer.js (v0.1.0) `esbuild ... --serve --serve-fallback=public/index.html
+  --alias:@emberx/string=./packages/@emberx/string/src/index.ts` did it in one line, but ember-source's bare
   names need emberSourcePlugin, which the esbuild command line cannot load.
 - release.ts: kept. `npm version --workspaces --include-workspace-root` bumps all seven package.json files but
   leaves the exact @emberx/* dependency pins at the old version (checked with npm 11.19), and the packages must

@@ -63,12 +63,13 @@ Deno can load a module without a bundler. `deno lint`'s `no-sloppy-imports` rule
 it. The build rewrites those specifiers to `.js` in the emitted declarations, the files a
 consumer has.
 
-`scripts/lib/glimmer-compat.js` holds the one upstream workaround that survives:
-`@glimmer/compiler` evaluates a bare `require` at import time to build a sha1 template id,
-which throws `ReferenceError` in browsers and native ESM. An esbuild plugin replaces that
-IIFE in memory with a counter. emberx never uses the upstream id — `create-template.ts`
-supplies its own — and the plugin throws loudly if upstream's shape changes rather than
-silently shipping a half-patched compiler.
+`scripts/lib/esbuild-plugins.js` resolves Ember's modules. The Glimmer VM and Ember's
+public API ship inside `ember-source` as `ember-source/@glimmer/manager/index.js` and so on,
+while its type declarations use the bare names (`@glimmer/manager`, `@ember/renderer`),
+which only resolve inside an Embroider build. So the source imports the bare names, which
+typecheck, and the plugin rewrites them to the `ember-source/...` paths. The package build
+leaves the rewritten path in `dist/`, so consumers need no aliases. The browser suite loads
+the same plugin through `package.json#qunitx.plugins`.
 
 Previously this and three sibling problems were solved by scripts that **rewrote files
 inside `node_modules`** before every build. Those are gone. If you find yourself wanting
@@ -76,15 +77,13 @@ to patch a dependency on disk, add an esbuild plugin or an `overrides` entry ins
 
 ## Invariants worth knowing
 
-**The Glimmer packages are one version-locked set.** `@glimmer/core@2.0.0-beta.21` pins
-its `@glimmer/*` siblings to exactly `0.84.0`. If any of them drifts, npm nests a second
-copy of `@glimmer/validator` — and two validator copies means two autotracking registries,
-so `@tracked` updates made through one are invisible to the renderer using the other.
-Reactivity then breaks in ways that look like random staleness. Dependabot groups these
-under `glimmer` and never auto-merges them. Verify a bump with:
+**There must be one `ember-source`.** The renderer, the autotracking registry and every
+manager live inside it. Two copies mean two registries, and `@tracked` updates made through
+one are invisible to the renderer using the other. Every package that needs it declares the
+same range, and Dependabot's `ember` group is never auto-merged. Verify a bump with:
 
 ```sh
-find node_modules -type d -path '*@glimmer/validator'   # expect exactly one
+npm ls ember-source   # every entry should be one version, deduped
 ```
 
 **`pretender` is pinned to 3.4.3** via `overrides`. `@memserver/server` — the API mock used
@@ -202,9 +201,10 @@ Files named `*.chrome.bench.ts` run in Chrome instead, through `Chrome.bench`
 they are checked and compared the same way. Neither Chrome nor the DevTools Protocol has a
 benchmark harness of its own, so this one warms up, sizes batches, samples and reports, on a
 cross-origin-isolated page for 5µs timer precision. They need Chrome, found as the browser suite
-finds it: `CHROME_BIN`, else a Chrome on your `PATH`, else Playwright's. `CHROME_BENCH_CPU_THROTTLE=4` slows the CPU down 4× through CDP, roughly a
-mid-range phone. On this branch they are observational, for the reason in
-`benches/render.chrome.bench.ts`.
+finds it: `CHROME_BIN`, else a Chrome on your `PATH`, else Playwright's.
+`CHROME_BENCH_CPU_THROTTLE=4` slows the CPU down 4× through CDP, roughly a mid-range phone.
+They are observational: a browser's GC and scheduling still move them by 30% between runs now
+and then, so they fail only on a catastrophic regression.
 
 Cases under 10µs (the string transforms and helpers) are reported but only fail on a
 catastrophic regression, ten times the threshold: at that scale the scheduler moves the

@@ -16,14 +16,12 @@ updates:
       interval: 'weekly'
     open-pull-requests-limit: 10
     groups:
-      # The Glimmer VM packages are a single version-locked set: @glimmer/core
-      # pins its @glimmer/* siblings to one exact version, and any skew
-      # reintroduces duplicate @glimmer/validator copies — which means two
-      # autotracking registries and silently broken reactivity. They must move
-      # together or not at all.
-      glimmer:
+      # ember-source carries the renderer and the autotracking registry, so a
+      # second copy means silently broken reactivity. It moves on its own, and
+      # never auto-merges.
+      ember:
         patterns:
-          - '@glimmer/*'
+          - 'ember-source'
       dev-tooling:
         patterns:
           - 'esbuild'

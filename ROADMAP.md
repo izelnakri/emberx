@@ -27,34 +27,29 @@ which installs onto `QUnit.assert`, and under node qunitx delegates to
 
 ---
 
-## 1. Own the renderer — unblocks everything else
+## 1. Stay on Ember's renderer
 
-**Problem.** `@emberx/component` and `@emberx/helper` depend on `@glimmer/core`, the
-standalone glimmer.js runtime. It is effectively abandoned: its last release pins the
-Glimmer VM at `0.84.0`, while the VM itself ships `0.94`/`0.95` and Ember 7 has absorbed
-glimmer-vm into its own monorepo. Staying on `@glimmer/core` means staying four years
-behind the VM permanently, and it is the reason the dependency set is version-locked so
-tightly.
+emberx renders through `ember-source` 7: `renderComponent` from `@ember/renderer`, runtime
+templates from `@ember/template-compiler/runtime`, and the Glimmer VM that ships inside
+`ember-source`. glimmer.js (`@glimmer/core`) and the standalone glimmer-vm packages are
+archived upstream; this is where the VM is maintained now. What is left:
 
-**What emberx actually uses from it** is small and already enumerated:
-
-- `renderComponent`, `didRender` — the render loop and its settledness signal
-- `setComponentTemplate`, `templateOnlyComponent`, `getOwner`/`setOwner`
-- `setComponentManager`, `setHelperManager`, `componentCapabilities`, `helperCapabilities`
-
-Everything except `renderComponent`/`didRender` is a straight re-export of
-`@glimmer/manager` and `@glimmer/owner`, so those can be repointed today with no behaviour
-change. The real work is `renderComponent`: environment setup, the DOM tree builder, and
-the render-transaction loop — roughly what `@glimmer/core/src/render-component.ts` does,
-which is a few hundred lines.
-
-**Why it is worth it.** It removes the last abandoned dependency, unlocks Glimmer 0.94+
-(and whatever Ember ships next), and puts the render loop — the thing a framework competing
-on performance must control — inside this repo instead of a dead upstream.
-
-**Suggested order:** repoint the manager/owner imports first (mechanical, fully covered by
-the existing suite) → port the environment delegate and render loop behind the existing
-`renderComponent` signature → flip the VM to `0.94.x` → delete `@glimmer/core`.
+- **Report two `renderComponent` issues upstream.** A root that throws on its first render
+  stays in its renderer and re-throws on every later render through the same owner
+  (emberx works around it with a stand-in owner per real owner, plus `resetRendering()`
+  between tests). And `into instanceof Element` throws where there is no DOM, which
+  `@emberx/ssr` works around with a temporary stand-in class.
+- **Stop importing `_resetRenderers`**, from `@ember/-internals/glimmer`, once Ember has a
+  public way to tear renderers down, or once the first issue above is fixed.
+- **Runtime templates need `'unsafe-eval'`.** `template()` compiles to JavaScript and
+  evaluates it; the JSON wire format emberx used before needed no eval, but Ember no longer
+  exports that entry point. Worth an upstream conversation if a CSP-strict deployment
+  matters.
+- **Overlap with `@ember/helper`.** Ember now ships `and`, `or`, `not`, `eq`, `neq`, `gt`,
+  `gte`, `lt` and `lte`. `@emberx/helper` could re-export them once their semantics are
+  checked against emberx's (`and`/`or` return values in particular).
+- **Install weight.** `ember-source` depends on Babel, broccoli and ember-cli packages for
+  its blueprints, none of which emberx loads at runtime.
 
 ---
 
@@ -138,13 +133,6 @@ what such a change would eliminate.
   through this repo's workspace link on every platform except Windows, where esbuild
   cannot follow the junction — so the Windows CI leg runs the node suite only. Declaring
   the dependency upstream, or replacing memserver, restores the full Windows matrix.
-- **Published `@emberx/component` leaves `@glimmer/compiler` external**, so the
-  `defaultId` patch in `scripts/lib/glimmer-compat.js` only applies to this repo's own
-  bundles. A consumer's bundler sees upstream's bare `require`: esbuild (and so Vite's dev
-  server) turns it into a shim that throws inside upstream's `try` and works, but a bundler
-  that leaves `require` as-is — a Rollup production build, for one — throws a
-  `ReferenceError` on import. Either inline the patched compiler into `@emberx/component`,
-  or add a Rollup build of a consumer app to the `package` CI job first to confirm it.
 - **TypeScript 7** is current; this repo is on 5.9 because the codebase leans on legacy
   (`experimentalDecorators`) decorators. Worth evaluating, together with a move to standard
   decorators.

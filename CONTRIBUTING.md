@@ -50,12 +50,13 @@ There is no Babel and no webpack. Relative imports do not need `.js` extensions 
 bundling resolves them, which is what `babel-plugin-module-extension-resolver` used to be
 for.
 
-`scripts/lib/glimmer-compat.js` holds the one upstream workaround that survives:
-`@glimmer/compiler` evaluates a bare `require` at import time to build a sha1 template id,
-which throws `ReferenceError` in browsers and native ESM. An esbuild plugin replaces that
-IIFE in memory with a counter. emberx never uses the upstream id — `create-template.ts`
-supplies its own — and the plugin throws loudly if upstream's shape changes rather than
-silently shipping a half-patched compiler.
+`scripts/lib/esbuild-plugins.js` resolves Ember's modules. The Glimmer VM and Ember's
+public API ship inside `ember-source` as `ember-source/@glimmer/manager/index.js` and so on,
+while its type declarations use the bare names (`@glimmer/manager`, `@ember/renderer`),
+which only resolve inside an Embroider build. So the source imports the bare names, which
+typecheck, and the plugin rewrites them to the `ember-source/...` paths. The package build
+leaves the rewritten path in `dist/`, so consumers need no aliases. The browser suite loads
+the same plugin through `package.json#qunitx.plugins`.
 
 Previously this and three sibling problems were solved by scripts that **rewrote files
 inside `node_modules`** before every build. Those are gone. If you find yourself wanting
@@ -63,15 +64,13 @@ to patch a dependency on disk, add an esbuild plugin or an `overrides` entry ins
 
 ## Invariants worth knowing
 
-**The Glimmer packages are one version-locked set.** `@glimmer/core@2.0.0-beta.21` pins
-its `@glimmer/*` siblings to exactly `0.84.0`. If any of them drifts, npm nests a second
-copy of `@glimmer/validator` — and two validator copies means two autotracking registries,
-so `@tracked` updates made through one are invisible to the renderer using the other.
-Reactivity then breaks in ways that look like random staleness. Dependabot groups these
-under `glimmer` and never auto-merges them. Verify a bump with:
+**There must be one `ember-source`.** The renderer, the autotracking registry and every
+manager live inside it. Two copies mean two registries, and `@tracked` updates made through
+one are invisible to the renderer using the other. Every package that needs it declares the
+same range, and Dependabot's `ember` group is never auto-merged. Verify a bump with:
 
 ```sh
-find node_modules -type d -path '*@glimmer/validator'   # expect exactly one
+npm ls ember-source   # every entry should be one version, deduped
 ```
 
 **`pretender` is pinned to 3.4.3** via `overrides`. `@memserver/server` — the API mock used

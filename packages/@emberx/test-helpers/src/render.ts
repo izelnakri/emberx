@@ -28,8 +28,6 @@ export default async function render(templateString: string, includes: object = 
 
   const container = document.getElementById('ember-testing') as HTMLElement;
 
-  container.innerHTML = '';
-
   return await renderComponent(TemplateOnlyComponent, {
     element: container,
     owner: Owner,
@@ -53,11 +51,9 @@ export async function rerender(): Promise<void> {
 
 /**
   Renders nothing in place of what render() rendered, to test what a component
-  leaves behind once it is gone. The container is emptied, and a later render()
-  starts afresh.
-
-  The component is not destroyed: @glimmer/core's renderComponent gives no way
-  to tear a rendered component down (ROADMAP.md, dependency debt).
+  leaves behind once it is gone. The component is destroyed, so its
+  willDestroy and destructors run, the container is emptied, and a later
+  render() starts afresh.
 */
 export async function clearRender(): Promise<void> {
   await render('');

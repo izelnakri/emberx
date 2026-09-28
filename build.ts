@@ -24,7 +24,7 @@ import { dirname } from 'node:path';
 import * as esbuild from 'esbuild';
 import ts from 'typescript';
 
-import { glimmerCompilerCryptoPlugin } from './scripts/lib/glimmer-compat.js';
+import { emberSourcePlugin } from './scripts/lib/esbuild-plugins.js';
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 
@@ -60,7 +60,7 @@ async function buildPackage(name: string) {
     sourcemap: isDevelopment ? 'inline' : true,
     minify: false,
     logLevel: 'warning',
-    plugins: [externalizeBareImports, glimmerCompilerCryptoPlugin()],
+    plugins: [emberSourcePlugin({ external: true }), externalizeBareImports],
   });
 
   return name;

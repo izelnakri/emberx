@@ -11,7 +11,7 @@
  * command does all of this too, except load the plugins below.
  */
 import * as esbuild from 'esbuild';
-import { glimmerCompilerCryptoPlugin, emberxWorkspacePlugin } from './lib/glimmer-compat.js';
+import { emberSourcePlugin, emberxWorkspacePlugin } from './lib/esbuild-plugins.js';
 import { PACKAGES, ROOT } from '../build.ts';
 
 const context = await esbuild.context({
@@ -26,7 +26,7 @@ const context = await esbuild.context({
   target: 'es2022',
   sourcemap: 'inline',
   logLevel: 'info',
-  plugins: [emberxWorkspacePlugin(ROOT, PACKAGES), glimmerCompilerCryptoPlugin()],
+  plugins: [emberxWorkspacePlugin(ROOT, PACKAGES), emberSourcePlugin()],
 });
 
 await context.watch();

@@ -10,10 +10,7 @@ module('@emberx/test-helpers | triggerKeyEvent', function (hooks) {
     test('rejects if event type is missing', async function (assert) {
       await render(hbs`<div data-test-some-test-div></div>`);
 
-      assert.rejects(
-        triggerKeyEvent('[data-test-some-test-div]'),
-        /Must provide an `eventType` to `triggerKeyEvent`/,
-      );
+      assert.rejects(triggerKeyEvent('[data-test-some-test-div]'), /Must provide an `eventType` to `triggerKeyEvent`/);
     });
 
     test('rejects if event type is invalid', async function (assert) {

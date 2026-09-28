@@ -106,9 +106,7 @@ class UserTable extends Component<{ users: User[] }> {
   sortUsersByCreatedAt(sortProperty) {
     let direction = this.sortDirection === 'desc' ? -1 : 1;
 
-    this.sortedUsers = [...this.args.users].sort(
-      (a, b) => (a[sortProperty] > b[sortProperty] ? 1 : -1) * direction,
-    );
+    this.sortedUsers = [...this.args.users].sort((a, b) => (a[sortProperty] > b[sortProperty] ? 1 : -1) * direction);
     this.sortDirection = this.sortDirection === 'desc' ? 'asc' : 'desc';
   }
 }

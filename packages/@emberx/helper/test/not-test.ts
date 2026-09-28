@@ -6,10 +6,9 @@ module('@emberx/helper | "not" helper', function (hooks) {
   setupRenderingTest(hooks);
 
   test('simple test 1', async function (assert) {
-    await render(
-      hbs`[{{not true}}] [{{not false}}] [{{not null}}] [{{not undefined}}] [{{not ''}}] [{{not ' '}}]`,
-      { not },
-    );
+    await render(hbs`[{{not true}}] [{{not false}}] [{{not null}}] [{{not undefined}}] [{{not ''}}] [{{not ' '}}]`, {
+      not,
+    });
 
     assert.equal(
       this.element.textContent,

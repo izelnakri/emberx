@@ -123,10 +123,7 @@ module('@emberx/test-helpers | tap', function (hooks) {
     test('tapping disabled form control throws', async function (assert) {
       await render(hbs`<input data-test-some-test-input disabled/>`);
 
-      assert.rejects(
-        tap('[data-test-some-test-input]'),
-        new Error('Can not `tap` disabled [object HTMLInputElement]'),
-      );
+      assert.rejects(tap('[data-test-some-test-input]'), new Error('Can not `tap` disabled [object HTMLInputElement]'));
     });
   });
 });

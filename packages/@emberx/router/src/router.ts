@@ -58,9 +58,7 @@ export default class Router {
 
     const routeMapRegistry = routeMap ? this.map(routeMap) : Owner.routes; // NOTE: move this to super.map since it just mutates the module
     const ROUTE_REGISTRY = this.convertDefinitionsToRegistry(arrayOfRouteDefinitions);
-    const routerJSRouteArray = this.convertToRouterJSRouteArray(
-      Object.assign(routeMapRegistry, ROUTE_REGISTRY),
-    );
+    const routerJSRouteArray = this.convertToRouterJSRouteArray(Object.assign(routeMapRegistry, ROUTE_REGISTRY));
     const routerService = Owner.register('service:router', new RouterService({ Resolver: this.Resolver }));
     routerService.map(function (match: any) {
       RouteMapContext.map(RouteMapContext.map, match, routerJSRouteArray);
@@ -107,8 +105,7 @@ export default class Router {
 
       routeNameSegments.reduce((parentSegment, routeSegment, index) => {
         const targetSegmentName = parentSegment ? `${parentSegment}.${routeSegment}` : routeSegment;
-        const targetRouteSegmentIndex =
-          index < routePathSegments.length ? index : routePathSegments.length - 1;
+        const targetRouteSegmentIndex = index < routePathSegments.length ? index : routePathSegments.length - 1;
 
         checkInRouteRegistryOrCreateRoute(Owner.routes, {
           name: targetSegmentName,
@@ -159,16 +156,12 @@ export default class Router {
         routeSegments.pop();
 
         if (routeSegments.length === 0) {
-          return result.concat([
-            { ...routerRegistry[routeName], nestedRoutes: [] } as routerJSRouteDefinition,
-          ]);
+          return result.concat([{ ...routerRegistry[routeName], nestedRoutes: [] } as routerJSRouteDefinition]);
         }
 
         const foundParentRoute = findNestedRoute(result, routeSegments);
         if (!foundParentRoute) {
-          return result.concat([
-            { ...routerRegistry[routeName], nestedRoutes: [] } as routerJSRouteDefinition,
-          ]);
+          return result.concat([{ ...routerRegistry[routeName], nestedRoutes: [] } as routerJSRouteDefinition]);
         }
 
         foundParentRoute.nestedRoutes.push({ ...routerRegistry[routeName], nestedRoutes: [] });

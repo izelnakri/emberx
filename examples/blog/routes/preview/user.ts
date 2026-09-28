@@ -8,8 +8,7 @@ class CommentStore {
 
       return result;
     }, new URLSearchParams());
-    const fullURL =
-      targetQueryParams.toString() === '' ? `/comments` : `/comments?${targetQueryParams.toString()}`;
+    const fullURL = targetQueryParams.toString() === '' ? `/comments` : `/comments?${targetQueryParams.toString()}`;
     const response = await fetch(fullURL);
     return await response.json();
   }

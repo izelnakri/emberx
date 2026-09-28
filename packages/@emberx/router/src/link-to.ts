@@ -45,9 +45,7 @@ export default class extends Component<{
     if (!args.route) {
       throw new Error('<LinkTo /> component missing @route argument');
     } else if ('model' in this.args && 'models' in this.args) {
-      throw new Error(
-        'You cannot provide both the `@model` and `@models` arguments to the <LinkTo> component.',
-      );
+      throw new Error('You cannot provide both the `@model` and `@models` arguments to the <LinkTo> component.');
     }
   }
 
@@ -166,9 +164,7 @@ export default class extends Component<{
 
     if (!this.preventDefault) {
       if (this.args.replace) {
-        const promise = this.router
-          .transitionTo(this.link, { queryParams: this.args.query }, true)
-          .method('replace');
+        const promise = this.router.transitionTo(this.link, { queryParams: this.args.query }, true).method('replace');
         return promise;
       }
 

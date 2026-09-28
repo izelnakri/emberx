@@ -59,11 +59,9 @@ try {
     const specifier = `@emberx/${name}`;
 
     try {
-      await exec(
-        process.execPath,
-        ['--input-type=module', '-e', `await import(${JSON.stringify(specifier)});`],
-        { cwd: workspace },
-      );
+      await exec(process.execPath, ['--input-type=module', '-e', `await import(${JSON.stringify(specifier)});`], {
+        cwd: workspace,
+      });
       process.stdout.write(`  ok   ${specifier}\n`);
     } catch (error) {
       failed = true;

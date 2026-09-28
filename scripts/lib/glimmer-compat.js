@@ -97,13 +97,7 @@ export function emberxWorkspacePlugin(rootDir, packageNames) {
         // modules with an index; `@emberx/helper/object/assign` is a file.
         // Try each candidate in the order node/TypeScript would.
         const target = `${base}${subpath}`;
-        const candidates = [
-          `${target}.ts`,
-          `${target}.js`,
-          `${target}/index.ts`,
-          `${target}/index.js`,
-          target,
-        ];
+        const candidates = [`${target}.ts`, `${target}.js`, `${target}/index.ts`, `${target}/index.js`, target];
 
         for (const candidate of candidates) {
           try {
@@ -117,8 +111,7 @@ export function emberxWorkspacePlugin(rootDir, packageNames) {
         return {
           errors: [
             {
-              text:
-                `Cannot resolve "${args.path}" to a file under ${base}. ` + `Tried: ${candidates.join(', ')}`,
+              text: `Cannot resolve "${args.path}" to a file under ${base}. ` + `Tried: ${candidates.join(', ')}`,
             },
           ],
         };

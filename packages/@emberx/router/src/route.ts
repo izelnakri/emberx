@@ -93,9 +93,7 @@ export default class Route extends EmberXComponent<FreeObject> {
       : document.getElementById('app');
 
     if (!containerElement) {
-      throw new Error(
-        '#app or #ember-testing not found for the @emberx/router to boot/render the application!',
-      );
+      throw new Error('#app or #ember-testing not found for the @emberx/router to boot/render the application!');
     }
 
     containerElement.innerHTML = ''; // TODO: temporary solution, clear previously rendered route
@@ -110,11 +108,7 @@ export default class Route extends EmberXComponent<FreeObject> {
   }
 
   static events = {
-    finalizeQueryParamChange(
-      this: RouteEventContext,
-      queryParams: FreeObject,
-      finalQueryParams: FreeObject[],
-    ): void {
+    finalizeQueryParamChange(this: RouteEventContext, queryParams: FreeObject, finalQueryParams: FreeObject[]): void {
       if (this.router.activeTransition) {
         this.router.queryParams = queryParams;
       }
@@ -135,12 +129,7 @@ export default class Route extends EmberXComponent<FreeObject> {
       }
     },
 
-    queryParamsDidChange(
-      this: RouteEventContext,
-      _changed: FreeObject,
-      _all: FreeObject,
-      _removed: FreeObject,
-    ) {
+    queryParamsDidChange(this: RouteEventContext, _changed: FreeObject, _all: FreeObject, _removed: FreeObject) {
       return this.router.refresh(); // NOTE: this might cause a history registry problem for some queryParam routes
     },
   };

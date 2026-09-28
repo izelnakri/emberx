@@ -65,7 +65,7 @@
     "last 2 Safari versions"
   ],
   "prettier": {
-    "printWidth": 110,
+    "printWidth": 120,
     "singleQuote": true
   },
   "qunitx": {

@@ -112,8 +112,7 @@ export function action(context, value, descriptor) {
 }
 
 async function renderComponent(ComponentClass: EmberXComponentClass, optionsOrElement: any): Promise<void> {
-  const options: any =
-    optionsOrElement instanceof HTMLElement ? { element: optionsOrElement } : optionsOrElement;
+  const options: any = optionsOrElement instanceof HTMLElement ? { element: optionsOrElement } : optionsOrElement;
 
   traverseAndCompileAllComponents(ComponentClass);
 

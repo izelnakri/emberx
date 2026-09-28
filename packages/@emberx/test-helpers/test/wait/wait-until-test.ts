@@ -33,12 +33,7 @@ module('@emberx/test-helpers | waitUntil', function (hooks) {
         assert.step(`catch handler: ${reason.message}`);
       })
       .finally(() => {
-        assert.verifySteps([
-          'before invocation',
-          'after invocation',
-          'waiting',
-          'catch handler: waitUntil timed out',
-        ]);
+        assert.verifySteps(['before invocation', 'after invocation', 'waiting', 'catch handler: waitUntil timed out']);
       });
   });
 

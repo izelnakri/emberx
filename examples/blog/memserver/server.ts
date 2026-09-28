@@ -21,7 +21,7 @@ const COMMENTS = [
 
 export default function () {
   this.get('/comments', (req, _res) => {
-    let queryParams = req.queryParams;
+    const queryParams = req.queryParams;
 
     if (queryParams.reviewed) {
       return COMMENTS.filter((comment) => comment.status === 'reviewed');

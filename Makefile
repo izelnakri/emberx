@@ -38,12 +38,23 @@ install setup:
 # reviewer needs to trust a change.
 check: format lint typecheck test
 
+# Formatting is prettier, configured by the "prettier" key in package.json; the
+# files it skips are negated patterns in the npm scripts, so there is no
+# .prettierignore. router/src/vendor/ is vendored verbatim from upstream and is
+# never reformatted, so it still diffs cleanly. README.md says why this is not
+# `deno fmt`.
 format:
 	npm run format
 
 fix fmt:
 	npm run format:fix
 
+# `deno lint`, from your installed Deno (CONTRIBUTING.md), configured by flags in
+# package.json's lint script. Its recommended rules, minus six that don't fit:
+#   no-sloppy-imports      extensionless relative imports are the convention; esbuild resolves them
+#   no-window, no-window-prefix   these are browser packages
+#   require-await          `async` is semantic here: @action detects AsyncFunction to track settledness
+#   no-explicit-any, ban-ts-comment   existing type debt, tightened separately
 lint:
 	npm run lint
 
@@ -174,7 +185,7 @@ help:
 	@echo "  check             format + lint + typecheck + test (what CI runs)"
 	@echo "  format            Check formatting (prettier)"
 	@echo "  fix / fmt         Auto-fix formatting"
-	@echo "  lint              Lint sources (oxlint)"
+	@echo "  lint              Lint sources (deno lint)"
 	@echo "  typecheck         tsc --noEmit over all package sources"
 	@echo "  test              Build, then node suite, then browser suite"
 	@echo "  test-node         string, helper and component under node + jsdom"

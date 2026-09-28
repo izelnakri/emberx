@@ -49,7 +49,7 @@ export default class EmberXComponent<Args extends FreeObject = FreeObject> exten
   static includes = {};
   static template: string;
   static setTemplate(sourceCode: string) {
-    let scope = Object.assign(this.includes, {
+    const scope = Object.assign(this.includes, {
       fn,
       hash,
       array,
@@ -70,7 +70,7 @@ export default class EmberXComponent<Args extends FreeObject = FreeObject> exten
       drop,
       take,
     });
-    let templateFactory: any = createTemplate(sourceCode || ``, { strictMode: true }, scope);
+    const templateFactory: any = createTemplate(sourceCode || ``, { strictMode: true }, scope);
 
     setComponentTemplate(templateFactory, this);
 
@@ -88,12 +88,12 @@ export function getAsyncActionsQueue() {
 // @ts-ignore
 export function action(context, value, descriptor) {
   if (descriptor) {
-    let actionFunction = descriptor.value;
+    const actionFunction = descriptor.value;
     Object.assign(descriptor, {
       value() {
         if (actionFunction instanceof AsyncFunction) {
           // @ts-ignore NOTE: this hack allows @emberx/test-helper input helpers to listen the finish of async
-          let promise = actionFunction.apply(this, arguments);
+          const promise = actionFunction.apply(this, arguments);
 
           ASYNC_ACTIONS_PROMISE_QUEUE.add(promise);
           promise.finally(() => ASYNC_ACTIONS_PROMISE_QUEUE.delete(promise));
@@ -133,7 +133,7 @@ function service(...args: any[]) {
     enumerable: true,
     configurable: false,
     get() {
-      let owner = getOwner(this) as Owner;
+      const owner = getOwner(this) as Owner;
       if (owner && owner.services) {
         return owner.services[key];
       }

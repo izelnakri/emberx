@@ -1,6 +1,6 @@
 import inputs from 'browser-inputs';
 
-export type Lit = string | number | boolean | undefined | null | void | {};
+export type Lit = string | number | boolean | undefined | null | void | object;
 export function tuple<T extends Lit[]>(...args: T) {
   return args;
 }

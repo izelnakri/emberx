@@ -217,7 +217,7 @@ module('@emberx/router | <LinkTo> tests', function (hooks) {
     });
   });
 
-  module('<LinkTo/> transition class test', function (hooks) {
+  module('<LinkTo/> transition class test', function () {
     test('only active links should have the correct active and loading classes', async function (assert) {
       await visit('/preview/11');
 
@@ -227,7 +227,7 @@ module('@emberx/router | <LinkTo> tests', function (hooks) {
       assert.dom('a.active').hasText('All users comments');
       assert.dom('a[href="/preview/11?reviewed=true"]').hasNoClass('loading');
 
-      let promise = visit('/preview/12?reviewed=true&status=complete');
+      const promise = visit('/preview/12?reviewed=true&status=complete');
 
       await waitFor('.loading');
 

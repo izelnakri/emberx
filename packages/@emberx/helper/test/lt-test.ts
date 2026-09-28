@@ -6,7 +6,7 @@ import { setupRenderingTest, render } from '@emberx/test-helpers';
 module('@emberx/helper | "lt" helper', function (hooks) {
   setupRenderingTest(hooks);
 
-  module("'lt' tests'", function (hooks) {
+  module("'lt' tests'", function () {
     test('boolean values', async function (assert) {
       await render(hbs`[{{lt true true}}] [{{lt true false}}] [{{lt false true}}] [{{lt false false}}]`, {
         lt,
@@ -79,7 +79,7 @@ module('@emberx/helper | "lt" helper', function (hooks) {
     });
   });
 
-  module("'lte' tests'", function (hooks) {
+  module("'lte' tests'", function () {
     test('boolean values', async function (assert) {
       await render(hbs`[{{lte true true}}] [{{lte true false}}] [{{lte false true}}] [{{lte false false}}]`, {
         lte,

@@ -7,7 +7,8 @@
   "description": "Explicitly resolvable, build-system-free Ember.js for SPAs",
   "license": "MIT",
   "engines": {
-    "node": ">=24.0.0"
+    "node": ">=24.0.0",
+    "deno": ">=2.9.0"
   },
   "volta": {
     "node": "24.21.0"
@@ -32,9 +33,9 @@
     "changelog:update": "git-cliff --unreleased --prepend CHANGELOG.md",
     "clean": "node scripts/clean.js",
     "dev": "node scripts/dev.js",
-    "format": "prettier --check .",
-    "format:fix": "prettier --write .",
-    "lint": "oxlint packages scripts benches test examples",
+    "format": "prettier --check . \"!CHANGELOG.md\" \"!package-lock.json\" \"!packages/@emberx/router/src/vendor/**\"",
+    "format:fix": "prettier --write . \"!CHANGELOG.md\" \"!package-lock.json\" \"!packages/@emberx/router/src/vendor/**\"",
+    "lint": "deno lint --rules-exclude=ban-ts-comment,no-explicit-any,no-sloppy-imports,no-window,no-window-prefix,require-await --ignore=packages/@emberx/router/src/vendor/",
     "test": "npm run build:dev && npm run test:node && npm run test:browser",
     "test:browser": "qunitx test/index.ts",
     "test:browser:dev": "qunitx test/index.ts --watch",
@@ -48,7 +49,6 @@
     "@memserver/server": "2.5.3",
     "esbuild": "^0.28.2",
     "git-cliff": "^2.14.2",
-    "oxlint": "^1.85.0",
     "prettier": "^3.9.9",
     "qunit-dom": "^3.6.0",
     "qunitx": "^1.3.1",

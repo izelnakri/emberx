@@ -28,6 +28,11 @@ jobs:
         with:
           node-version-file: package.json
           cache: npm
+      # Deno is not an npm dependency; this is the version `npm run lint` uses in
+      # CI. The Dockerfile pins the same one. Bump them together.
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: 2.9.6
       - run: npm ci
       - run: npm run format
       - run: npm run lint

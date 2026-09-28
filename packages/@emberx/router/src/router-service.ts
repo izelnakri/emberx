@@ -13,7 +13,7 @@ import LocationBar from './vendor/location-bar';
 type RouterJSConstructor = typeof router;
 const routerModule = router as RouterJSConstructor & { default?: RouterJSConstructor };
 
-let Router = routerModule.default ? routerModule.default : routerModule;
+const Router = routerModule.default ? routerModule.default : routerModule;
 
 interface FreeObject {
   [propName: string]: any;
@@ -67,8 +67,8 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
 
   triggerEvent(handlerInfos: any[], _ignoreFailure: boolean, name: string, args: any[]) {
     if (['finalizeQueryParamChange', 'queryParamsDidChange'].includes(name)) {
-      let currentHandlerInfo = handlerInfos[handlerInfos.length - 1];
-      let currentHandler = currentHandlerInfo.route;
+      const currentHandlerInfo = handlerInfos[handlerInfos.length - 1];
+      const currentHandler = currentHandlerInfo.route;
 
       // If there is no handler, it means the handler hasn't resolved yet which
       // means that we should trigger the event later when the handler is available
@@ -122,7 +122,7 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
   }
 
   willTransition(_oldRouteInfos: any, _newRouteInfos: any, transition: any) {
-    let targetRouteInfo = transition.routeInfos[transition.resolveIndex];
+    const targetRouteInfo = transition.routeInfos[transition.resolveIndex];
 
     this.currentRoute = targetRouteInfo._route;
     this.currentRouteName = targetRouteInfo.name;
@@ -130,7 +130,7 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
   }
 
   didTransition(routeInfos: any) {
-    let targetRouteInfo = routeInfos[routeInfos.length - 1];
+    const targetRouteInfo = routeInfos[routeInfos.length - 1];
 
     this.currentRoute = targetRouteInfo._route;
     this.currentRouteName = targetRouteInfo.name;
@@ -141,7 +141,7 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
       console.log('[EmberXRouter debug]:', name);
     }
 
-    let targetRoute = this.Resolver.resolve(name);
+    const targetRoute = this.Resolver.resolve(name);
 
     return Object.assign(targetRoute, Owner.services);
   }

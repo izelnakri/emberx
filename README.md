@@ -33,6 +33,12 @@ Everything runs through `make`; run `make` on its own for the full list.
 CI runs these same checks as separate jobs, and also runs the browser suite in Firefox and WebKit,
 a benchmark regression check and a package verification step.
 
+Linting is `deno lint` and formatting is prettier, the same pair qunitx-cli uses. `deno fmt` would
+be the natural partner, but it always moves a class-field decorator onto its own line, turning
+`@tracked count = 0;` into two lines, and no flag or `deno.json` option prevents it. emberx code is
+full of one-line `@tracked`, `@service` and `@action` fields, so prettier stays. prettier comes
+from `npm ci`; Deno is installed once per machine (see CONTRIBUTING.md).
+
 The browser suite needs a Chrome/Chromium binary. It is picked up from `CHROME_BIN`,
 otherwise from your `PATH`:
 

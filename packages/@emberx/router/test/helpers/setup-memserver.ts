@@ -29,7 +29,7 @@ export default function setupMemserver(hooks) {
           },
         ];
 
-        this.get('/posts', (req) => {
+        this.get('/posts', () => {
           return JSON.stringify([
             {
               id: 1,
@@ -58,8 +58,8 @@ export default function setupMemserver(hooks) {
           ]);
         });
 
-        this.get('/comments', (req, res) => {
-          let queryParams = req.queryParams;
+        this.get('/comments', (req) => {
+          const queryParams = req.queryParams;
 
           if (queryParams.reviewed) {
             return COMMENTS.filter((comment) => comment.status === 'reviewed');
@@ -70,7 +70,7 @@ export default function setupMemserver(hooks) {
           return JSON.stringify(COMMENTS);
         });
 
-        this.get('/current-time', (req) => {
+        this.get('/current-time', () => {
           return { currentTime: '2021-06-30T21:27:33.195Z' };
         });
       },

@@ -19,6 +19,9 @@ ENV CHROME_BIN=/usr/bin/chromium \
     PLAYWRIGHT_SKIP_DOWNLOAD=true \
     NODE_ENV=development
 
+# Deno for `make lint`. Same version as the CI lint job; bump them together.
+COPY --from=docker.io/denoland/deno:bin-2.9.6 /deno /usr/local/bin/deno
+
 WORKDIR /code
 
 COPY . .

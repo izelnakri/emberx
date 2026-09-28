@@ -50,7 +50,7 @@ module('@emberx/helper | Public API', function (hooks) {
 
   test('Complex embedded helper with service works, incl. on mutation', async function (assert) {
     const myHelper = helper(function ([text], options, services) {
-      let locale = services.locale.currentLocale;
+      const locale = services.locale.currentLocale;
 
       return `Param is ${text}, options are ${JSON.stringify(options)}, locale is ${locale}`;
     });

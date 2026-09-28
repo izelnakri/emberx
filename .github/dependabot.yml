@@ -29,7 +29,6 @@ updates:
           - 'esbuild'
           - 'typescript'
           - 'prettier'
-          - 'oxlint'
           - 'git-cliff'
       testing:
         patterns:

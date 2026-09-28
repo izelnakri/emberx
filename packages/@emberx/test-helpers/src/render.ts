@@ -7,9 +7,9 @@ interface FreeObject {
 }
 
 export default async function render(templateString: string, includes: object = {}): Promise<void> {
-  let context = getContext();
+  const context = getContext();
 
-  class TemplateOnlyComponent<Args extends FreeObject = {}> extends Component<Args> {
+  class TemplateOnlyComponent<Args extends FreeObject = FreeObject> extends Component<Args> {
     static includes = includes;
 
     constructor(owner: object, args: Args) {
@@ -26,7 +26,7 @@ export default async function render(templateString: string, includes: object = 
 
   TemplateOnlyComponent.setTemplate(templateString);
 
-  let container = document.getElementById('ember-testing') as HTMLElement;
+  const container = document.getElementById('ember-testing') as HTMLElement;
 
   container.innerHTML = '';
 

@@ -96,8 +96,9 @@ export default class Route extends EmberXComponent<FreeObject> {
       throw new Error('#app or #ember-testing not found for the @emberx/router to boot/render the application!');
     }
 
-    containerElement.innerHTML = ''; // TODO: temporary solution, clear previously rendered route
-
+    // No manual clearing: renderComponent replaces what it rendered here before.
+    // Clearing innerHTML behind its back removes nodes it still owns, and its
+    // asynchronous teardown then fails to find them.
     if (transition.routeInfos[transition.routeInfos.length - 1]._route === this) {
       await renderComponent(this, {
         element: containerElement as HTMLElement, // containerElement,

@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, extname, join, normalize, resolve } from 'node:path';
 import * as esbuild from 'esbuild';
 
-import { glimmerCompilerCryptoPlugin, emberxWorkspacePlugin } from './lib/glimmer-compat.js';
+import { emberSourcePlugin, emberxWorkspacePlugin } from './lib/esbuild-plugins.js';
 import { PACKAGES } from './build.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -46,7 +46,7 @@ const context = await esbuild.context({
   logLevel: 'info',
   // Examples import @emberx/* by package name; resolve those to the workspace
   // sources so editing the framework is picked up without an intermediate build.
-  plugins: [emberxWorkspacePlugin(ROOT, PACKAGES), glimmerCompilerCryptoPlugin()],
+  plugins: [emberxWorkspacePlugin(ROOT, PACKAGES), emberSourcePlugin()],
 });
 
 await context.watch();

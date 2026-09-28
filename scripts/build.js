@@ -22,7 +22,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import * as esbuild from 'esbuild';
 
-import { glimmerCompilerCryptoPlugin } from './lib/glimmer-compat.js';
+import { emberSourcePlugin } from './lib/esbuild-plugins.js';
 
 const exec = promisify(execFile);
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -59,7 +59,7 @@ async function buildPackage(name) {
     sourcemap: isDevelopment ? 'inline' : true,
     minify: false,
     logLevel: 'warning',
-    plugins: [externalizeBareImports, glimmerCompilerCryptoPlugin()],
+    plugins: [emberSourcePlugin({ external: true }), externalizeBareImports],
   });
 
   return name;

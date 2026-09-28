@@ -76,7 +76,10 @@
     "htmlPaths": [
       "test/index.html"
     ],
-    "junit": "tmp/junit.xml"
+    "junit": "tmp/junit.xml",
+    "plugins": [
+      "./scripts/lib/esbuild-plugins.js"
+    ]
   },
   "allowScripts": {
     "esbuild": false,

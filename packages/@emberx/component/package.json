@@ -26,12 +26,6 @@
   },
   "dependencies": {
     "@emberx/helper": "0.0.14",
-    "@glimmer/compiler": "0.84.0",
-    "@glimmer/core": "2.0.0-beta.21",
-    "@glimmer/interfaces": "0.84.0",
-    "@glimmer/modifier": "2.0.0-beta.21",
-    "@glimmer/opcode-compiler": "0.84.0",
-    "@glimmer/runtime": "0.84.0",
-    "@glimmer/tracking": "2.0.0-beta.21"
+    "ember-source": "^7.3.0"
   }
 }

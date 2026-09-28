@@ -1,21 +1,21 @@
-import {
-  renderComponent as glimmerRenderComponent,
-  didRender,
-  setComponentTemplate,
-  getOwner,
-  templateOnlyComponent,
-} from '@glimmer/core';
+import { renderComponent as emberRenderComponent, renderSettled } from '@ember/renderer';
+// Internal, but it is what Ember's own test setup uses between tests. See resetRendering().
+import { _resetRenderers } from '@ember/-internals/glimmer';
+import { setComponentTemplate } from '@glimmer/manager';
+import { getOwner } from '@glimmer/owner';
+import templateOnlyComponent from '@ember/component/template-only';
 
 // The Glimmer component base class, vendored in ./glimmer-component. See that
 // file for why it is not the `@glimmer/component` package.
 import Component from './glimmer-component';
 
-import { fn, hash, array, get, concat, on } from '@glimmer/runtime';
+import { fn, hash, array, get, concat } from '@ember/helper';
+import { on } from '@ember/modifier';
 import { and, or, not, eq, neq, gt, gte, lt, lte, assign, debug, drop, take } from '@emberx/helper';
 import createTemplate from './create-template';
 
 import { tracked } from '@glimmer/tracking';
-import { action as glimmerAction } from '@glimmer/modifier';
+import { action as emberAction } from '@ember/object';
 
 interface Owner {
   [key: string]: any;
@@ -105,18 +105,63 @@ export function action(context, value, descriptor) {
       },
     });
 
-    return glimmerAction(context, descriptor.value, descriptor);
+    // @ts-ignore: @ember/object's action is typed as a decorator, and is called as one here
+    return emberAction(context, value, descriptor);
   }
 
-  return glimmerAction(context, value, descriptor);
+  // @ts-ignore: as above
+  return emberAction(context, value, descriptor);
 }
 
+/**
+ * Renders into `element` and resolves once the render has settled, as
+ * @glimmer/core's renderComponent did. Ember's renderComponent takes `into`
+ * rather than `element` and returns synchronously; `owner` and `args` are the
+ * same.
+ */
 async function renderComponent(ComponentClass: EmberXComponentClass, optionsOrElement: any): Promise<void> {
-  const options: any = optionsOrElement instanceof HTMLElement ? { element: optionsOrElement } : optionsOrElement;
+  const { element, ...options }: any =
+    optionsOrElement instanceof HTMLElement ? { element: optionsOrElement } : optionsOrElement;
 
   traverseAndCompileAllComponents(ComponentClass);
 
-  return glimmerRenderComponent(ComponentClass, options);
+  const owner = options.owner ? renderingOwnerFor(options.owner) : undefined;
+  emberRenderComponent(ComponentClass as object, { ...options, owner, into: element });
+
+  return renderSettled();
+}
+
+/**
+ * Ember keeps one renderer per owner, and a root that throws during its first
+ * render stays in that renderer: every later render through the same owner
+ * re-renders it and throws again. emberx renders everything with one static
+ * Owner, so one failed render would break every render after it.
+ *
+ * Each owner therefore renders through a stand-in that inherits from it
+ * (getOwner(component).services still resolves), and resetRendering() drops the
+ * stand-ins along with Ember's global renderer list, giving the next render a
+ * fresh renderer.
+ */
+let renderingOwners = new WeakMap<object, object>();
+
+function renderingOwnerFor(owner: object): object {
+  let renderingOwner = renderingOwners.get(owner);
+  if (!renderingOwner) {
+    renderingOwner = Object.create(owner) as object;
+    renderingOwners.set(owner, renderingOwner);
+  }
+  return renderingOwner;
+}
+
+/** Forgets every renderer. @emberx/test-helpers calls this after each test. */
+function resetRendering(): void {
+  renderingOwners = new WeakMap();
+  _resetRenderers();
+}
+
+/** Resolves once pending renders have flushed. Kept under its @glimmer/core name. */
+function didRender(): Promise<void> {
+  return renderSettled();
 }
 
 function service(...args: any[]) {
@@ -163,6 +208,7 @@ function traverseAndCompileAllComponents(ComponentClass: EmberXComponentClass) {
 
 export {
   didRender,
+  resetRendering,
   createTemplate,
   setComponentTemplate,
   getOwner,

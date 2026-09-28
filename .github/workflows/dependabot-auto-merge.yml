@@ -19,12 +19,11 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       # Patch and minor bumps merge themselves once CI is green. Majors — and
-      # anything in the version-locked @glimmer group, where a coordinated bump
-      # can silently duplicate @glimmer/validator — always want a human.
+      # ember-source, which carries the renderer — always want a human.
       - name: Enable auto-merge
         if: |
           steps.metadata.outputs.update-type != 'version-update:semver-major' &&
-          steps.metadata.outputs.dependency-group != 'glimmer'
+          steps.metadata.outputs.dependency-group != 'ember'
         run: gh pr merge --auto --squash "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}

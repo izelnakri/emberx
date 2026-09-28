@@ -18,40 +18,35 @@ Ordered by what unblocks the most downstream work, not by size.
 | `@emberx/router`       | ✅    | Complete apart from re-rendering (see #2); browser-only (see #3).          |
 | `@emberx/ssr`          | ⚠️    | Renders to a string under node and Deno; no routing or hydration (see #4). |
 
-340 tests pass in the browser (the full suite). The 65 of them that need no router
+341 tests pass in the browser (the full suite). The 65 of them that need no router
 also pass under node and under Deno, as do @emberx/ssr's 2, which run there only, and
 the 13 code examples in the docs run as doctests. See #3 for what keeps the rest browser-only.
 
 ---
 
-## 1. Own the renderer — unblocks everything else
+## 1. Stay on Ember's renderer
 
-**Problem.** `@emberx/component` and `@emberx/helper` depend on `@glimmer/core`, the
-standalone glimmer.js runtime. It is effectively abandoned: its last release pins the
-Glimmer VM at `0.84.0`, while the VM itself ships `0.94`/`0.95` and Ember 7 has absorbed
-glimmer-vm into its own monorepo. Staying on `@glimmer/core` means staying four years
-behind the VM permanently, and it is the reason the dependency set is version-locked so
-tightly.
+emberx renders through `ember-source` 7: `renderComponent` from `@ember/renderer`, runtime
+templates from `@ember/template-compiler/runtime`, and the Glimmer VM that ships inside
+`ember-source`. glimmer.js (`@glimmer/core`) and the standalone glimmer-vm packages are
+archived upstream; this is where the VM is maintained now. What is left:
 
-**What emberx actually uses from it** is small and already enumerated:
-
-- `renderComponent`, `didRender` — the render loop and its settledness signal
-- `setComponentTemplate`, `templateOnlyComponent`, `getOwner`/`setOwner`
-- `setComponentManager`, `setHelperManager`, `componentCapabilities`, `helperCapabilities`
-
-Everything except `renderComponent`/`didRender` is a straight re-export of
-`@glimmer/manager` and `@glimmer/owner`, so those can be repointed today with no behaviour
-change. The real work is `renderComponent`: environment setup, the DOM tree builder, and
-the render-transaction loop — roughly what `@glimmer/core/src/render-component.ts` does,
-which is a few hundred lines.
-
-**Why it is worth it.** It removes the last abandoned dependency, unlocks Glimmer 0.94+
-(and whatever Ember ships next), and puts the render loop — the thing a framework competing
-on performance must control — inside this repo instead of a dead upstream.
-
-**Suggested order:** repoint the manager/owner imports first (mechanical, fully covered by
-the existing suite) → port the environment delegate and render loop behind the existing
-`renderComponent` signature → flip the VM to `0.94.x` → delete `@glimmer/core`.
+- **Report two `renderComponent` issues upstream.** A root that throws on its first render
+  stays in its renderer and re-throws on every later render through the same owner
+  (emberx works around it with a stand-in owner per real owner, plus `resetRendering()`
+  between tests). And `into instanceof Element` throws where there is no DOM, which
+  `@emberx/ssr` works around with a temporary stand-in class.
+- **Stop importing `_resetRenderers`**, from `@ember/-internals/glimmer`, once Ember has a
+  public way to tear renderers down, or once the first issue above is fixed.
+- **Runtime templates need `'unsafe-eval'`.** `template()` compiles to JavaScript and
+  evaluates it; the JSON wire format emberx used before needed no eval, but Ember no longer
+  exports that entry point. Worth an upstream conversation if a CSP-strict deployment
+  matters.
+- **Overlap with `@ember/helper`.** Ember now ships `and`, `or`, `not`, `eq`, `neq`, `gt`,
+  `gte`, `lt` and `lte`. `@emberx/helper` could re-export them once their semantics are
+  checked against emberx's (`and`/`or` return values in particular).
+- **Install weight.** `ember-source` depends on Babel, broccoli and ember-cli packages for
+  its blueprints, none of which emberx loads at runtime.
 
 ---
 
@@ -111,13 +106,16 @@ static-site generator.
 
 emberx compiles templates in the browser on first render. That is the project's central
 bet and what makes "no build system" true, but the benchmarks put a typical component at
-~0.4ms and a large page at ~10ms of compilation — paid on every cold load, by every user.
+~0.9ms and a large page at ~16ms of compilation — paid on every cold load, by every user.
+Ember's compiler runs its AST plugins, which makes this about 2.5× what glimmer.js's
+compiler took (~0.35ms and ~11ms in v0.1.0).
 
 The bet is worth keeping as the _default_. But a production build that precompiles `hbs`
 templates to wire format ahead of time — while leaving the runtime path intact for
 development and for consumers with no build step — would remove that cost without
-compromising the premise. `benches/template-compilation.bench.ts` already measures exactly
-what such a change would eliminate.
+compromising the premise, and with it the `'unsafe-eval'` a strict CSP needs for runtime
+templates (#1). `benches/template-compilation.bench.ts` already measures exactly what such
+a change would eliminate.
 
 ---
 
@@ -132,27 +130,6 @@ what such a change would eliminate.
   through this repo's workspace link on every platform except Windows, where esbuild
   cannot follow the junction — so the Windows CI leg runs the node suite only. Declaring
   the dependency upstream, or replacing memserver, restores the full Windows matrix.
-- **Published `@emberx/component` leaves `@glimmer/compiler` external**, so the
-  `defaultId` patch in `scripts/lib/glimmer-compat.js` only applies to this repo's own
-  bundles. A consumer's bundler sees upstream's bare `require`: esbuild (and so Vite's dev
-  server) turns it into a shim that throws inside upstream's `try` and works, but a bundler
-  that leaves `require` as-is — a Rollup production build, for one — throws a
-  `ReferenceError` on import. Either inline the patched compiler into `@emberx/component`,
-  or add a Rollup build of a consumer app to the `package` CI job first to confirm it.
-- **The published packages do not import natively in Deno.** `@glimmer/core` publishes
-  CommonJS as `main`, with no exports map, and Deno does not see the named exports it
-  re-exports, so `import { renderComponent } from '@emberx/component'` fails there. The Deno
-  suite passes because esbuild bundles it from `@glimmer/core`'s ESM build, and
-  `test:release` runs that suite against the tarballs but skips the native-import consumer
-  test under Deno. Moving to `ember-source`, which is ESM with an exports map, removes it.
-- **`@glimmer/core` never lets go of a rendered root.** `renderComponent` pushes every
-  result onto a module-level array that nothing prunes, and every scheduled re-render
-  revalidates all of them. In an app, each route transition adds a root, so re-render
-  work and memory grow with navigation history. It also makes the Chrome render
-  benchmarks too noisy to gate, keeps replaced routes following query-param changes
-  unless the router freezes their args, and leaves `clearRender()` unable to destroy what
-  it clears. `ember-source`'s `renderComponent` replaces what it rendered into an element
-  before, which removes it.
 - **TypeScript 7** is current; this repo is on 5.9 because the codebase leans on legacy
   (`experimentalDecorators`) decorators. Worth evaluating, together with a move to standard
   decorators.

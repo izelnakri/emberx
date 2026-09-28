@@ -9,18 +9,18 @@ Ordered by what unblocks the most downstream work, not by size.
 
 ## 0. Where things actually stand
 
-| Package                | Tests | State                                                             |
-| ---------------------- | ----- | ----------------------------------------------------------------- |
-| `@emberx/string`       | ✅    | Complete. Zero dependencies.                                      |
-| `@emberx/helper`       | ✅    | Complete.                                                         |
-| `@emberx/component`    | ✅    | Complete for the current renderer.                                |
-| `@emberx/test-helpers` | ✅    | Complete; browser-only (see #3).                                  |
-| `@emberx/router`       | ✅    | Complete apart from re-rendering (see #2); browser-only (see #3). |
-| `@emberx/ssr`          | ❌ 0% | Untested, blocked on the router.                                  |
+| Package                | Tests | State                                                                      |
+| ---------------------- | ----- | -------------------------------------------------------------------------- |
+| `@emberx/string`       | ✅    | Complete. Zero dependencies.                                               |
+| `@emberx/helper`       | ✅    | Complete.                                                                  |
+| `@emberx/component`    | ✅    | Complete for the current renderer.                                         |
+| `@emberx/test-helpers` | ✅    | Complete; browser-only (see #3).                                           |
+| `@emberx/router`       | ✅    | Complete apart from re-rendering (see #2); browser-only (see #3).          |
+| `@emberx/ssr`          | ⚠️    | Renders to a string under node and Deno; no routing or hydration (see #4). |
 
 340 tests pass in the browser (the full suite). The 65 of them that need no router
-also pass under node and under Deno, and the 13 code examples in the docs run as
-doctests. See #3 for what keeps the rest browser-only.
+also pass under node and under Deno, as do @emberx/ssr's 2, which run there only, and
+the 13 code examples in the docs run as doctests. See #3 for what keeps the rest browser-only.
 
 ---
 
@@ -100,9 +100,9 @@ run headless, and it is a prerequisite for real SSR.
 
 ## 4. Server-side rendering
 
-`@emberx/ssr` is 20 lines and has no tests. It also duplicates
-`traverseAndCompileAllComponents` from `@emberx/component` instead of importing it. Needs:
-routing support (#2, #3), a test suite, and a hydration story — SSR without hydration is a
+`@emberx/ssr` renders a component to a string, and the node suite covers that. It
+duplicates `traverseAndCompileAllComponents` from `@emberx/component` instead of importing
+it. Needs: routing support (#2, #3) and a hydration story — SSR without hydration is a
 static-site generator.
 
 ---

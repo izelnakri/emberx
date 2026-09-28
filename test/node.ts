@@ -6,6 +6,8 @@
  * packages are imported, rendered into jsdom and asserted on under plain node
  * and under Deno, no browser involved.
  *
+ * @emberx/ssr runs here only: it renders to a string, without a browser DOM.
+ *
  * @emberx/router and @emberx/test-helpers stay browser-only for now. Their
  * suites start a router per test, and transitions from one test keep running
  * after it ends, rendering into a container the next test has already torn
@@ -15,3 +17,4 @@
 import '../packages/@emberx/string/test/index.ts';
 import '../packages/@emberx/helper/test/index.ts';
 import '../packages/@emberx/component/test/index.ts';
+import '../packages/@emberx/ssr/test/index.ts';

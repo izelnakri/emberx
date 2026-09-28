@@ -81,7 +81,7 @@ module('@emberx/helper | "or" helper', function (hooks) {
     );
   });
 
-  module('"or" with "neq" tests', function (hooks) {
+  module('"or" with "neq" tests', function () {
     test('simple test 1', async function (assert) {
       await render(hbs`[{{or (neq true false) (neq true false)}}]`, { or });
 

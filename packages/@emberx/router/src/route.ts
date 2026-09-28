@@ -51,7 +51,7 @@ export default class Route extends EmberXComponent<FreeObject> {
   // static paramsFor(routeName) {
   // }
   static modelFor(routeKey: string) {
-    let transition = this.router.activeTransition;
+    const transition = this.router.activeTransition;
     if (!transition || !transition.resolvedModels[routeKey]) {
       throw new Error(`@emberx/router Route: ${routeKey} not found on current transition!`);
     }
@@ -119,8 +119,8 @@ export default class Route extends EmberXComponent<FreeObject> {
         this.router.queryParams = queryParams;
       }
 
-      for (let key in queryParams) {
-        let value = castCorrectValueFromString(queryParams[key]);
+      for (const key in queryParams) {
+        const value = castCorrectValueFromString(queryParams[key]);
         if (value === null) {
           delete queryParams[key];
           // NOTE: `finalQueryParams` is router_js's array of `{ key, value }`

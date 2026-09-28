@@ -49,7 +49,7 @@ export function setupTest(hooks: QUnitHooks, _startRouter?: () => unknown): void
 
     this.pauseTest = function pauseTest() {
       assert.timeout(-1); // prevent the test from timing out
-      console.info('Testing paused. Use `resumeTest()` to continue.'); // eslint-disable-line no-console
+      console.info('Testing paused. Use `resumeTest()` to continue.');
 
       return new Promise((resolve) => {
         window.resume = resolve;

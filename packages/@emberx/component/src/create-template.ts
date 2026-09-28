@@ -13,9 +13,9 @@ export default function createTemplate(
 ) {
   options.locals = options.locals ?? Object.keys(scopeValues ?? {});
 
-  let [block, usedLocals]: [any, any] = precompileJSON(templateSource, options);
-  let reifiedScopeValues = usedLocals.map((key: string) => scopeValues[key]);
-  let templateBlock = {
+  const [block, usedLocals]: [any, any] = precompileJSON(templateSource, options);
+  const reifiedScopeValues = usedLocals.map((key: string) => scopeValues[key]);
+  const templateBlock = {
     id: String(templateId++),
     block: JSON.stringify(block),
     moduleName: options.meta?.moduleName ?? '(unknown template module)',

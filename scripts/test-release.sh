@@ -4,10 +4,10 @@
 #
 # Two checks run against the installed packages:
 #   - scripts/release-consumer-test.ts, what an npm user does first: import each
-#     package, render a component, render one to a string (node);
-#   - the node suite (test/node.ts), bundled with @emberx/* and @glimmer/*
-#     resolved from the consumer's node_modules instead of the workspace (node,
-#     then Deno).
+#     package, render a component, render one to a string;
+#   - the node suite (test/node.ts), bundled with @emberx/* and ember-source
+#     resolved from the consumer's node_modules instead of the workspace.
+# Both run under node, then under Deno.
 #
 # Source tests cannot see packaging mistakes: a `files` entry that omits dist/,
 # an `exports` path that does not exist, or a dependency used at runtime but only
@@ -48,8 +48,7 @@ echo "test-release: node (full suite against the installed packages)"
 node "$ROOT/scripts/test-node.ts" --packages-from="$CONSUMER"
 
 # ── Deno ────────────────────────────────────────────────────────────────────
-# The suite only: the consumer test cannot import @emberx/component natively in
-# Deno yet. @glimmer/core publishes CommonJS as `main` and has no exports map,
-# and Deno does not see the named exports it re-exports. ROADMAP.md tracks it.
+echo "test-release: deno (consumer)"
+deno test --no-check --allow-read --allow-env release-consumer-test.ts
 echo "test-release: deno (full suite against the installed packages)"
 deno run -A "$ROOT/scripts/test-deno.ts" --packages-from="$CONSUMER"

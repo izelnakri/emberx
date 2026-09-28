@@ -11,15 +11,16 @@
  *
  * Vendoring keeps behaviour identical while making the dependency honest.
  * Upstream: https://github.com/glimmerjs/glimmer.js/tree/master/packages/%40glimmer/component
+ *
+ * `@glimmer/component` 2.x is now published from the ember.js repository as a
+ * v2 addon. It no longer drags in ember-cli, but it imports `@ember/component`,
+ * `@ember/owner` and friends by their bare names, which resolve only inside an
+ * Embroider build, so this copy stays. The manager and owner APIs it uses come
+ * from ember-source.
  */
-import {
-  componentCapabilities,
-  setComponentManager,
-  setOwner,
-  type ComponentManager,
-  type ComponentCapabilities,
-} from '@glimmer/core';
-import type { Arguments } from '@glimmer/interfaces';
+import { componentCapabilities, setComponentManager } from '@glimmer/manager';
+import { setOwner } from '@glimmer/owner';
+import type { Arguments, ComponentCapabilities, ComponentManager } from '@glimmer/interfaces';
 
 /**
  * Development-only assertions, off by default.

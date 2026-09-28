@@ -78,9 +78,8 @@ test('@emberx/ssr renders to a string', async () => {
 });
 
 /**
- * jsdom's DOM classes, `window` and `document` on globalThis, once. `self` too:
- * @glimmer/core reads the document from `self.document`, a browser global that
- * node does not define, so any node app rendering emberx needs it.
+ * jsdom's DOM classes, `window`, `document` and `self` on globalThis, once: the
+ * globals browser code reaches for, which node does not define.
  */
 function installDOM() {
   if (globalThis.document) return;

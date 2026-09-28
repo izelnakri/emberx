@@ -2,17 +2,14 @@
  * Rendering in a real browser, through Chrome.bench (scripts/lib/chrome-bench.js).
  *
  * Template compilation is measured in Deno (template-compilation.bench.ts); this
- * is what happens after it: the first render of a component into a fresh
- * element, in Chrome's DOM, which jsdom cannot stand in for. Each class compiles
- * its template once, on its first render, so every timed iteration is a render.
+ * is what happens after it: rendering a component in Chrome's DOM, which jsdom
+ * cannot stand in for. Each case renders into the same element every time, as
+ * an app's router does, so Ember replaces the previous render: an iteration is
+ * a render plus the teardown of the one before. Each class compiles its
+ * template once, on its first render.
  *
- * Re-renders are not measured on this branch. @glimmer/core schedules them with
- * setTimeout(0), which browsers clamp to 4ms once timers nest, so a loop of them
- * would time the clamp. It also keeps every root renderComponent ever made and
- * revalidates all of them on each change (ROADMAP.md, dependency debt), so the
- * roots these benchmarks create stay alive until the page closes: the heap grows
- * during a run and GC moves these numbers 15–55% between runs. check-benchmarks
- * therefore treats them as observational, failing only at its hard ceiling.
+ * Re-renders are not measured yet: a tracked change followed by didRender()
+ * measured 290–510µs here, too noisy to gate and slow enough to look into first.
  */
 import Component, { hbs, renderComponent } from '@emberx/component';
 
@@ -79,20 +76,24 @@ const ONE_POST = post(1);
 const HUNDRED_POSTS = Array.from({ length: 100 }, (_unused, index) => post(index));
 const TEN_POSTS = HUNDRED_POSTS.slice(0, 10);
 
+const POST_ELEMENT = document.createElement('div');
+const LIST_ELEMENT = document.createElement('div');
+const FEED_ELEMENT = document.createElement('div');
+
 Chrome.bench({
   name: 'render/typical component (~15 nodes)',
   group,
-  fn: () => renderComponent(Post, { element: document.createElement('div'), args: { post: ONE_POST } }),
+  fn: () => renderComponent(Post, { element: POST_ELEMENT, args: { post: ONE_POST } }),
 });
 
 Chrome.bench({
   name: 'render/list (100 rows)',
   group,
-  fn: () => renderComponent(PostList, { element: document.createElement('div'), args: { posts: HUNDRED_POSTS } }),
+  fn: () => renderComponent(PostList, { element: LIST_ELEMENT, args: { posts: HUNDRED_POSTS } }),
 });
 
 Chrome.bench({
   name: 'render/nested components (10 × typical)',
   group,
-  fn: () => renderComponent(Feed, { element: document.createElement('div'), args: { posts: TEN_POSTS } }),
+  fn: () => renderComponent(Feed, { element: FEED_ELEMENT, args: { posts: TEN_POSTS } }),
 });

@@ -7,6 +7,17 @@ class Counter {
   @tracked count = 1;
 }
 
+// Steps 'destroyed' when it is torn down.
+let step: (name: string) => void = () => {};
+class Farewell extends Component {
+  static template = hbs`<p data-test-farewell>Bye</p>`;
+
+  willDestroy() {
+    super.willDestroy();
+    step('destroyed');
+  }
+}
+
 class Greeting extends Component {
   static template = hbs`<p data-test-greeting>Hello {{@name}}</p>`;
 }
@@ -32,6 +43,19 @@ module('@emberx/test-helpers | rerender and clearRender', function (hooks) {
     await rerender();
 
     assert.dom('[data-test-count]').hasText('static');
+  });
+
+  test('clearRender destroys the component it clears', async function (assert) {
+    step = (name) => assert.step(name);
+
+    await render(hbs`<Farewell />`, { Farewell });
+    assert.verifySteps([]);
+
+    await clearRender();
+
+    assert.dom('[data-test-farewell]').doesNotExist();
+    assert.verifySteps(['destroyed']);
+    step = () => {};
   });
 
   test('clearRender empties what render rendered, and render starts afresh after it', async function (assert) {

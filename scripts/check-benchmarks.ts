@@ -47,13 +47,14 @@
  *
  * emberx: the packages are built first (`npm run build:dev`), so the benchmarks
  * measure the dist/ users get, and each bench file is bundled by esbuild before
- * Deno runs it. @glimmer/core publishes CommonJS with no exports map, whose named
- * exports Deno does not see, and @glimmer/compiler needs the in-memory patch the
- * rest of the build applies.
+ * it runs: a page in Chrome cannot resolve bare imports, and bundling the Deno
+ * files the same way keeps both measuring the same code. emberSourcePlugin
+ * resolves any bare Ember name (`@glimmer/manager`) to its ember-source path, as
+ * the build does.
  */
 import * as esbuild from 'esbuild';
 
-import { glimmerCompilerCryptoPlugin } from './lib/glimmer-compat.js';
+import { emberSourcePlugin } from './lib/esbuild-plugins.js';
 
 const paint =
   (open: number, close: number) =>
@@ -118,7 +119,7 @@ async function bundle(files: string[]): Promise<void> {
     target: 'esnext',
     logLevel: 'warning' as const,
     mainFields: ['module', 'main'],
-    plugins: [glimmerCompilerCryptoPlugin()],
+    plugins: [emberSourcePlugin()],
   };
   const denoFiles = files.filter((file) => !isChromeBench(file));
   const chromeFiles = files.filter(isChromeBench);
@@ -133,9 +134,8 @@ async function bundle(files: string[]): Promise<void> {
 
 /**
  * emberx: Chrome benches are observational, gated only at the hard ceiling like
- * sub-10µs ones. On @glimmer/core every renderComponent root stays alive and is
- * revalidated forever (ROADMAP.md, dependency debt), so the heap grows during a
- * render benchmark and its GC cost swings 15–55% between runs.
+ * sub-10µs ones. A browser's GC and scheduling still move a render benchmark
+ * by 30% between runs now and then, past the threshold with no code change.
  */
 const observational = new Set<string>();
 

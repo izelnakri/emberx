@@ -23,9 +23,6 @@ interface RouteInfo {
   context?: unknown;
 }
 
-// Bumped by every route render, so a route can tell whether it is still the one on screen.
-let renderCount = 0;
-
 // TODO: maybe provide the associated routeInfo for router_js hacking and expose the Route itself on didTransition
 // TODO: serialize() model hook might be needed to make default params and queryParams for the route links
 export default class Route extends EmberXComponent<FreeObject> {
@@ -164,12 +161,11 @@ export default class Route extends EmberXComponent<FreeObject> {
       throw new Error('#app or #ember-testing not found for the @emberx/router to boot/render the application!');
     }
 
-    containerElement.innerHTML = ''; // TODO: temporary solution, clear previously rendered route
-
+    // No manual clearing: renderComponent replaces what it rendered here before.
+    // Clearing innerHTML behind its back removes nodes it still owns, and its
+    // asynchronous teardown then fails to find them.
     const target = getRenderedRouteInfo(routeInfos);
     const router = this.router;
-    const render = ++renderCount;
-    let queryParams = router.queryParamsWithDefaults;
 
     await renderComponent(target.route as typeof Route, {
       element: containerElement as HTMLElement,
@@ -177,16 +173,9 @@ export default class Route extends EmberXComponent<FreeObject> {
         model: (target === routeInfos[routeInfos.length - 1] ? model : target.context) || {},
         params: Object.assign({}, ...routeInfos.map((routeInfo) => routeInfo.params)),
         // A getter, so a query-param change that keeps the route updates it in
-        // place through the tracked router state. Only while it is on screen:
-        // @glimmer/core never lets go of a replaced route's root and re-renders
-        // it on every change (ROADMAP.md), and a list changing in its detached
-        // DOM throws.
+        // place through the tracked router state.
         get queryParams() {
-          if (render === renderCount) {
-            queryParams = router.queryParamsWithDefaults;
-          }
-
-          return queryParams;
+          return router.queryParamsWithDefaults;
         },
       },
       owner: Owner,

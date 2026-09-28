@@ -1,5 +1,5 @@
-import { helperCapabilities, HelperManager, setHelperManager } from '@glimmer/core';
-import { Dict, Arguments } from '@glimmer/interfaces';
+import { helperCapabilities, setHelperManager } from '@glimmer/manager';
+import type { Arguments, Dict, HelperManager } from '@glimmer/interfaces';
 
 type helperFunc<
   Positional extends readonly unknown[] = readonly unknown[],

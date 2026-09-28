@@ -2,14 +2,14 @@
  * Runtime template compilation.
  *
  * emberx has no build step: `hbs` is a no-op tag and templates are handed to
- * `@glimmer/compiler` in the browser, on first render of each component. Every
+ * Ember's runtime template compiler in the browser, on first render of each component. Every
  * millisecond here is paid by the user on page load, once per component, so
  * this is the benchmark that matters most for the project's core claim.
  *
- * `precompileJSON` is measured separately from `createTemplate` to separate
- * Glimmer's cost from emberx's wrapper (scope reification + templateFactory).
+ * `precompile` is measured separately from `createTemplate` to separate the
+ * compiler's cost from evaluating its output and building the template.
  */
-import { precompileJSON } from '@glimmer/compiler';
+import { precompile } from 'ember-source/ember-template-compiler/index.js';
 import { createTemplate } from '@emberx/component';
 
 const TRIVIAL = `<span>{{@name}}</span>`;
@@ -52,19 +52,19 @@ const group = 'template-compilation';
 const strictMode = { strictMode: true };
 
 Deno.bench({
-  name: 'template-compilation/precompileJSON: trivial (1 element)',
+  name: 'template-compilation/precompile: trivial (1 element)',
   group,
-  fn: () => void (sink = precompileJSON(TRIVIAL, strictMode)),
+  fn: () => void (sink = precompile(TRIVIAL, strictMode)),
 });
 Deno.bench({
-  name: 'template-compilation/precompileJSON: typical component (~15 nodes)',
+  name: 'template-compilation/precompile: typical component (~15 nodes)',
   group,
-  fn: () => void (sink = precompileJSON(TYPICAL, strictMode)),
+  fn: () => void (sink = precompile(TYPICAL, strictMode)),
 });
 Deno.bench({
-  name: 'template-compilation/precompileJSON: large page (24 sections)',
+  name: 'template-compilation/precompile: large page (24 sections)',
   group,
-  fn: () => void (sink = precompileJSON(LARGE, strictMode)),
+  fn: () => void (sink = precompile(LARGE, strictMode)),
 });
 Deno.bench({
   name: 'template-compilation/createTemplate: trivial (1 element)',

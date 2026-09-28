@@ -52,16 +52,16 @@ export default class extends Component<{
   }
 
   get link() {
-    let link = this.router.recognizer.generate(this.args.route, this.models);
-    let linkWithParams = new URLSearchParams('');
+    const link = this.router.recognizer.generate(this.args.route, this.models);
+    const linkWithParams = new URLSearchParams('');
 
-    let allParams = Object.assign({}, null, this.args.query); // TODO: this needs to only apply to targeted routes
+    const allParams = Object.assign({}, null, this.args.query); // TODO: this needs to only apply to targeted routes
     Object.keys(allParams as object).forEach((key) => {
       // @ts-ignore
       linkWithParams.set(key, allParams[key]);
     });
 
-    let queryParams = linkWithParams.toString();
+    const queryParams = linkWithParams.toString();
     return queryParams === '' ? link : `${link}?${queryParams}`;
   }
 
@@ -94,7 +94,7 @@ export default class extends Component<{
   get models() {
     // NOTE: maybe optimize rendering if there is no dynamic segments?
     // @ts-ignore
-    let dynamicSegments = this.router.recognizer.names[this.args.route].handlers.reduce(
+    const dynamicSegments = this.router.recognizer.names[this.args.route].handlers.reduce(
       (result: string[][], handlerFunc: RecognizerHandler) => {
         if (handlerFunc.shouldDecodes.length > 0) {
           result.push(handlerFunc.names);
@@ -114,7 +114,7 @@ export default class extends Component<{
     } else if (isObject(this.args.model)) {
       // @ts-ignore
       return dynamicSegments.reduce((model, segment) => {
-        let actualSegmentInModel = [segment[0], underscore(segment[0]), camelize(segment[0]), 'id'].find(
+        const actualSegmentInModel = [segment[0], underscore(segment[0]), camelize(segment[0]), 'id'].find(
           (potentialKey) => {
             // @ts-ignore
             return potentialKey in this.args.model;
@@ -149,7 +149,7 @@ export default class extends Component<{
 
   @action transition(event: any) {
     // @ts-ignore
-    let element = event.target;
+    const element = event.target;
     if (element.target === '' || element.target === '_self') {
       event.preventDefault();
     } else {
@@ -166,13 +166,13 @@ export default class extends Component<{
 
     if (!this.preventDefault) {
       if (this.args.replace) {
-        let promise = this.router
+        const promise = this.router
           .transitionTo(this.link, { queryParams: this.args.query }, true)
           .method('replace');
         return promise;
       }
 
-      let promise = this.router.transitionTo(this.link, { queryParams: this.args.query }, true);
+      const promise = this.router.transitionTo(this.link, { queryParams: this.args.query }, true);
       return promise;
     }
   }

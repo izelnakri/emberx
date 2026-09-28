@@ -8,12 +8,12 @@ export default class RouteMapContext {
   static _parentRoute: string | null = null;
 
   static map(
-    map: (any: any, match: any, routerJSRouteArray: FreeObject) => {},
+    map: (any: any, match: any, routerJSRouteArray: FreeObject) => void,
     match: (param: any) => any,
     routerJSRouteArray: FreeObject,
   ): Array<routerJSRouteDefinition> {
     return Object.keys(routerJSRouteArray).map((registryRoute) => {
-      let route = routerJSRouteArray[registryRoute];
+      const route = routerJSRouteArray[registryRoute];
       if (route.nestedRoutes.length > 0) {
         return match(route.options.path).to(route.name, function (match: any) {
           map(map, match, route.nestedRoutes);
@@ -24,19 +24,19 @@ export default class RouteMapContext {
     });
   }
 
-  static route(routeName: string, options: FreeObject, subRoute?: () => {}): any {
+  static route(routeName: string, options: FreeObject, subRoute?: () => void): any {
     this._parentRoute = this._parentRoute ? `${this._parentRoute}.${routeName}` : routeName;
 
-    let targetOptions =
+    const targetOptions =
       typeof options === 'object' && options !== null
         ? Object.assign(options, { path: options.path || getLastPath(this._parentRoute) })
         : { path: getLastPath(this._parentRoute) };
 
-    let targetSubRoute = subRoute || returnOptionsAsSubRouteIfFunction(options);
+    const targetSubRoute = subRoute || returnOptionsAsSubRouteIfFunction(options);
     if (targetSubRoute) {
       targetSubRoute.apply(this);
 
-      let existingIndexRoute = Owner.routes[`${this._parentRoute}.index`];
+      const existingIndexRoute = Owner.routes[`${this._parentRoute}.index`];
       Owner.routes[`${this._parentRoute}.index`] = existingIndexRoute || {
         name: `${this._parentRoute}.index`,
         options: { path: '/' },
@@ -60,7 +60,7 @@ export default class RouteMapContext {
   }
 }
 
-function returnOptionsAsSubRouteIfFunction(options: Function | object | undefined) {
+function returnOptionsAsSubRouteIfFunction(options: (() => void) | object | undefined) {
   return typeof options === 'function' ? options : undefined;
 }
 

@@ -7,7 +7,7 @@ import setupMemserver from './helpers/setup-memserver';
 /** GET a JSON document over XMLHttpRequest, so the XHR path stays covered. */
 function getJSONWithXHR(url: string): Promise<any> {
   return new Promise((resolve, reject) => {
-    let request = new XMLHttpRequest();
+    const request = new XMLHttpRequest();
 
     request.open('GET', url);
     request.onload = () => resolve(JSON.parse(request.responseText));
@@ -69,7 +69,7 @@ module('@emberx/component | Action tests', function (hooks) {
       this.loadingMessage = 'Fetching user...';
 
       try {
-        let response = await fetch(`/users?username=${username}`);
+        const response = await fetch(`/users?username=${username}`);
         this.user = await response.json();
       } finally {
         this.loadingMessage = null;
@@ -110,7 +110,7 @@ module('@emberx/component | Action tests', function (hooks) {
     assert.dom('#secret-message').doesNotExist();
     assert.dom('#show-secret-message').hasText('Show secret message');
 
-    let promise = click('#show-secret-message');
+    const promise = click('#show-secret-message');
 
     assert.dom('#secret-message').doesNotExist();
     assert.dom('#show-secret-message').hasText('Show secret message');
@@ -132,7 +132,7 @@ module('@emberx/component | Action tests', function (hooks) {
       return { firstName: 'Izel', lastName: 'Nakri' };
     });
 
-    let promise = click('#fetch-user-with-fetch');
+    const promise = click('#fetch-user-with-fetch');
 
     await waitFor('#loading-user');
 
@@ -156,7 +156,7 @@ module('@emberx/component | Action tests', function (hooks) {
       return { firstName: 'Izel', lastName: 'Nakri' };
     });
 
-    let promise = click('#fetch-user-with-xhr');
+    const promise = click('#fetch-user-with-xhr');
 
     await waitFor('#loading-user');
 

@@ -9,7 +9,10 @@ make check     # format + lint + typecheck + node suite + browser suite
 ```
 
 Node 24 or newer is required (`engines.node`, and `volta.node` pins the exact version
-used in CI). The browser suite needs a Chrome/Chromium binary, discovered from
+used in CI). [Deno](https://docs.deno.com/runtime/getting_started/installation/) 2.9 or newer
+is required for `make lint` (`engines.deno`). It is not an npm dependency: installed once, it
+is shared across projects instead of adding ~90 MB to every clone's `node_modules`. CI and
+the Dockerfile pin the exact version (2.9.6); bump the two together. The browser suite needs a Chrome/Chromium binary, discovered from
 `CHROME_BIN` or your `PATH`:
 
 ```sh

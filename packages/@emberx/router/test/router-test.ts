@@ -29,7 +29,7 @@ module('@emberx/router | Public API', function (hooks) {
     assert.ok(Router.map);
     assert.ok(Router.start);
 
-    let routeRegistry = Router.map(oldRouterMap);
+    const routeRegistry = Router.map(oldRouterMap);
 
     assert.deepEqual(Router.owner.routes, removeRoute(targetFlatRegistry, 'not-found'));
     assert.deepEqual(routeRegistry, removeRoute(targetFlatRegistry, 'not-found'));
@@ -42,8 +42,8 @@ module('@emberx/router | Public API', function (hooks) {
   });
 
   test('Router.start with only map create route registry correctly', async function (assert) {
-    let router = Router.start([], oldRouterMap);
-    let routerService = router.owner.lookup('service:router');
+    const router = Router.start([], oldRouterMap);
+    const routerService = router.owner.lookup('service:router');
 
     assert.propEqual(router.owner.routes, targetFlatRegistry);
     assert.ok(router);
@@ -66,7 +66,7 @@ module('@emberx/router | Public API', function (hooks) {
   });
 
   test('Router.start with array of routeDefinitions create route registry correctly', async function (assert) {
-    let router = Router.start([
+    const router = Router.start([
       { path: '/admin', name: 'admin' },
       { path: '/admin/content', name: 'admin.content' },
       { path: '/admin/lol/abc', name: 'admin.lol.abc' },
@@ -79,7 +79,7 @@ module('@emberx/router | Public API', function (hooks) {
       { path: '/public/:slug', name: 'public.blog-post' },
     ]);
 
-    let oldOptions = Object.assign({}, targetFlatRegistry['admin.posts'].options);
+    const oldOptions = Object.assign({}, targetFlatRegistry['admin.posts'].options);
 
     delete targetFlatRegistry['admin.posts'].options.resetNamespace;
 
@@ -90,7 +90,7 @@ module('@emberx/router | Public API', function (hooks) {
   });
 
   test('Router.start with array of routeDefinitions and map create route registry correctly', async function (assert) {
-    let router = Router.start(
+    const router = Router.start(
       [
         { path: '/admin', name: 'admin' },
         { path: '/admin/content', name: 'admin.content' },
@@ -100,7 +100,7 @@ module('@emberx/router | Public API', function (hooks) {
         { path: '/logout', name: 'logout' },
         { path: '/', name: 'public' },
       ],
-      oldRouterMap
+      oldRouterMap,
     );
 
     assert.propEqual(Router.owner.routes, targetFlatRegistry);

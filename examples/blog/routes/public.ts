@@ -1,11 +1,11 @@
-import { Route, LinkTo, tracked, action, hbs } from '@emberx/router';
+import { Route, LinkTo, tracked, action, hbs, service } from '@emberx/router';
 import t from '../helpers/t';
 
 import BlogHeader from '../components/BlogHeader';
 import Counter from '../components/Counter';
 
 export default class PublicIndexRoute extends Route {
-  // @service intl;
+  @service intl;
 
   @tracked dynamicObject;
 

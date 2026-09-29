@@ -1,5 +1,16 @@
-import axios from 'axios';
 import { Route, hbs, action, tracked } from '@emberx/router';
+
+/** GET a JSON document over XMLHttpRequest, so the XHR path stays covered. */
+function getJSONWithXHR(url: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const request = new XMLHttpRequest();
+
+    request.open('GET', url);
+    request.onload = () => resolve(JSON.parse(request.responseText));
+    request.onerror = () => reject(new Error(`XHR failed for ${url}`));
+    request.send();
+  });
+}
 
 export default class BasicRoute extends Route {
   @tracked count = 55;
@@ -61,21 +72,24 @@ export default class BasicRoute extends Route {
     this.loadingMessage = 'Fetching user...';
 
     try {
-      let response = await fetch(`/users?username=${username}`);
+      const response = await fetch(`/users?username=${username}`);
       this.user = await response.json();
     } finally {
       this.loadingMessage = null;
     }
   }
 
+  // Deliberately XMLHttpRequest, not fetch: auto-settling must work for any
+  // promise an @action returns, whichever transport produced it. Previously
+  // this used axios purely to get an XHR; a bare XHR keeps the coverage
+  // without the dependency.
   @action
   async fetchUserWithXHR(username: string): Promise<void> {
     this.user = null;
     this.loadingMessage = 'Loading user...';
 
     try {
-      let response = await axios.get(`/users?username=${username}`);
-      this.user = response.data;
+      this.user = await getJSONWithXHR(`/users?username=${username}`);
     } finally {
       this.loadingMessage = null;
     }
@@ -83,7 +97,7 @@ export default class BasicRoute extends Route {
 }
 
 async function wait(timeout: number = 500) {
-  await new Promise((resolve, reject) => {
+  await new Promise((resolve) => {
     setTimeout(() => resolve(), timeout);
   });
 }

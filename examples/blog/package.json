@@ -10,8 +10,7 @@
   "scripts": {
     "build": "webpack"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "volta": {
     "node": "12.16.1"
   }

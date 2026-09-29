@@ -41,10 +41,6 @@ module('@emberx/component | Render tests', function (hooks) {
         this.currentLocale = currentLocale;
       }
 
-      get currentLocale(): string {
-        return this.currentLocale;
-      }
-
       @action
       setLocale(locale) {
         this.currentLocale = locale;

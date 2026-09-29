@@ -1,7 +1,16 @@
 node_modules
-.parcel-cache
-tmp/*
+packages/@emberx/*/dist
 dist
+tmp
+.tmp
+*.tgz
+
+npm-debug.log*
 yarn-error.log
-.eslintcache
-glimmer-core
+.DS_Store
+
+# Created by qunitx-cli's postinstall (deno install); not managed by this repo.
+deno.lock
+
+# Benchmark baselines only compare on the machine that recorded them; see benches/compare.js.
+benches/results.json

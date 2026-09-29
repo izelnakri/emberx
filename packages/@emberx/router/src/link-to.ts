@@ -1,5 +1,4 @@
-import Component, { hbs, service } from '@emberx/component';
-import { action } from '@glimmer/modifier';
+import Component, { action, hbs, service } from '@emberx/component';
 import { underscore, camelize } from '@emberx/string';
 
 interface FreeObject {
@@ -8,6 +7,16 @@ interface FreeObject {
 
 function isMissing<T>(value: T): boolean {
   return value === null || value === undefined;
+}
+
+/**
+ * The shape route-recognizer stores under `recognizer.names[routeName].handlers`.
+ * Only the two fields <LinkTo /> reads are described here; everything else on it
+ * is router_js/route-recognizer internal bookkeeping.
+ */
+interface RecognizerHandler {
+  names: string[];
+  shouldDecodes: boolean[];
 }
 
 export default class extends Component<{
@@ -31,29 +40,26 @@ export default class extends Component<{
   }
 
   constructor(owner: any, args: any) {
-    // @ts-ignore
     super(owner, args);
 
     if (!args.route) {
       throw new Error('<LinkTo /> component missing @route argument');
     } else if ('model' in this.args && 'models' in this.args) {
-      throw new Error(
-        'You cannot provide both the `@model` and `@models` arguments to the <LinkTo> component.'
-      );
+      throw new Error('You cannot provide both the `@model` and `@models` arguments to the <LinkTo> component.');
     }
   }
 
   get link() {
-    let link = this.router.recognizer.generate(this.args.route, this.models);
-    let linkWithParams = new URLSearchParams('');
+    const link = this.router.recognizer.generate(this.args.route, this.models);
+    const linkWithParams = new URLSearchParams('');
 
-    let allParams = Object.assign({}, null, this.args.query); // TODO: this needs to only apply to targeted routes
+    const allParams = Object.assign({}, null, this.args.query); // TODO: this needs to only apply to targeted routes
     Object.keys(allParams as object).forEach((key) => {
       // @ts-ignore
       linkWithParams.set(key, allParams[key]);
     });
 
-    let queryParams = linkWithParams.toString();
+    const queryParams = linkWithParams.toString();
     return queryParams === '' ? link : `${link}?${queryParams}`;
   }
 
@@ -86,15 +92,15 @@ export default class extends Component<{
   get models() {
     // NOTE: maybe optimize rendering if there is no dynamic segments?
     // @ts-ignore
-    let dynamicSegments = this.router.recognizer.names[this.args.route].handlers.reduce(
-      (result, handlerFunc) => {
+    const dynamicSegments = this.router.recognizer.names[this.args.route].handlers.reduce(
+      (result: string[][], handlerFunc: RecognizerHandler) => {
         if (handlerFunc.shouldDecodes.length > 0) {
           result.push(handlerFunc.names);
         }
 
         return result;
       },
-      []
+      [],
     );
 
     if (this.args.models) {
@@ -106,11 +112,11 @@ export default class extends Component<{
     } else if (isObject(this.args.model)) {
       // @ts-ignore
       return dynamicSegments.reduce((model, segment) => {
-        let actualSegmentInModel = [segment[0], underscore(segment[0]), camelize(segment[0]), 'id'].find(
+        const actualSegmentInModel = [segment[0], underscore(segment[0]), camelize(segment[0]), 'id'].find(
           (potentialKey) => {
             // @ts-ignore
             return potentialKey in this.args.model;
-          }
+          },
         );
 
         // @ts-ignore
@@ -141,7 +147,7 @@ export default class extends Component<{
 
   @action transition(event: any) {
     // @ts-ignore
-    let element = event.target;
+    const element = event.target;
     if (element.target === '' || element.target === '_self') {
       event.preventDefault();
     } else {
@@ -152,21 +158,17 @@ export default class extends Component<{
       return;
     } else if (this.isLoading) {
       throw new Error(
-        'This link is in an inactive loading state because at least one of its models currently has a null/undefined value, or the provided route name is invalid.'
+        'This link is in an inactive loading state because at least one of its models currently has a null/undefined value, or the provided route name is invalid.',
       );
     }
 
     if (!this.preventDefault) {
       if (this.args.replace) {
-        let promise = this.router
-          .transitionTo(this.link, { queryParams: this.args.query }, true)
-          .method('replace');
-        this.willBeActive;
+        const promise = this.router.transitionTo(this.link, { queryParams: this.args.query }, true).method('replace');
         return promise;
       }
 
-      let promise = this.router.transitionTo(this.link, { queryParams: this.args.query }, true);
-      this.willBeActive;
+      const promise = this.router.transitionTo(this.link, { queryParams: this.args.query }, true);
       return promise;
     }
   }

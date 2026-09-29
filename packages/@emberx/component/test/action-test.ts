@@ -1,9 +1,20 @@
 import Component, { hbs, renderComponent, action, tracked } from '@emberx/component';
 import { module, test } from 'qunitx';
-import axios from 'axios';
 import { click, wait, waitFor } from '@emberx/test-helpers';
 import { setupRenderingTest } from './helpers/index';
 import setupMemserver from './helpers/setup-memserver';
+
+/** GET a JSON document over XMLHttpRequest, so the XHR path stays covered. */
+function getJSONWithXHR(url: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const request = new XMLHttpRequest();
+
+    request.open('GET', url);
+    request.onload = () => resolve(JSON.parse(request.responseText));
+    request.onerror = () => reject(new Error(`XHR failed for ${url}`));
+    request.send();
+  });
+}
 
 module('@emberx/component | Action tests', function (hooks) {
   setupRenderingTest(hooks);
@@ -58,21 +69,24 @@ module('@emberx/component | Action tests', function (hooks) {
       this.loadingMessage = 'Fetching user...';
 
       try {
-        let response = await fetch(`/users?username=${username}`);
+        const response = await fetch(`/users?username=${username}`);
         this.user = await response.json();
       } finally {
         this.loadingMessage = null;
       }
     }
 
+    // Deliberately XMLHttpRequest, not fetch: auto-settling must work for any
+    // promise an @action returns, whichever transport produced it. Previously
+    // this used axios purely to get an XHR; a bare XHR keeps the coverage
+    // without the dependency.
     @action
     async fetchUserWithXHR(username: string): Promise<void> {
       this.user = null;
       this.loadingMessage = 'Loading user...';
 
       try {
-        let response = await axios.get(`/users?username=${username}`);
-        this.user = response.data;
+        this.user = await getJSONWithXHR(`/users?username=${username}`);
       } finally {
         this.loadingMessage = null;
       }
@@ -96,7 +110,7 @@ module('@emberx/component | Action tests', function (hooks) {
     assert.dom('#secret-message').doesNotExist();
     assert.dom('#show-secret-message').hasText('Show secret message');
 
-    let promise = click('#show-secret-message');
+    const promise = click('#show-secret-message');
 
     assert.dom('#secret-message').doesNotExist();
     assert.dom('#show-secret-message').hasText('Show secret message');
@@ -118,7 +132,7 @@ module('@emberx/component | Action tests', function (hooks) {
       return { firstName: 'Izel', lastName: 'Nakri' };
     });
 
-    let promise = click('#fetch-user-with-fetch');
+    const promise = click('#fetch-user-with-fetch');
 
     await waitFor('#loading-user');
 
@@ -142,7 +156,7 @@ module('@emberx/component | Action tests', function (hooks) {
       return { firstName: 'Izel', lastName: 'Nakri' };
     });
 
-    let promise = click('#fetch-user-with-xhr');
+    const promise = click('#fetch-user-with-xhr');
 
     await waitFor('#loading-user');
 

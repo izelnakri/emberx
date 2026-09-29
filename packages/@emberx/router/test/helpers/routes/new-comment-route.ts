@@ -1,13 +1,13 @@
-import { Route, hbs, action, tracked, service } from '@emberx/router';
+import { Route, hbs } from '@emberx/router';
 
 // NOTE: used for /posts/:post_id/comments/new
 export default class PostsPostCommentsNewRoute extends Route {
-  static model(params, transition) {
+  static model(_params, _transition) {
     return {};
   }
 
-  static async afterModel(model, transition) {
-    let currentTime = await getCurrentTime();
+  static async afterModel(model, _transition) {
+    const currentTime = await getCurrentTime();
     model.currentTime = currentTime;
   }
 
@@ -17,8 +17,8 @@ export default class PostsPostCommentsNewRoute extends Route {
 }
 
 async function getCurrentTime() {
-  let response = await fetch('/current-time');
-  let json = await response.json();
+  const response = await fetch('/current-time');
+  const json = await response.json();
 
   return json.currentTime;
 }

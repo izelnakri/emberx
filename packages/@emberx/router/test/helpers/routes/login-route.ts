@@ -14,8 +14,8 @@ export default class LoginRoute extends Route {
 }
 
 async function getCurrentTime() {
-  let response = await fetch('/current-time');
-  let json = await response.json();
+  const response = await fetch('/current-time');
+  const json = await response.json();
 
   return json.currentTime;
 }

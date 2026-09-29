@@ -1,25 +1,25 @@
-import { Route, hbs, action, tracked, service } from '@emberx/router';
+import { Route, service } from '@emberx/router';
 
 // NOTE: used for /posts/:post_id
 export default class ChildRoute extends Route {
   @service session;
 
-  static beforeModel(transition) {
-    let posts = this.modelFor('posts');
+  static beforeModel(_transition) {
+    const posts = this.modelFor('posts');
     if (posts.length === 1) {
       return this.router.transitionTo('posts.post.comments.new', posts[0]);
     }
   }
 
   static model(params) {
-    let { posts } = this.modelFor('posts');
+    const { posts } = this.modelFor('posts');
     return {
       posts,
       post: posts.find((post) => post.id === params.post_id),
     };
   }
 
-  static async afterModel(model, transition) {
+  static async afterModel(model, _transition) {
     if (model.posts.length === 1) {
       this.router.transitionTo('posts.post', model.posts[0]);
     }

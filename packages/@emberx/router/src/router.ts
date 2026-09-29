@@ -45,25 +45,21 @@ export default class Router {
   }
 
   static visit(url: string) {
-    // @ts-ignore
-    try {
-      debugger;
-      let result = Owner.lookup('service:router').visit(url);
-      return result;
-    } catch (error) {
-      // debuger;
+    const routerService = Owner.lookup('service:router');
+    if (!routerService) {
+      throw new Error('Router.visit() was called before Router.start().');
     }
+
+    return routerService.visit(url);
   }
 
   static start(arrayOfRouteDefinitions: Array<RouteDefinition> = [], routeMap: any = undefined): Router {
     Owner.clear('routes');
 
-    let routeMapRegistry = routeMap ? this.map(routeMap) : Owner.routes; // NOTE: move this to super.map since it just mutates the module
-    let ROUTE_REGISTRY = this.convertDefinitionsToRegistry(arrayOfRouteDefinitions);
-    let routerJSRouteArray = this.convertToRouterJSRouteArray(
-      Object.assign(routeMapRegistry, ROUTE_REGISTRY)
-    );
-    let routerService = Owner.register('service:router', new RouterService({ Resolver: this.Resolver }));
+    const routeMapRegistry = routeMap ? this.map(routeMap) : Owner.routes; // NOTE: move this to super.map since it just mutates the module
+    const ROUTE_REGISTRY = this.convertDefinitionsToRegistry(arrayOfRouteDefinitions);
+    const routerJSRouteArray = this.convertToRouterJSRouteArray(Object.assign(routeMapRegistry, ROUTE_REGISTRY));
+    const routerService = Owner.register('service:router', new RouterService({ Resolver: this.Resolver }));
     routerService.map(function (match: any) {
       RouteMapContext.map(RouteMapContext.map, match, routerJSRouteArray);
     });
@@ -71,7 +67,7 @@ export default class Router {
     return this;
   }
 
-  static map(routerDefinition: () => {}): RouteRegistry {
+  static map(routerDefinition: () => void): RouteRegistry {
     routerDefinition.apply(RouteMapContext); // TODO: this uses this.route
 
     return Owner.routes;
@@ -95,21 +91,21 @@ export default class Router {
       } else if (!routeDefinition.name) {
         throw new Error('One of the RouteDefinition on Router.start(RouteDefinition[]) misses "name" key');
       } else if (routeDefinition.name.endsWith('.index')) {
-        let routeName = routeDefinition.name;
-        let parentRouteName = routeName.slice(0, routeName.length - 6);
+        const routeName = routeDefinition.name;
+        const parentRouteName = routeName.slice(0, routeName.length - 6);
 
         throw new Error(
-          `RouteDefinition{ name: ${routeName} } cannot end with ".index". Instead specify it as "indexRoute" of its parent route: ${parentRouteName}`
+          `RouteDefinition{ name: ${routeName} } cannot end with ".index". Instead specify it as "indexRoute" of its parent route: ${parentRouteName}`,
         );
       }
 
-      let routeName = routeDefinition.name; // || createRouteNameFromRouteClass(routeDefinition.route); // || createRouteNameFromPath(routeDefinition.path as string); // NOTE: when /create-user type of paths are defined create a better routeName guess, should I replace order?
-      let routeNameSegments = routeName.split('.') as string[]; // eg: 'public.posts.post.index'
-      let routePathSegments = routeDefinition.path.slice(1).split('/') as string[]; // eg: ['posts', ':post_id']
+      const routeName = routeDefinition.name; // || createRouteNameFromRouteClass(routeDefinition.route); // || createRouteNameFromPath(routeDefinition.path as string); // NOTE: when /create-user type of paths are defined create a better routeName guess, should I replace order?
+      const routeNameSegments = routeName.split('.') as string[]; // eg: 'public.posts.post.index'
+      const routePathSegments = routeDefinition.path.slice(1).split('/') as string[]; // eg: ['posts', ':post_id']
 
       routeNameSegments.reduce((parentSegment, routeSegment, index) => {
-        let targetSegmentName = parentSegment ? `${parentSegment}.${routeSegment}` : routeSegment;
-        let targetRouteSegmentIndex = index < routePathSegments.length ? index : routePathSegments.length - 1;
+        const targetSegmentName = parentSegment ? `${parentSegment}.${routeSegment}` : routeSegment;
+        const targetRouteSegmentIndex = index < routePathSegments.length ? index : routePathSegments.length - 1;
 
         checkInRouteRegistryOrCreateRoute(Owner.routes, {
           name: targetSegmentName,
@@ -155,21 +151,17 @@ export default class Router {
     return Object.keys(routerRegistry)
       .sort()
       .reduce((result: Array<routerJSRouteDefinition>, routeName) => {
-        let routeSegments = routeName.split('.');
+        const routeSegments = routeName.split('.');
 
         routeSegments.pop();
 
         if (routeSegments.length === 0) {
-          return result.concat([
-            { ...routerRegistry[routeName], nestedRoutes: [] } as routerJSRouteDefinition,
-          ]);
+          return result.concat([{ ...routerRegistry[routeName], nestedRoutes: [] } as routerJSRouteDefinition]);
         }
 
-        let foundParentRoute = findNestedRoute(result, routeSegments);
+        const foundParentRoute = findNestedRoute(result, routeSegments);
         if (!foundParentRoute) {
-          return result.concat([
-            { ...routerRegistry[routeName], nestedRoutes: [] } as routerJSRouteDefinition,
-          ]);
+          return result.concat([{ ...routerRegistry[routeName], nestedRoutes: [] } as routerJSRouteDefinition]);
         }
 
         foundParentRoute.nestedRoutes.push({ ...routerRegistry[routeName], nestedRoutes: [] });
@@ -195,7 +187,7 @@ function checkInRouteRegistryOrCreateRoute(registry: RouteRegistry, targetRoute:
   if (targetRoute.route) {
     if (foundRoute.route && foundRoute.name !== targetRoute.name) {
       console.log(
-        `[WARNING]: ${routeName}.route already has ${foundRoute.name}. You tried to overwrite ${routeName}.route with ${targetRoute.name}`
+        `[WARNING]: ${routeName}.route already has ${foundRoute.name}. You tried to overwrite ${routeName}.route with ${targetRoute.name}`,
       );
     }
 

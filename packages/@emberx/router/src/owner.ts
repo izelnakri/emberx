@@ -21,15 +21,15 @@ export default class Owner {
   static services: Registry = Object.create(null);
 
   static lookup(lookupKey: string): ModuleObject {
-    let [type, moduleKey] = lookupKey.split(':');
-    let registryKey = findRegistryNamespace(type, moduleKey);
+    const [type, moduleKey] = lookupKey.split(':');
+    const registryKey = findRegistryNamespace(type, moduleKey);
 
     return this[registryKey][moduleKey];
   }
 
   static register(lookupKey: string, newModule: ModuleObject): ModuleObject {
-    let [type, moduleKey] = lookupKey.split(':');
-    let registryKey = findRegistryNamespace(type, moduleKey);
+    const [type, moduleKey] = lookupKey.split(':');
+    const registryKey = findRegistryNamespace(type, moduleKey);
 
     this[registryKey][moduleKey] = newModule;
 
@@ -37,8 +37,8 @@ export default class Owner {
   }
 
   static clear(type: RegistryKeys): Registry {
-    let object = this[type];
-    for (let key in object) {
+    const object = this[type];
+    for (const key in object) {
       delete object[key];
     }
 
@@ -58,6 +58,6 @@ function findRegistryNamespace(type: string, moduleKey: string): RegistryKeys {
   }
 
   throw new Error(
-    `${type} is an invalid registry key. Try for example: "service:${moduleKey}" or "route:${moduleKey}"`
+    `${type} is an invalid registry key. Try for example: "service:${moduleKey}" or "route:${moduleKey}"`,
   );
 }

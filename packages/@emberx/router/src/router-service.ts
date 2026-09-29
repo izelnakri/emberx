@@ -5,12 +5,30 @@ import EmberXRouter from './index';
 import { tracked } from '@emberx/component';
 import LocationBar from './vendor/location-bar';
 
-// @ts-ignore
-let Router = router.default ? router.default : router;
+/**
+ * router_js publishes both an ESM and a CJS build; under the CJS interop shape
+ * the class sits one level down on `.default`. Both branches denote the very
+ * same constructor, so a single alias describes either.
+ */
+type RouterJSConstructor = typeof router;
+const routerModule = router as RouterJSConstructor & { default?: RouterJSConstructor };
+
+const Router = routerModule.default ? routerModule.default : routerModule;
 
 interface FreeObject {
   [propName: string]: any;
 }
+
+/**
+ * QUnit installs itself as a global while the test suite runs, and its mere
+ * presence is how emberx detects that it is running under test. `QUnit` is typed
+ * as `unknown` because only its existence is ever checked.
+ *
+ * This is a cast at the use site rather than a `declare global`, which would be
+ * published in this package's .d.ts and then clash with `@types/qunit` in any
+ * consumer that has it installed.
+ */
+export type GlobalWithQUnit = typeof globalThis & { QUnit?: unknown };
 
 // routeWillChange handler
 // routeDidChange handler
@@ -24,7 +42,7 @@ interface FreeObject {
 export default class RouterJSRouter extends Router<RouterJSRoute> {
   // @ts-ignore
   activeTransition: FreeObject;
-  testing: boolean = !!globalThis.QUnit;
+  testing: boolean = !!(globalThis as GlobalWithQUnit).QUnit;
   locationBar: any;
 
   Resolver = DefaultResolver;
@@ -39,7 +57,7 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
 
     if (options) {
       Object.entries(options).forEach(([key, value]) => {
-        this[key] = value;
+        (this as FreeObject)[key] = value;
       });
     }
 
@@ -49,8 +67,8 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
 
   triggerEvent(handlerInfos: any[], _ignoreFailure: boolean, name: string, args: any[]) {
     if (['finalizeQueryParamChange', 'queryParamsDidChange'].includes(name)) {
-      let currentHandlerInfo = handlerInfos[handlerInfos.length - 1];
-      let currentHandler = currentHandlerInfo.route;
+      const currentHandlerInfo = handlerInfos[handlerInfos.length - 1];
+      const currentHandler = currentHandlerInfo.route;
 
       // If there is no handler, it means the handler hasn't resolved yet which
       // means that we should trigger the event later when the handler is available
@@ -104,7 +122,7 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
   }
 
   willTransition(_oldRouteInfos: any, _newRouteInfos: any, transition: any) {
-    let targetRouteInfo = transition.routeInfos[transition.resolveIndex];
+    const targetRouteInfo = transition.routeInfos[transition.resolveIndex];
 
     this.currentRoute = targetRouteInfo._route;
     this.currentRouteName = targetRouteInfo.name;
@@ -112,7 +130,7 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
   }
 
   didTransition(routeInfos: any) {
-    let targetRouteInfo = routeInfos[routeInfos.length - 1];
+    const targetRouteInfo = routeInfos[routeInfos.length - 1];
 
     this.currentRoute = targetRouteInfo._route;
     this.currentRouteName = targetRouteInfo.name;
@@ -123,7 +141,7 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
       console.log('[EmberXRouter debug]:', name);
     }
 
-    let targetRoute = this.Resolver.resolve(name);
+    const targetRoute = this.Resolver.resolve(name);
 
     return Object.assign(targetRoute, Owner.services);
   }

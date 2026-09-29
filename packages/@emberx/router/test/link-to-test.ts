@@ -33,12 +33,9 @@ module('@emberx/router | <LinkTo> tests', function (hooks) {
   test('it works for a route with @model as object', async function (assert) {
     this.blogPost = { slug: '0d469c09-b6f6-4bce-999a-b7b528f86aac' };
 
-    await render(
-      hbs`<LinkTo @route="public.blog-post" @model={{this.blogPost}} data-test-link>Go to post</LinkTo>`,
-      {
-        LinkTo,
-      }
-    );
+    await render(hbs`<LinkTo @route="public.blog-post" @model={{this.blogPost}} data-test-link>Go to post</LinkTo>`, {
+      LinkTo,
+    });
 
     assert.dom('a').hasText('Go to post');
     assert.dom('a').hasAttribute('href', '/0d469c09-b6f6-4bce-999a-b7b528f86aac');
@@ -54,7 +51,7 @@ module('@emberx/router | <LinkTo> tests', function (hooks) {
       hbs`<LinkTo @route="public.blog-post" @model={{hash slug="0d469c09-b6f6-4bce-999a-b7b528f86aac"}} data-test-link>Go to post</LinkTo>`,
       {
         LinkTo,
-      }
+      },
     );
 
     assert.dom('a').hasText('Go to post');
@@ -73,7 +70,7 @@ module('@emberx/router | <LinkTo> tests', function (hooks) {
       hbs`<LinkTo @route="public.blog-post" @model={{this.blogPost.slug}} data-test-link>Go to post</LinkTo>`,
       {
         LinkTo,
-      }
+      },
     );
 
     assert.dom('a').hasText('Go to post');
@@ -93,7 +90,7 @@ module('@emberx/router | <LinkTo> tests', function (hooks) {
 
     await render(
       hbs`<LinkTo @route="preview.user.posts.post" @models={{this.models}} data-test-link>Go to post {{this.post.id}}</LinkTo>`,
-      { LinkTo }
+      { LinkTo },
     );
 
     assert.dom('a').hasText(`Go to post ${this.post.id}`);
@@ -111,7 +108,7 @@ module('@emberx/router | <LinkTo> tests', function (hooks) {
 
     await render(
       hbs`<LinkTo @route="preview.user.posts.post" @models={{array this.user.id this.post.id}} data-test-link>Go to post {{this.post.id}}</LinkTo>`,
-      { LinkTo }
+      { LinkTo },
     );
 
     assert.dom('a').hasText(`Go to post ${this.post.id}`);
@@ -131,7 +128,7 @@ module('@emberx/router | <LinkTo> tests', function (hooks) {
 
     await render(
       hbs`<LinkTo @route='login' {{on "click" (fn this.testCall this.something)}} @preventDefault={{true}} data-test-link>Trigger</LinkTo>`,
-      { LinkTo }
+      { LinkTo },
     );
 
     assert.dom('a').hasText('Trigger');
@@ -152,7 +149,7 @@ module('@emberx/router | <LinkTo> tests', function (hooks) {
         Go to post
       </LinkTo>
     `,
-      { LinkTo }
+      { LinkTo },
     );
 
     assert.dom('a').hasText('Go to post');
@@ -170,7 +167,7 @@ module('@emberx/router | <LinkTo> tests', function (hooks) {
 
       await render(
         hbs`<LinkTo @route="preview.user" @model={{this.user}} data-test-link>Go to user {{this.user.id}}</LinkTo>`,
-        { LinkTo }
+        { LinkTo },
       );
 
       assert.dom('a').hasText(`Go to user ${this.user.id}`);
@@ -187,7 +184,7 @@ module('@emberx/router | <LinkTo> tests', function (hooks) {
 
       await render(
         hbs`<LinkTo @route="preview.user" @model={{this.user}} data-test-link>Go to user {{this.user.userId}}</LinkTo>`,
-        { LinkTo }
+        { LinkTo },
       );
 
       assert.dom('a').hasText(`Go to user ${this.user.userId}`);
@@ -204,7 +201,7 @@ module('@emberx/router | <LinkTo> tests', function (hooks) {
 
       await render(
         hbs`<LinkTo @route="preview.user" @model={{this.user}} data-test-link>Go to user {{this.user.user_id}}</LinkTo>`,
-        { LinkTo }
+        { LinkTo },
       );
 
       assert.dom('a').hasText(`Go to user ${this.user.user_id}`);
@@ -217,7 +214,7 @@ module('@emberx/router | <LinkTo> tests', function (hooks) {
     });
   });
 
-  module('<LinkTo/> transition class test', function (hooks) {
+  module('<LinkTo/> transition class test', function () {
     test('only active links should have the correct active and loading classes', async function (assert) {
       await visit('/preview/11');
 
@@ -227,7 +224,7 @@ module('@emberx/router | <LinkTo> tests', function (hooks) {
       assert.dom('a.active').hasText('All users comments');
       assert.dom('a[href="/preview/11?reviewed=true"]').hasNoClass('loading');
 
-      let promise = visit('/preview/12?reviewed=true&status=complete');
+      const promise = visit('/preview/12?reviewed=true&status=complete');
 
       await waitFor('.loading');
 

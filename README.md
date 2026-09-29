@@ -2,19 +2,50 @@
 
 [Working example/E2E Test](http://emberx-router.surge.sh/tests/tests.html?testId=906afba6)
 
-Experimental router for glimmer, will ship as `@emberx/router` & `@emberx/component` & `@emberx/helper` &
-`@emberx/test-helpers` and `@emberx/string`.
+Experimental router for glimmer, published on npm as `@emberx/router`, `@emberx/component`, `@emberx/helper`,
+`@emberx/test-helpers`, `@emberx/string` and `@emberx/ssr`.
 
 This project allows you to import your routes, components and helpers in node.js. Thus removes need for any ember
 specific build system. You can run your tests by using [QunitX](https://github.com/izelnakri/qunitx) and `@emberx/test-helpers`.
 
 When stable, check examples folder for the documentation.
 
-```
-# will change:
-npm install && parcel examples/blog/index.html
+```sh
+npm ci          # or: make install
+make dev        # serves examples/blog on http://localhost:1234
 ```
 
+### Development
+
+Everything runs through `make`; run `make` on its own for the full list.
+
+| Command             | What it does                                            |
+| ------------------- | ------------------------------------------------------- |
+| `make check`        | format + lint + typecheck + tests, the core CI checks   |
+| `make test`         | build, then the node suite, then the browser suite      |
+| `make test-node`    | string, helper and component under node + jsdom         |
+| `make test-browser` | the full suite in a real browser (chromium)             |
+| `make coverage`     | browser-suite line coverage, written to `tmp/coverage/` |
+| `make bench`        | runtime template-compilation and per-render benchmarks  |
+| `make build`        | bundle every package to `dist/` and emit `.d.ts`        |
+| `make dev`          | example app with watch rebuilds                         |
+
+CI runs these same checks as separate jobs, and also runs the browser suite in Firefox and WebKit,
+a benchmark regression check and a package verification step.
+
+Linting is `deno lint` and formatting is prettier, the same pair qunitx-cli uses. `deno fmt` would
+be the natural partner, but it always moves a class-field decorator onto its own line, turning
+`@tracked count = 0;` into two lines, and no flag or `deno.json` option prevents it. emberx code is
+full of one-line `@tracked`, `@service` and `@action` fields, so prettier stays. prettier comes
+from `npm ci`; Deno is installed once per machine (see CONTRIBUTING.md).
+
+The browser suite needs a Chrome/Chromium binary. It is picked up from `CHROME_BIN`,
+otherwise from your `PATH`:
+
+```sh
+export CHROME_BIN=$(which google-chrome-stable)
+make test-browser
+```
 
 ### Current Status
 
@@ -35,7 +66,7 @@ Although the project is not production-ready one can still experiment with it us
 - No runloop, we dont need it anymore.
 - test helpers(`click()`, `keyPress()` etc.) wait without a waiter when the fired action returns a promise during tests.
 - Explicit and flexible routes declarations with @emberx/router.
-- Ember Route `model`, `beforeModel` and `afterModel` hooks are static properties instead of instance methods.
+- Ember Route `model` hook is a static method instead of an instance method. `beforeModel` and `afterModel` aren't implemented yet.
 - No sticky queryParams, instead link building is explicit with `<LinkTo @query={{hash param=value}}/>` or with object helpers `<LinkTo @query={{assign (hash active=true) this.router.queryParams}}/>`.
 - No `{{outlet}}`, instead parent routes included in the child route template with `{{yield}}`. This allows compiling individual route files for the browser without a magical build step.
 - No need for initializers and instance initializers, all code runs in module file import and execution order.
@@ -62,25 +93,33 @@ Router.addServices({
 let router = Router.start([
   {
     path: '/',
-    route: IndexRoute
+    name: 'index',
+    route: IndexRoute,
   },
   {
     path: '/posts',
+    name: 'posts',
     route: PostsRoute,
-    indexRoute: PostsIndexRoute
+    indexRoute: PostsIndexRoute,
   },
   {
     path: '/posts/:slug',
-    route: PostsPostRoute
+    name: 'posts.post',
+    route: PostsPostRoute,
   },
   {
     path: '/posts/:blog_post_id/comments',
-    route: PostsPostCommentsRoute
+    name: 'posts.post.comments',
+    route: PostsPostCommentsRoute,
   },
 ]);
 
 export default router;
 ```
+
+Every definition needs a `name`; it is what `<LinkTo @route="...">`, `transitionTo`
+and `modelFor` refer to. Nested routes use dotted names, and a route whose name ends
+in `.index` is created for you — declare it with `indexRoute` instead.
 
 This API also will allow custom resolvers that can resolve current ember routers(ie. routes in `Router.map(function() {})`) with a specific resolver definition(classic or MUD) in future:
 
@@ -92,31 +131,36 @@ import SomeCustomResolver from './custom-resolver';
 
 Router.Resolver = SomeCustomResolver;
 
-let existingMapDefinition = Router.map(function () {
-  this.route("public", { path: "/" }, function () {
-    this.route("index", { path: "/" });
-    this.route("blog-post", { path: "/:slug" });
+let existingMapDefinition = function () {
+  this.route('public', { path: '/' }, function () {
+    this.route('index', { path: '/' });
+    this.route('blog-post', { path: '/:slug' });
   });
 
-  this.route("admin", function () {
-    this.route("index", { path: "/" });
+  this.route('admin', function () {
+    this.route('index', { path: '/' });
   });
 
-  this.route("settings");
-  this.route("login");
-});
+  this.route('settings');
+  this.route('login');
+};
 
-let router = Router.start([
-  {
-    path: '/',
-    route: IndexRoute
-  },
-  {
-    path: '/posts',
-    route: PostsRoute,
-    indexRoute: PostsIndexRoute,
-  }
-], existingMapDefinition);
+let router = Router.start(
+  [
+    {
+      path: '/',
+      name: 'index',
+      route: IndexRoute,
+    },
+    {
+      path: '/posts',
+      name: 'posts',
+      route: PostsRoute,
+      indexRoute: PostsIndexRoute,
+    },
+  ],
+  existingMapDefinition,
+);
 
 export default router;
 ```
@@ -147,7 +191,9 @@ export default class IndexRoute extends Route {
   }
 
   static includes = {
-    Counter
+    LinkTo,
+    Counter,
+    t,
   };
 
   static model(): object {
@@ -188,17 +234,13 @@ export default class IndexRoute extends Route {
 #### Familiar @emberx/component:
 
 ```ts
-import Component, { service, tracked, action, renderComponent } from '@emberx/component';
+import Component, { service, tracked, action, hbs, renderComponent } from '@emberx/component';
 
 class LocaleService {
   @tracked currentLocale: string;
 
   constructor(currentLocale: string) {
     this.currentLocale = currentLocale;
-  }
-
-  get currentLocale(): string {
-    return this.currentLocale;
   }
 
   @action
@@ -267,7 +309,6 @@ await renderComponent(MainComponent, {
   element: document.getElementById('ember-testing'),
   owner: { services: { locale: new LocaleService('en') } },
 });
-
 ```
 
 Template/Component imports are respecting typescript standards, thus can be easily run node.js with npm, allowing
@@ -282,11 +323,15 @@ Allows "npm your way to ember", from a React alternative(glimmer) to a full-fled
 
 ## Prerequisites
 
-You will need the following things properly installed on your computer.
+- [Git](https://git-scm.com/)
+- [Node.js](https://nodejs.org/) 24 or newer (with npm)
+- A Chrome/Chromium binary for the browser test suite — see [Development](#development)
 
-* [Git](https://git-scm.com/)
-* [Node.js](https://nodejs.org/) (with NPM)
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the development workflow, and
+[ROADMAP.md](ROADMAP.md) for what is planned on the way to v1.
 
 ## Further Reading / Useful Links
 
-* [glimmerx](http://github.com/glimmerjs/glimmer-experimental/)
+- [glimmerx](http://github.com/glimmerjs/glimmer-experimental/)

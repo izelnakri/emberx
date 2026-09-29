@@ -6,7 +6,7 @@ import { setupRenderingTest, render } from '@emberx/test-helpers';
 module('@emberx/helper | "gt" helper', function (hooks) {
   setupRenderingTest(hooks);
 
-  module("'gt' tests'", function (hooks) {
+  module("'gt' tests'", function () {
     test('boolean values', async function (assert) {
       await render(hbs`[{{gt true true}}] [{{gt true false}}] [{{gt false true}}] [{{gt false false}}]`, {
         gt,
@@ -15,7 +15,7 @@ module('@emberx/helper | "gt" helper', function (hooks) {
       assert.equal(
         this.element.textContent,
         '[false] [true] [false] [false]',
-        'value should be "[false] [true] [false] [false]"'
+        'value should be "[false] [true] [false] [false]"',
       );
     });
 
@@ -25,7 +25,7 @@ module('@emberx/helper | "gt" helper', function (hooks) {
       assert.equal(
         this.element.textContent,
         '[false] [true] [false] [false]',
-        'value should be "[false] [true] [false] [false]"'
+        'value should be "[false] [true] [false] [false]"',
       );
     });
 
@@ -35,51 +35,51 @@ module('@emberx/helper | "gt" helper', function (hooks) {
       assert.equal(
         this.element.textContent,
         '[false] [true] [false] [false]',
-        'value should be "[false] [true] [false] [false]"'
+        'value should be "[false] [true] [false] [false]"',
       );
     });
 
     test('integers in strings 1', async function (assert) {
       await render(
         hbs`[{{gt '1' '1' forceNumber=true}}] [{{gt '1' '0' forceNumber=true}}] [{{gt '0' '1' forceNumber=true}}] [{{gt '0' '0' forceNumber=true}}]`,
-        { gt }
+        { gt },
       );
 
       assert.equal(
         this.element.textContent,
         '[false] [true] [false] [false]',
-        'value should be "[false] [true] [false] [false]"'
+        'value should be "[false] [true] [false] [false]"',
       );
     });
 
     test('integers in strings 2', async function (assert) {
       await render(
         hbs`[{{gt '102' '102' forceNumber=true}}] [{{gt '102' '98' forceNumber=true}}] [{{gt '98' '102' forceNumber=true}}] [{{gt '98' '98' forceNumber=true}}]`,
-        { gt }
+        { gt },
       );
 
       assert.equal(
         this.element.textContent,
         '[false] [true] [false] [false]',
-        'value should be "[false] [true] [false] [false]"'
+        'value should be "[false] [true] [false] [false]"',
       );
     });
 
     test('decimals in strings', async function (assert) {
       await render(
         hbs`[{{gt '19.2' '19.2' forceNumber=true}}] [{{gt '19.2' '3.55' forceNumber=true}}] [{{gt '3.55' '19.2' forceNumber=true}}] [{{gt '3.55' '3.55' forceNumber=true}}]`,
-        { gt }
+        { gt },
       );
 
       assert.equal(
         this.element.textContent,
         '[false] [true] [false] [false]',
-        'value should be "[false] [true] [false] [false]"'
+        'value should be "[false] [true] [false] [false]"',
       );
     });
   });
 
-  module("'gte' tests'", function (hooks) {
+  module("'gte' tests'", function () {
     test('boolean values', async function (assert) {
       await render(hbs`[{{gte true true}}] [{{gte true false}}] [{{gte false true}}] [{{gte false false}}]`, {
         gte,
@@ -88,7 +88,7 @@ module('@emberx/helper | "gt" helper', function (hooks) {
       assert.equal(
         this.element.textContent,
         '[true] [true] [false] [true]',
-        'value should be "[false] [true] [false] [true]"'
+        'value should be "[false] [true] [false] [true]"',
       );
     });
 
@@ -98,7 +98,7 @@ module('@emberx/helper | "gt" helper', function (hooks) {
       assert.equal(
         this.element.textContent,
         '[true] [true] [false] [true]',
-        'value should be "[true] [true] [false] [true]"'
+        'value should be "[true] [true] [false] [true]"',
       );
     });
 
@@ -110,46 +110,46 @@ module('@emberx/helper | "gt" helper', function (hooks) {
       assert.equal(
         this.element.textContent,
         '[true] [true] [false] [true]',
-        'value should be "[true] [true] [false] [true]"'
+        'value should be "[true] [true] [false] [true]"',
       );
     });
 
     test('integers in strings 1', async function (assert) {
       await render(
         hbs`[{{gte '1' '1' forceNumber=true}}] [{{gte '1' '0' forceNumber=true}}] [{{gte '0' '1' forceNumber=true}}] [{{gte '0' '0' forceNumber=true}}]`,
-        { gte }
+        { gte },
       );
 
       assert.equal(
         this.element.textContent,
         '[true] [true] [false] [true]',
-        'value should be "[true] [true] [false] [true]"'
+        'value should be "[true] [true] [false] [true]"',
       );
     });
 
     test('integers in strings 2', async function (assert) {
       await render(
         hbs`[{{gte '102' '102' forceNumber=true}}] [{{gte '102' '98' forceNumber=true}}] [{{gte '98' '102' forceNumber=true}}] [{{gte '98' '98' forceNumber=true}}]`,
-        { gte }
+        { gte },
       );
 
       assert.equal(
         this.element.textContent,
         '[true] [true] [false] [true]',
-        'value should be "[true] [true] [false] [true]"'
+        'value should be "[true] [true] [false] [true]"',
       );
     });
 
     test('decimals in strings', async function (assert) {
       await render(
         hbs`[{{gte '19.2' '19.2' forceNumber=true}}] [{{gte '19.2' '3.55' forceNumber=true}}] [{{gte '3.55' '19.2' forceNumber=true}}] [{{gte '3.55' '3.55' forceNumber=true}}]`,
-        { gte }
+        { gte },
       );
 
       assert.equal(
         this.element.textContent,
         '[true] [true] [false] [true]',
-        'value should be "[true] [true] [false] [true]"'
+        'value should be "[true] [true] [false] [true]"',
       );
     });
   });

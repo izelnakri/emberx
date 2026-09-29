@@ -1,7 +1,7 @@
 import { module, test } from 'qunitx';
-import Router, { Route, RouterService } from '@emberx/router';
+import Router, { Route } from '@emberx/router';
 import BasicRoute from './helpers/routes/basic-route';
-import { visit, click, currentURL, waitFor } from '@emberx/test-helpers';
+import { visit, click, waitFor } from '@emberx/test-helpers';
 import setupTest from './helpers/index';
 import setupMemserver from './helpers/setup-memserver';
 
@@ -18,7 +18,7 @@ module('@emberx/router | Route Unit Test', function (hooks) {
   setupMemserver(hooks);
 
   test('Route has the initial properties', async function (assert) {
-    let route = new Route();
+    const route = new Route();
 
     assert.ok('includes' in Route);
     assert.ok('template' in Route);
@@ -46,7 +46,7 @@ module('@emberx/router | Route Unit Test', function (hooks) {
     assert.dom('#secret-message').doesNotExist();
     assert.dom('#show-secret-message').hasText('Show secret message');
 
-    let promise = click('#show-secret-message');
+    const promise = click('#show-secret-message');
 
     assert.dom('#secret-message').doesNotExist();
     assert.dom('#show-secret-message').hasText('Show secret message');
@@ -68,7 +68,7 @@ module('@emberx/router | Route Unit Test', function (hooks) {
       return { firstName: 'Izel', lastName: 'Nakri' };
     });
 
-    let promise = click('#fetch-user-with-fetch');
+    const promise = click('#fetch-user-with-fetch');
 
     await waitFor('#loading-user');
 
@@ -92,7 +92,7 @@ module('@emberx/router | Route Unit Test', function (hooks) {
       return { firstName: 'Izel', lastName: 'Nakri' };
     });
 
-    let promise = click('#fetch-user-with-xhr');
+    const promise = click('#fetch-user-with-xhr');
 
     await waitFor('#loading-user');
 

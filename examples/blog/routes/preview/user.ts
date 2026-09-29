@@ -3,14 +3,13 @@ import { Route, LinkTo, hbs } from '@emberx/router';
 
 class CommentStore {
   static async findAll(queryParams) {
-    let targetQueryParams = Object.keys(queryParams).reduce((result, key) => {
+    const targetQueryParams = Object.keys(queryParams).reduce((result, key) => {
       result.set(key, queryParams[key]);
 
       return result;
     }, new URLSearchParams());
-    let fullURL =
-      targetQueryParams.toString() === '' ? `/comments` : `/comments?${targetQueryParams.toString()}`;
-    let response = await fetch(fullURL);
+    const fullURL = targetQueryParams.toString() === '' ? `/comments` : `/comments?${targetQueryParams.toString()}`;
+    const response = await fetch(fullURL);
     return await response.json();
   }
 }

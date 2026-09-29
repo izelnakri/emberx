@@ -1,6 +1,6 @@
 import { module, test } from 'qunitx';
-import Router, { Route, RouterService } from '@emberx/router';
-import { visit, click, currentURL, waitFor } from '@emberx/test-helpers';
+import Router from '@emberx/router';
+import { visit, currentURL } from '@emberx/test-helpers';
 import setupTest from '../helpers/index';
 import setupMemserver from '../helpers/setup-memserver';
 import Session from '../helpers/services/session';
@@ -46,8 +46,8 @@ module('@emberx/router | Route Internal Transitions', function (hooks) {
   setupMemserver(hooks);
 
   test('user can land on root and go to children route that includes parent model', async function (assert) {
-    let router = this.owner.lookup('service:router');
-    let session = this.owner.lookup('service:session');
+    const router = this.owner.lookup('service:router');
+    const session = this.owner.lookup('service:session');
 
     session.currentUser = { id: 1, firstName: 'Izel', lastName: 'Nakri' };
 
@@ -79,7 +79,7 @@ module('@emberx/router | Route Internal Transitions', function (hooks) {
   });
 
   test('user can land on parent route then go to children then to unrelated route then another children', async function (assert) {
-    let router = this.owner.lookup('service:router');
+    const router = this.owner.lookup('service:router');
 
     router.routeDidChange = function (transition) {
       console.log('transition', transition);
@@ -90,7 +90,7 @@ module('@emberx/router | Route Internal Transitions', function (hooks) {
 
     assert.equal(currentURL(), '/login');
 
-    let session = this.owner.lookup('service:session');
+    const session = this.owner.lookup('service:session');
 
     session.currentUser = { id: 1, firstName: 'Izel', lastName: 'Nakri' };
 
@@ -109,14 +109,14 @@ module('@emberx/router | Route Internal Transitions', function (hooks) {
   });
 
   test('user can land on children and then another children then parent route, then another children', async function (assert) {
-    let router = this.owner.lookup('service:router');
+    const router = this.owner.lookup('service:router');
 
     router.routeDidChange = function (transition) {
       console.log('transition', transition);
       assert.step(this.currentRouteName);
     };
 
-    let session = this.owner.lookup('service:session');
+    const session = this.owner.lookup('service:session');
 
     session.currentUser = { id: 1, firstName: 'Izel', lastName: 'Nakri' };
 

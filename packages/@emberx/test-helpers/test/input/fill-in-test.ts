@@ -18,7 +18,7 @@ module('@emberx/test-helpers | fillIn', function (hooks) {
 
       assert.rejects(
         fillIn('[data-test-some-test-div]', 'foo'),
-        /`fillIn` is only usable on form controls or contenteditable elements/
+        /`fillIn` is only usable on form controls or contenteditable elements/,
       );
     });
 
@@ -27,12 +27,12 @@ module('@emberx/test-helpers | fillIn', function (hooks) {
 
       assert.rejects(
         fillIn(`[data-test-some-test-input]`, 'foo'),
-        new Error("Can not `fillIn` disabled '[data-test-some-test-input]'.")
+        new Error("Can not `fillIn` disabled '[data-test-some-test-input]'."),
       );
 
       assert.rejects(
         fillIn(document.querySelector('[data-test-some-test-input]'), 'foo'),
-        new Error("Can not `fillIn` disabled '[object HTMLInputElement]'.")
+        new Error("Can not `fillIn` disabled '[object HTMLInputElement]'."),
       );
     });
 
@@ -41,19 +41,19 @@ module('@emberx/test-helpers | fillIn', function (hooks) {
 
       assert.rejects(
         fillIn(`[data-test-some-test-input]`, 'foo'),
-        new Error("Can not `fillIn` readonly '[data-test-some-test-input]'.")
+        new Error("Can not `fillIn` readonly '[data-test-some-test-input]'."),
       );
 
       assert.rejects(
         fillIn(document.querySelector('[data-test-some-test-input]'), 'foo'),
-        new Error("Can not `fillIn` readonly '[object HTMLInputElement]'.")
+        new Error("Can not `fillIn` readonly '[object HTMLInputElement]'."),
       );
     });
 
     test('rejects if selector is not found', async function (assert) {
       assert.rejects(
         fillIn(`#foo-bar-baz-not-here-ever-bye-bye`, 'foo'),
-        /Element not found when calling `fillIn\('#foo-bar-baz-not-here-ever-bye-bye'\)`/
+        /Element not found when calling `fillIn\('#foo-bar-baz-not-here-ever-bye-bye'\)`/,
       );
     });
 
@@ -222,12 +222,12 @@ module('@emberx/test-helpers | fillIn', function (hooks) {
       assert.equal(
         element.value,
         maxLengthString,
-        `fillIn respects input attribute [maxlength=${maxLengthString.length}]`
+        `fillIn respects input attribute [maxlength=${maxLengthString.length}]`,
       );
       assert.verifySteps([]);
       assert.rejects(
         fillIn(element, 'foo'),
-        new Error("Can not `fillIn` with text: 'foo' that exceeds maxlength: '1'.")
+        new Error("Can not `fillIn` with text: 'foo' that exceeds maxlength: '1'."),
       );
     });
 
@@ -267,7 +267,7 @@ module('@emberx/test-helpers | fillIn', function (hooks) {
       assert.verifySteps([]);
       assert.rejects(
         fillIn(element, 'foo'),
-        new Error("Can not `fillIn` with text: 'foo' that exceeds maxlength: '1'.")
+        new Error("Can not `fillIn` with text: 'foo' that exceeds maxlength: '1'."),
       );
       assert.verifySteps([]);
       assert.equal(element.value, '');

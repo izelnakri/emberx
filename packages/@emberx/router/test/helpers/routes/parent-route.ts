@@ -1,23 +1,23 @@
-import { Route, hbs, action, tracked, service } from '@emberx/router';
+import { Route, hbs, service } from '@emberx/router';
 
 // NOTE: used for /posts
 export default class ParentRoute extends Route {
   @service session;
 
-  static beforeModel(transition) {
+  static beforeModel(_transition) {
     if (!this.session.currentUser) {
       return this.router.transitionTo('login');
     }
   }
 
-  static async model(params, transition) {
-    let response = await fetch('/posts');
-    let posts = await response.json();
+  static async model(_params, _transition) {
+    const response = await fetch('/posts');
+    const posts = await response.json();
 
     return { posts };
   }
 
-  static async afterModel(model, transition) {
+  static async afterModel(model, _transition) {
     if (model.posts.length === 1) {
       this.router.transitionTo('posts.post', model.posts[0]);
     }

@@ -1,28 +1,37 @@
 {
   "name": "@emberx/component",
-  "description": "",
   "version": "0.0.14",
+  "description": "Glimmer components for emberx, compiled at runtime with no build step",
   "type": "module",
   "author": "Izel Nakri",
-  "files": [
-    "dist/*"
-  ],
-  "main": "dist/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/izelnakri/emberx.git",
+    "directory": "packages/@emberx/component"
   },
-  "license": "ISC",
-  "directories": {
-    "test": "tests"
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
   },
   "dependencies": {
-    "@glimmer/compiler": "^0.80.0",
-    "@glimmer/component": "2.0.0-beta.17",
-    "@glimmer/core": "2.0.0-beta.17",
-    "@glimmer/modifier": "2.0.0-beta.17",
-    "@glimmer/opcode-compiler": "^0.80.0",
-    "@glimmer/runtime": "^0.80.0",
-    "@glimmer/tracking": "2.0.0-beta.16",
-    "@emberx/helper": "0.0.14"
+    "@emberx/helper": "0.0.14",
+    "@glimmer/compiler": "0.84.0",
+    "@glimmer/core": "2.0.0-beta.21",
+    "@glimmer/interfaces": "0.84.0",
+    "@glimmer/modifier": "2.0.0-beta.21",
+    "@glimmer/opcode-compiler": "0.84.0",
+    "@glimmer/runtime": "0.84.0",
+    "@glimmer/tracking": "2.0.0-beta.21"
   }
 }

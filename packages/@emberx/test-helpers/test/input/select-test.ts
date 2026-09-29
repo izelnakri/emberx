@@ -25,21 +25,15 @@ module('@emberx/test-helpers | select', function (hooks) {
     const element = document.querySelector('[data-test-some-div]');
     assert.rejects(
       select(element, undefined),
-      /Must provide an `option` or `options` to select when calling `select`./
+      /Must provide an `option` or `options` to select when calling `select`./,
     );
-    assert.rejects(
-      select(element, null),
-      /Must provide an `option` or `options` to select when calling `select`./
-    );
+    assert.rejects(select(element, null), /Must provide an `option` or `options` to select when calling `select`./);
   });
 
   test('select with unfindable selector ', async function (assert) {
     await render(hbs`<div data-test-some-div></div>`);
 
-    assert.rejects(
-      select('#fake-selector', 'example'),
-      /Element not found when calling `select\('#fake-selector'\)`/
-    );
+    assert.rejects(select('#fake-selector', 'example'), /Element not found when calling `select\('#fake-selector'\)`/);
   });
 
   test('select with element that is not a HTMLSelectElement', async function (assert) {
@@ -48,7 +42,7 @@ module('@emberx/test-helpers | select', function (hooks) {
     const element = document.querySelector('[data-test-some-div]');
     assert.rejects(
       select(element, 'example'),
-      `Element is not a HTMLSelectElement when calling \`select(${element})\``
+      `Element is not a HTMLSelectElement when calling \`select(${element})\``,
     );
   });
 
@@ -75,7 +69,7 @@ module('@emberx/test-helpers | select', function (hooks) {
     const element = document.querySelector('[data-test-some-select]');
     assert.rejects(
       select(element, ['apple', 'orange']),
-      `HTMLSelectElement \`multiple\` attribute is set to \`false\` but multiple options have been passed when calling \`select(${element})\``
+      `HTMLSelectElement \`multiple\` attribute is set to \`false\` but multiple options have been passed when calling \`select(${element})\``,
     );
   });
 

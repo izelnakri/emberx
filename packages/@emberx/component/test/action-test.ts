@@ -128,9 +128,16 @@ module('@emberx/component | Action tests', function (hooks) {
     assert.dom('#loading-user').doesNotExist();
     assert.dom('#fetch-user-with-fetch').hasText('Fetch user with fetch');
 
-    this.Server.get('/users', () => {
-      return { firstName: 'Izel', lastName: 'Nakri' };
-    });
+    // A 50ms response keeps the request pending past a render. Ember batches
+    // re-renders to a later task than glimmer.js did, so an instant mock
+    // response would clear the loading state before it ever reached the DOM.
+    this.Server.get(
+      '/users',
+      () => {
+        return { firstName: 'Izel', lastName: 'Nakri' };
+      },
+      { timing: 50 },
+    );
 
     const promise = click('#fetch-user-with-fetch');
 
@@ -152,9 +159,16 @@ module('@emberx/component | Action tests', function (hooks) {
     assert.dom('#loading-user').doesNotExist();
     assert.dom('#fetch-user-with-xhr').hasText('Fetch user with xhr');
 
-    this.Server.get('/users', () => {
-      return { firstName: 'Izel', lastName: 'Nakri' };
-    });
+    // A 50ms response keeps the request pending past a render. Ember batches
+    // re-renders to a later task than glimmer.js did, so an instant mock
+    // response would clear the loading state before it ever reached the DOM.
+    this.Server.get(
+      '/users',
+      () => {
+        return { firstName: 'Izel', lastName: 'Nakri' };
+      },
+      { timing: 50 },
+    );
 
     const promise = click('#fetch-user-with-xhr');
 

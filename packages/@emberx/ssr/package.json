@@ -26,6 +26,9 @@
   },
   "dependencies": {
     "@emberx/component": "0.0.14",
-    "@glimmer/ssr": "2.0.0-beta.21"
+    "@simple-dom/document": "^1.4.0",
+    "@simple-dom/serializer": "^1.4.0",
+    "@simple-dom/void-map": "^1.4.0",
+    "ember-source": "^7.3.0"
   }
 }

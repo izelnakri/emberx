@@ -1,4 +1,5 @@
 import { Owner } from '@emberx/router';
+import { resetRendering } from '@emberx/component';
 import { setContext } from './context';
 
 declare global {
@@ -79,6 +80,9 @@ export function setupTest(hooks: QUnitHooks, _startRouter?: () => unknown): void
   hooks.afterEach(function () {
     // NOTE: created by the `beforeEach` above, so it is present by construction.
     document.getElementById('ember-testing-container')!.remove();
+    // Each test starts with a fresh renderer, so a render that threw in one test
+    // cannot replay its error in the next.
+    resetRendering();
   });
 }
 

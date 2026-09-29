@@ -28,8 +28,6 @@ export default async function render(templateString: string, includes: object = 
 
   const container = document.getElementById('ember-testing') as HTMLElement;
 
-  container.innerHTML = '';
-
   return await renderComponent(TemplateOnlyComponent, {
     element: container,
     owner: Owner,

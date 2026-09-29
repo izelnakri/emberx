@@ -17,7 +17,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import * as esbuild from 'esbuild';
 
-import { glimmerCompilerCryptoPlugin, emberxWorkspacePlugin } from './lib/glimmer-compat.js';
+import { emberSourcePlugin, emberxWorkspacePlugin } from './lib/esbuild-plugins.js';
 import { PACKAGES } from './build.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -35,9 +35,7 @@ await esbuild.build({
   sourcemap: 'inline',
   logLevel: 'warning',
   // Prefer each dependency's ESM build. esbuild defaults to `main` (CommonJS)
-  // for platform: 'node', but the Glimmer packages ship untranspiled ESM under
-  // `module`, which is what every other emberx bundle consumes — and what the
-  // @glimmer/compiler patch in glimmer-compat.js targets.
+  // for platform: 'node'; every other emberx bundle consumes `module`.
   mainFields: ['module', 'main'],
   // Everything is inlined. The bundle is written under tmp/, so anything left
   // external would be resolved by node relative to tmp/ rather than the repo
@@ -49,7 +47,7 @@ await esbuild.build({
   banner: {
     js: "import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);",
   },
-  plugins: [emberxWorkspacePlugin(ROOT, PACKAGES), glimmerCompilerCryptoPlugin()],
+  plugins: [emberxWorkspacePlugin(ROOT, PACKAGES), emberSourcePlugin()],
 });
 
 // Must happen before the bundle is imported: @emberx/component reads `window`

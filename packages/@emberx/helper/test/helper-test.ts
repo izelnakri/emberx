@@ -1,7 +1,7 @@
 import Component, { hbs, service, renderComponent } from '@emberx/component';
 import helper from '@emberx/helper';
 import { tracked } from '@glimmer/tracking';
-import { action } from '@glimmer/modifier';
+import { action } from '@emberx/component';
 import { module, test } from 'qunitx';
 import { click } from '@emberx/test-helpers';
 import { setupRenderingTest } from './helpers/index';

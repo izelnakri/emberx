@@ -2,14 +2,14 @@
  * Runtime template compilation.
  *
  * emberx has no build step: `hbs` is a no-op tag and templates are handed to
- * `@glimmer/compiler` in the browser, on first render of each component. Every
+ * Ember's runtime template compiler in the browser, on first render of each component. Every
  * millisecond here is paid by the user on page load, once per component, so
  * this is the benchmark that matters most for the project's core claim.
  *
- * `precompileJSON` is measured separately from `createTemplate` to separate
- * Glimmer's cost from emberx's wrapper (scope reification + templateFactory).
+ * `precompile` is measured separately from `createTemplate` to separate the
+ * compiler's cost from evaluating its output and building the template.
  */
-import { precompileJSON } from '@glimmer/compiler';
+import { precompile } from 'ember-source/ember-template-compiler/index.js';
 import { createTemplate } from '@emberx/component';
 
 const TRIVIAL = `<span>{{@name}}</span>`;
@@ -47,16 +47,16 @@ const LARGE = Array.from(
 
 export default [
   {
-    name: 'precompileJSON: trivial (1 element)',
-    fn: () => precompileJSON(TRIVIAL, { strictMode: true }),
+    name: 'precompile: trivial (1 element)',
+    fn: () => precompile(TRIVIAL, { strictMode: true }),
   },
   {
-    name: 'precompileJSON: typical component (~15 nodes)',
-    fn: () => precompileJSON(TYPICAL, { strictMode: true }),
+    name: 'precompile: typical component (~15 nodes)',
+    fn: () => precompile(TYPICAL, { strictMode: true }),
   },
   {
-    name: 'precompileJSON: large page (24 sections)',
-    fn: () => precompileJSON(LARGE, { strictMode: true }),
+    name: 'precompile: large page (24 sections)',
+    fn: () => precompile(LARGE, { strictMode: true }),
   },
   {
     name: 'createTemplate: trivial (1 element)',

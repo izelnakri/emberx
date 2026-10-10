@@ -1,6 +1,6 @@
 /**
- * Bundles test/node.ts, the suite that runs outside a browser. Node cannot run
- * the test modules directly: they use extensionless relative imports, which its
+ * Bundles test/node.ts, the suite that runs outside a browser, for node or Deno.
+ * Neither can run the test modules directly: they use extensionless relative imports, which its
  * ESM resolver rejects. esbuild resolves them the way the rest of the build
  * does, and transpiles the legacy decorators the suite is written with.
  *
@@ -41,7 +41,27 @@ function installedPackagesPlugin(directory) {
   };
 }
 
-export async function bundleTestSuite({ outfile, packagesFrom } = {}) {
+/**
+ * qunitx's Deno build inlines QUnit, and its shared assert module also imports
+ * vendor/qunit.js for the side effect. With a DOM present (jsdom here) both
+ * copies register themselves on `window`, and the second throws "QUnit has
+ * already been defined". The Deno build wires its own QUnit into Assert, so the
+ * second import is dropped. Without a DOM, as in qunitx's own Deno tests, the
+ * duplicate never surfaces.
+ */
+const singleQUnitPlugin = {
+  name: 'emberx:single-qunit',
+  setup(build) {
+    build.onResolve({ filter: /vendor\/qunit\.js$/ }, (args) =>
+      /[\\/]qunitx[\\/]dist[\\/]shared[\\/]/.test(args.importer)
+        ? { path: 'qunitx-vendor-qunit', namespace: 'emberx-empty' }
+        : null,
+    );
+    build.onLoad({ filter: /.*/, namespace: 'emberx-empty' }, () => ({ contents: '', loader: 'js' }));
+  },
+};
+
+export async function bundleTestSuite({ runtime = 'node', outfile, packagesFrom } = {}) {
   await mkdir(dirname(outfile), { recursive: true });
 
   await esbuild.build({
@@ -56,14 +76,16 @@ export async function bundleTestSuite({ outfile, packagesFrom } = {}) {
     // Prefer each dependency's ESM build. esbuild defaults to `main` (CommonJS)
     // for platform: 'node'; every other emberx bundle consumes `module`.
     mainFields: ['module', 'main'],
-    // qunitx picks its node build from this, which reports through node:test.
-    conditions: ['node'],
+    // qunitx picks its build from these: `deno` reports through Deno.test,
+    // `node` through node:test. Deno runs node packages, so `node` stays on.
+    conditions: runtime === 'deno' ? ['deno', 'node'] : ['node'],
     // CommonJS dependencies inlined into an ESM bundle still call `require` for
     // node builtins (util, crypto, ...), and ESM has no `require` of its own.
     banner: {
       js: "import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);",
     },
     plugins: [
+      ...(runtime === 'deno' ? [singleQUnitPlugin] : []),
       packagesFrom ? installedPackagesPlugin(packagesFrom) : emberxWorkspacePlugin(ROOT, PACKAGES),
       glimmerCompilerCryptoPlugin(),
     ],

@@ -87,8 +87,8 @@ are the least exercised and most likely to hide v7→v8 differences.
 
 ## 3. Make the suite runnable in node
 
-`@emberx/string`, `@emberx/helper` and `@emberx/component` run under node + jsdom. The
-router and test-helpers suites do not yet. Getting them there would let the whole suite
+`@emberx/string`, `@emberx/helper` and `@emberx/component` run under node + jsdom, and
+under Deno. The router and test-helpers suites do not yet. Getting them there would let the whole suite
 run headless, and it is a prerequisite for real SSR.
 
 - **Router state outlives each test.** Every test that starts a router builds a new
@@ -145,6 +145,12 @@ what such a change would eliminate.
   that leaves `require` as-is — a Rollup production build, for one — throws a
   `ReferenceError` on import. Either inline the patched compiler into `@emberx/component`,
   or add a Rollup build of a consumer app to the `package` CI job first to confirm it.
+- **The published packages do not import natively in Deno.** `@glimmer/core` publishes
+  CommonJS as `main`, with no exports map, and Deno does not see the named exports it
+  re-exports, so `import { renderComponent } from '@emberx/component'` fails there. The Deno
+  suite passes because esbuild bundles it from `@glimmer/core`'s ESM build, and
+  `test:release` runs that suite against the tarballs but skips the native-import consumer
+  test under Deno. Moving to `ember-source`, which is ESM with an exports map, removes it.
 - **TypeScript 7** is current; this repo is on 5.9 because the codebase leans on legacy
   (`experimentalDecorators`) decorators. Worth evaluating, together with a move to standard
   decorators.

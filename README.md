@@ -24,6 +24,7 @@ Everything runs through `make`; run `make` on its own for the full list.
 | `make check`        | format + lint + typecheck + tests, the core CI checks   |
 | `make test`         | build, then the node suite, then the browser suite      |
 | `make test-node`    | string, helper and component under node + jsdom         |
+| `make test-deno`    | the same suite under Deno                               |
 | `make test-browser` | the full suite in a real browser (chromium)             |
 | `make coverage`     | browser-suite line coverage, written to `tmp/coverage/` |
 | `make bench`        | runtime template-compilation and per-render benchmarks  |

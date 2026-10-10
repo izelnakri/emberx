@@ -1,10 +1,10 @@
 /**
- * Node suite entry point.
+ * Node and Deno suite entry point (scripts/test-node.js, scripts/test-deno.js).
  *
- * emberx's central claim is that its packages resolve and run in node without a
- * framework-specific build system. This suite is what proves it: the packages
- * are imported, rendered into jsdom and asserted on under plain node, no
- * browser involved.
+ * emberx's central claim is that its packages resolve and run outside a browser
+ * without a framework-specific build system. This suite is what proves it: the
+ * packages are imported, rendered into jsdom and asserted on under plain node
+ * and under Deno, no browser involved.
  *
  * @emberx/router and @emberx/test-helpers stay browser-only for now. Their
  * suites start a router per test, and transitions from one test keep running

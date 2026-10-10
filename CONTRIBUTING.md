@@ -10,7 +10,7 @@ make check     # format + lint + typecheck + node suite + browser suite
 
 Node 24 or newer is required (`engines.node`, and `volta.node` pins the exact version
 used in CI). [Deno](https://docs.deno.com/runtime/getting_started/installation/) 2.9 or newer
-is required for `make lint` (`engines.deno`). It is not an npm dependency: installed once, it
+is required for `make lint` and `make test-deno` (`engines.deno`). It is not an npm dependency: installed once, it
 is shared across projects instead of adding ~90 MB to every clone's `node_modules`. CI and
 the Dockerfile pin the exact version (2.9.6); bump the two together. The browser suite needs a Chrome/Chromium binary, discovered from
 `CHROME_BIN` or your `PATH`:
@@ -107,6 +107,7 @@ owner, because `@emberx/router`'s `Owner` is a static class.
 | Suite   | Command             | Covers                                          |
 | ------- | ------------------- | ----------------------------------------------- |
 | node    | `make test-node`    | string, helper and component under node + jsdom |
+| deno    | `make test-deno`    | the same suite under Deno                       |
 | browser | `make test-browser` | everything, including routing and rendering     |
 
 The browser suite is the real one — the router, the renderer and `@emberx/test-helpers`

@@ -6,7 +6,7 @@ BENCH_BASE ?=
 
 .PHONY: bench bench-check bench-print bench-update build build-dev check clean coverage \
         dev docker-build docker-test fix fmt format help install lint release setup test test-all-browsers \
-        test-browser test-browser-dev test-chrome test-firefox test-node test-release test-webkit typecheck
+        test-browser test-browser-dev test-chrome test-firefox test-deno test-node test-release test-webkit typecheck
 
 # ── Build ─────────────────────────────────────────────────────────────────────
 
@@ -61,7 +61,7 @@ lint:
 typecheck:
 	npm run typecheck
 
-# Builds, then runs the node suite followed by the browser suite.
+# Builds, then runs the node suite, the Deno suite and the browser suite.
 test:
 	npm test
 
@@ -69,6 +69,10 @@ test:
 # packages resolve, render and run outside a browser. Fast, no browser required.
 test-node:
 	npm run test:node
+
+# The same suite under Deno (needs Deno installed; see CONTRIBUTING.md).
+test-deno:
+	npm run test:deno
 
 # The full suite in a real browser — the only place @emberx/router,
 # @emberx/component rendering and @emberx/test-helpers are actually exercised.
@@ -197,6 +201,7 @@ help:
 	@echo "  typecheck         tsc --noEmit over all package sources"
 	@echo "  test              Build, then node suite, then browser suite"
 	@echo "  test-node         string, helper and component under node + jsdom"
+	@echo "  test-deno         The same suite under Deno"
 	@echo "  test-browser      Full suite in chromium (alias: test-chrome)"
 	@echo "  test-browser-dev  Full suite in chromium, watching for changes"
 	@echo "  test-firefox      Full suite in firefox"

@@ -36,10 +36,11 @@
     "format": "prettier --check . \"!CHANGELOG.md\" \"!package-lock.json\" \"!packages/@emberx/router/src/vendor/**\"",
     "format:fix": "prettier --write . \"!CHANGELOG.md\" \"!package-lock.json\" \"!packages/@emberx/router/src/vendor/**\"",
     "lint": "deno lint --rules-exclude=ban-ts-comment,no-explicit-any,no-sloppy-imports,no-window,no-window-prefix,require-await --ignore=packages/@emberx/router/src/vendor/",
-    "test": "npm run build:dev && npm run test:node && npm run test:browser",
+    "test": "npm run build:dev && npm run test:node && npm run test:deno && npm run test:browser",
     "test:browser": "qunitx test/index.ts",
     "test:browser:dev": "qunitx test/index.ts --watch",
     "test:coverage": "qunitx test/index.ts --coverage=lcov,html",
+    "test:deno": "node scripts/test-deno.js",
     "test:node": "node scripts/test-node.js",
     "test:release": "bash scripts/test-release.sh",
     "typecheck": "tsc --project tsconfig.json --noEmit"

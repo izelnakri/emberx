@@ -104,11 +104,12 @@ owner, because `@emberx/router`'s `Owner` is a static class.
 
 ## Tests
 
-| Suite   | Command             | Covers                                          |
-| ------- | ------------------- | ----------------------------------------------- |
-| node    | `make test-node`    | string, helper and component under node + jsdom |
-| deno    | `make test-deno`    | the same suite under Deno                       |
-| browser | `make test-browser` | everything, including routing and rendering     |
+| Suite   | Command              | Covers                                          |
+| ------- | -------------------- | ----------------------------------------------- |
+| node    | `make test-node`     | string, helper and component under node + jsdom |
+| deno    | `make test-deno`     | the same suite under Deno                       |
+| browser | `make test-browser`  | everything, including routing and rendering     |
+| docs    | `make test-doctests` | the code examples in the READMEs and JSDoc      |
 
 The browser suite is the real one — the router, the renderer and `@emberx/test-helpers`
 only run there. Both must pass before a change lands.
@@ -120,6 +121,19 @@ each entry point with esbuild, so TypeScript runs directly with no build step.
 There is no runloop. `settled()` awaits the promise queue that `@action` populates, so a
 test helper automatically waits for any promise an action returned. If you add an async
 path that tests need to wait on, it must flow through that queue.
+
+### Documentation examples
+
+Every ` ```ts ` and ` ```js ` block in a README or in a JSDoc comment under
+`packages/@emberx/*/src` runs in `make test-doctests` (and `make check`), so examples cannot
+drift from the code. Write them self-contained: import what they use, and render into
+`document.getElementById('app')`, which each example gets fresh. End a statement with
+`// => value` to assert what it returns, as `String(statement)`. A multi-file sketch that
+imports files a reader would write themselves is marked ` ```ts ignore `.
+
+This is qunitx's `deno test --doc` in spirit, but the examples run under node: Deno compiles
+decorators with standard class-field semantics, under which a legacy `@tracked` field is
+overwritten by its initializer, and nearly every emberx example uses `@tracked`.
 
 ## Benchmarks
 

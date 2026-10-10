@@ -37,6 +37,8 @@ jobs:
       - run: npm ci
       - run: npm run format
       - run: npm run lint
+      # The docs' code examples, run and checked; see scripts/test-doctests.js.
+      - run: npm run test:doctests
       - run: npm run typecheck
 
   test:

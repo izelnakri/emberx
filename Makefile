@@ -6,7 +6,7 @@ BENCH_BASE ?=
 
 .PHONY: bench bench-check bench-print bench-update build build-dev check clean coverage \
         dev docker-build docker-test fix fmt format help install lint release setup test test-all-browsers \
-        test-browser test-browser-dev test-chrome test-firefox test-deno test-node test-release test-webkit typecheck
+        test-browser test-browser-dev test-chrome test-firefox test-deno test-doctests test-node test-release test-webkit typecheck
 
 # ── Build ─────────────────────────────────────────────────────────────────────
 
@@ -36,7 +36,7 @@ install setup:
 
 # The gate that CI runs and that `make release` requires. Everything a
 # reviewer needs to trust a change.
-check: format lint typecheck test
+check: format lint typecheck test test-doctests
 
 # Formatting is prettier, configured by the "prettier" key in package.json; the
 # files it skips are negated patterns in the npm scripts, so there is no
@@ -73,6 +73,11 @@ test-node:
 # The same suite under Deno (needs Deno installed; see CONTRIBUTING.md).
 test-deno:
 	npm run test:deno
+
+# Runs every ```ts/```js example in the READMEs and in JSDoc comments, checking
+# each `// => value`. ```ts ignore skips a multi-file sketch.
+test-doctests:
+	npm run test:doctests
 
 # The full suite in a real browser — the only place @emberx/router,
 # @emberx/component rendering and @emberx/test-helpers are actually exercised.
@@ -194,7 +199,7 @@ help:
 	@echo "  install / setup   npm ci for a fresh checkout"
 	@echo ""
 	@echo "Verify"
-	@echo "  check             format + lint + typecheck + test (what CI runs)"
+	@echo "  check             format + lint + typecheck + test + test-doctests"
 	@echo "  format            Check formatting (prettier)"
 	@echo "  fix / fmt         Auto-fix formatting"
 	@echo "  lint              Lint sources (deno lint)"
@@ -202,6 +207,7 @@ help:
 	@echo "  test              Build, then node suite, then browser suite"
 	@echo "  test-node         string, helper and component under node + jsdom"
 	@echo "  test-deno         The same suite under Deno"
+	@echo "  test-doctests     Run the code examples in the docs"
 	@echo "  test-browser      Full suite in chromium (alias: test-chrome)"
 	@echo "  test-browser-dev  Full suite in chromium, watching for changes"
 	@echo "  test-firefox      Full suite in firefox"

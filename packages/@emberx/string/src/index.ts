@@ -68,12 +68,12 @@ const DECAMELIZE_CACHE = new Cache<string, string>(1000, (str) =>
   Converts a camelized string into all lower case separated by underscores.
 
   ```javascript
-  import { decamelize } from '@ember/string';
+  import { decamelize } from '@emberx/string';
 
-  decamelize('innerHTML');          // 'inner_html'
-  decamelize('action_name');        // 'action_name'
-  decamelize('css-class-name');     // 'css-class-name'
-  decamelize('my favorite items');  // 'my favorite items'
+  decamelize('innerHTML'); // => inner_html
+  decamelize('action_name'); // => action_name
+  decamelize('css-class-name'); // => css-class-name
+  decamelize('my favorite items'); // => my favorite items
   ```
 
   @method decamelize
@@ -89,13 +89,13 @@ export function decamelize(str: string): string {
   Replaces underscores, spaces, or camelCase with dashes.
 
   ```javascript
-  import { dasherize } from '@ember/string';
+  import { dasherize } from '@emberx/string';
 
-  dasherize('innerHTML');                // 'inner-html'
-  dasherize('action_name');              // 'action-name'
-  dasherize('css-class-name');           // 'css-class-name'
-  dasherize('my favorite items');        // 'my-favorite-items'
-  dasherize('privateDocs/ownerInvoice';  // 'private-docs/owner-invoice'
+  dasherize('innerHTML'); // => inner-html
+  dasherize('action_name'); // => action-name
+  dasherize('css-class-name'); // => css-class-name
+  dasherize('my favorite items'); // => my-favorite-items
+  dasherize('privateDocs/ownerInvoice'); // => private-docs/owner-invoice
   ```
 
   @method dasherize
@@ -111,14 +111,14 @@ export function dasherize(str: string): string {
   Returns the lowerCamelCase form of a string.
 
   ```javascript
-  import { camelize } from '@ember/string';
+  import { camelize } from '@emberx/string';
 
-  camelize('innerHTML');                   // 'innerHTML'
-  camelize('action_name');                 // 'actionName'
-  camelize('css-class-name');              // 'cssClassName'
-  camelize('my favorite items');           // 'myFavoriteItems'
-  camelize('My Favorite Items');           // 'myFavoriteItems'
-  camelize('private-docs/owner-invoice');  // 'privateDocs/ownerInvoice'
+  camelize('innerHTML'); // => innerHTML
+  camelize('action_name'); // => actionName
+  camelize('css-class-name'); // => cssClassName
+  camelize('my favorite items'); // => myFavoriteItems
+  camelize('My Favorite Items'); // => myFavoriteItems
+  camelize('private-docs/owner-invoice'); // => privateDocs/ownerInvoice
   ```
 
   @method camelize
@@ -134,13 +134,13 @@ export function camelize(str: string): string {
   Returns the UpperCamelCase form of a string.
 
   ```javascript
-  import { classify } from '@ember/string';
+  import { classify } from '@emberx/string';
 
-  classify('innerHTML');                   // 'InnerHTML'
-  classify('action_name');                 // 'ActionName'
-  classify('css-class-name');              // 'CssClassName'
-  classify('my favorite items');           // 'MyFavoriteItems'
-  classify('private-docs/owner-invoice');  // 'PrivateDocs/OwnerInvoice'
+  classify('innerHTML'); // => InnerHTML
+  classify('action_name'); // => ActionName
+  classify('css-class-name'); // => CssClassName
+  classify('my favorite items'); // => MyFavoriteItems
+  classify('private-docs/owner-invoice'); // => PrivateDocs/OwnerInvoice
   ```
 
   @method classify
@@ -157,13 +157,13 @@ export function classify(str: string): string {
   form of a string.
 
   ```javascript
-  import { underscore } from '@ember/string';
+  import { underscore } from '@emberx/string';
 
-  underscore('innerHTML');                 // 'inner_html'
-  underscore('action_name');               // 'action_name'
-  underscore('css-class-name');            // 'css_class_name'
-  underscore('my favorite items');         // 'my_favorite_items'
-  underscore('privateDocs/ownerInvoice');  // 'private_docs/owner_invoice'
+  underscore('innerHTML'); // => inner_html
+  underscore('action_name'); // => action_name
+  underscore('css-class-name'); // => css_class_name
+  underscore('my favorite items'); // => my_favorite_items
+  underscore('privateDocs/ownerInvoice'); // => private_docs/owner_invoice
   ```
 
   @method underscore
@@ -179,13 +179,13 @@ export function underscore(str: string): string {
   Returns the Capitalized form of a string
 
   ```javascript
-  import { capitalize } from '@ember/string';
+  import { capitalize } from '@emberx/string';
 
-  capitalize('innerHTML')                 // 'InnerHTML'
-  capitalize('action_name')               // 'Action_name'
-  capitalize('css-class-name')            // 'Css-class-name'
-  capitalize('my favorite items')         // 'My favorite items'
-  capitalize('privateDocs/ownerInvoice'); // 'PrivateDocs/ownerInvoice'
+  capitalize('innerHTML'); // => InnerHTML
+  capitalize('action_name'); // => Action_name
+  capitalize('css-class-name'); // => Css-class-name
+  capitalize('my favorite items'); // => My favorite items
+  capitalize('privateDocs/ownerInvoice'); // => PrivateDocs/OwnerInvoice
   ```
 
   @method capitalize

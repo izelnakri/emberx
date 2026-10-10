@@ -16,9 +16,16 @@ export interface Options {
   Wait for the provided callback to return a truthy value.
 
   @example
-  await waitUntil(function() {
-    return find('.my-selector').textContent.includes('something')
-  }, { timeout: 2000 })
+  ```ts
+  import { find, waitUntil } from '@emberx/test-helpers';
+
+  document.body.innerHTML = '<p class="status">loading</p>';
+  setTimeout(() => (find('.status')!.textContent = 'loaded'), 50);
+
+  await waitUntil(() => find('.status')!.textContent!.includes('loaded'), { timeout: 2000 });
+
+  find('.status')!.textContent; // => loaded
+  ```
 */
 export function waitUntil<T>(callback: () => T | void | Falsy, options: Options = {}): Promise<T> {
   const timeout = 'timeout' in options ? (options.timeout as number) : 1000;
@@ -66,10 +73,17 @@ export function waitUntil<T>(callback: () => T | void | Falsy, options: Options 
   interim DOM states (e.g. loading states, pending promises, etc).
 
   @example
-  <caption>
-    Waiting until a selector is rendered:
-  </caption>
-  await waitFor('.my-selector', { timeout: 2000 })
+  Waiting until a selector is rendered:
+
+  ```ts
+  import { waitFor } from '@emberx/test-helpers';
+
+  setTimeout(() => document.body.insertAdjacentHTML('beforeend', '<p class="ready">ready</p>'), 50);
+
+  const element = (await waitFor('.ready', { timeout: 2000 })) as Element;
+
+  element.textContent; // => ready
+  ```
 */
 export function waitFor(selector: string, options: Options = {}): Promise<Element | Element[]> {
   return Promise.resolve().then(() => {

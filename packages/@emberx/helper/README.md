@@ -2,44 +2,34 @@
 
 EmberX helpers are UI functions that return data when its parameters or related services state changes:
 
-```
-// Helper definition:
+```ts
 import helper from '@emberx/helper';
+import Component, { service, tracked, action, hbs, renderComponent, didRender } from '@emberx/component';
 
-const translate = helper(([key, intl], _hash, services) => {
-  return services.intl.t(key);
-});
+// A helper receives positional params, named params, and the owner's services:
+const translate = helper(([key], _named, services) => services.intl.t(key));
 
-export default translate;
+class Intl {
+  @tracked currentLocale = 'en';
 
-// Helper usage:
-import Component, { service, action, renderComponent } from '@emberx/component';
-import { LinkTo } from '@emberx/router';
-import translate from './helpers/translate';
+  translations = {
+    en: { 'button.save': 'Save model' },
+    es: { 'button.save': 'Guardar modelo' },
+  };
 
-export default class UserDisplay extends Component {
+  t(key) {
+    return this.translations[this.currentLocale][key];
+  }
+}
+
+class UserDisplay extends Component {
   @service intl;
 
-  user = {
-    id: 1,
-    firstName: 'Izel',
-    lastName: 'Nakri'
-  };
-
-  static includes = {
-    LinkTo,
-    translate,
-  };
-  static template = `
-    <div id="intro">
-      <LinkTo @route="user.posts" @model={{this.user.id}}>{{translate "user-page.posts-link" this.user.firstName}}</LinkTo>
-
-      <h5>Current locale is: {{this.intl.currentLocale}}</h5>
-      <button type="button" {{on "click" this.changeLocale}}>Change locale</button>
-
-      <h5>Localized button example:</h5>
-      <button type="button">{{translate "button.save"}}</button>
-    </div>
+  static includes = { translate };
+  static template = hbs`
+    <h5 id="locale">Current locale is: {{this.intl.currentLocale}}</h5>
+    <button type="button" id="save">{{translate "button.save"}}</button>
+    <button type="button" id="change-locale" {{on "click" this.changeLocale}}>Change locale</button>
   `;
 
   @action changeLocale(): void {
@@ -47,7 +37,16 @@ export default class UserDisplay extends Component {
   }
 }
 
-// Rendering:
+await renderComponent(UserDisplay, {
+  element: document.getElementById('app'),
+  owner: { services: { intl: new Intl() } },
+});
 
-renderComponent(UserDisplay, { element: document.getElementById('app') });
+document.querySelector('#save').textContent; // => Save model
+
+// The helper re-runs when the service state it read changes:
+document.querySelector('#change-locale').click();
+await didRender();
+
+document.querySelector('#save').textContent; // => Guardar modelo
 ```

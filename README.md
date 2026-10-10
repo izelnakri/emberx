@@ -19,17 +19,18 @@ make dev        # serves examples/blog on http://localhost:1234
 
 Everything runs through `make`; run `make` on its own for the full list.
 
-| Command             | What it does                                            |
-| ------------------- | ------------------------------------------------------- |
-| `make check`        | format + lint + typecheck + tests, the core CI checks   |
-| `make test`         | build, then the node suite, then the browser suite      |
-| `make test-node`    | string, helper and component under node + jsdom         |
-| `make test-deno`    | the same suite under Deno                               |
-| `make test-browser` | the full suite in a real browser (chromium)             |
-| `make coverage`     | browser-suite line coverage, written to `tmp/coverage/` |
-| `make bench`        | runtime template-compilation and per-render benchmarks  |
-| `make build`        | bundle every package to `dist/` and emit `.d.ts`        |
-| `make dev`          | example app with watch rebuilds                         |
+| Command              | What it does                                            |
+| -------------------- | ------------------------------------------------------- |
+| `make check`         | format + lint + typecheck + tests, the core CI checks   |
+| `make test`          | build, then the node suite, then the browser suite      |
+| `make test-node`     | string, helper and component under node + jsdom         |
+| `make test-deno`     | the same suite under Deno                               |
+| `make test-doctests` | the code examples in the docs, run and checked          |
+| `make test-browser`  | the full suite in a real browser (chromium)             |
+| `make coverage`      | browser-suite line coverage, written to `tmp/coverage/` |
+| `make bench`         | runtime template-compilation and per-render benchmarks  |
+| `make build`         | bundle every package to `dist/` and emit `.d.ts`        |
+| `make dev`           | example app with watch rebuilds                         |
 
 CI runs these same checks as separate jobs, and also runs the browser suite in Firefox and WebKit,
 a benchmark regression check and a package verification step.
@@ -78,7 +79,7 @@ Although the project is not production-ready one can still experiment with it us
 What if `@ember/routing/router` & `@ember/routing/route` were a tiny and explicitly resolvable router you could import from npm.
 Flexible and simple API below can be progressively backward-compatible and support current ember router definitions!
 
-```ts
+```ts ignore
 // in ./router.js
 
 import Router from '@emberx/router';
@@ -126,7 +127,7 @@ This API also will allow custom resolvers that can resolve current ember routers
 
 #### Backward-compatible API suggestion:
 
-```ts
+```ts ignore
 import Router from '@emberx/router';
 import SomeCustomResolver from './custom-resolver';
 
@@ -170,7 +171,7 @@ This experiment is also a sketch/request for a new ember edition.
 
 #### Familiar @emberx/route:
 
-```ts
+```ts ignore
 import { Route, LinkTo, hbs, tracked, service, action, on } from '@emberx/router';
 
 import t from '../helpers/t';
@@ -307,9 +308,12 @@ class MainComponent extends Component {
 }
 
 await renderComponent(MainComponent, {
-  element: document.getElementById('ember-testing'),
+  element: document.getElementById('app'),
   owner: { services: { locale: new LocaleService('en') } },
 });
+
+document.querySelector('#main-component-formatted-message').textContent; // => HELLO WORLD
+document.querySelector('#locale-info').textContent; // => Component gets rendered. Current locale is en
 ```
 
 Template/Component imports are respecting typescript standards, thus can be easily run node.js with npm, allowing

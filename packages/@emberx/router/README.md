@@ -6,7 +6,7 @@ segments, promise-aware model hooks and parent-children route relationships. Que
 are in progress, see [ROADMAP.md](../../../ROADMAP.md). The router is fully testable with `visit`
 and `currentURL` helpers for `@emberx/test-helpers`.
 
-```ts
+```ts ignore
 // in index.ts:
 
 import startRouter from './start-router';

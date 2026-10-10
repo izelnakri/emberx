@@ -49,13 +49,21 @@ class UserDisplay extends Component {
 
 // Usage:
 
-renderComponent(UserDisplay, { element: document.getElementById('app') });
+await renderComponent(UserDisplay, { element: document.getElementById('app') });
+
+document.querySelector('#counter').textContent; // => Counter: 55
 ```
 
 EmberX Components are composable, they allow embedding other EmberX components, helpers and modifiers:
 
 ```ts
 import Component, { hbs, renderComponent, action, tracked } from '@emberx/component';
+
+interface User {
+  firstName: string;
+  lastName: string;
+  createdAt: string;
+}
 
 class Table extends Component<{ headRows: object }> {
   static template = hbs`
@@ -113,5 +121,10 @@ class UserTable extends Component<{ users: User[] }> {
 
 // Usage:
 
-renderComponent(UserTable, { element: document.getElementById('app') });
+await renderComponent(UserTable, {
+  element: document.getElementById('app'),
+  args: { users: [{ firstName: 'Izel', lastName: 'Nakri', createdAt: '2021-05-01' }] },
+});
+
+document.querySelector('.my-table tbody td').textContent; // => Izel
 ```

@@ -41,6 +41,7 @@
     "test:browser:dev": "qunitx test/index.ts --watch",
     "test:coverage": "qunitx test/index.ts --coverage=lcov,html",
     "test:deno": "node scripts/test-deno.js",
+    "test:doctests": "node scripts/test-doctests.js",
     "test:node": "node scripts/test-node.js",
     "test:release": "bash scripts/test-release.sh",
     "typecheck": "tsc --project tsconfig.json --noEmit"

@@ -161,6 +161,15 @@ and `make release` compares against the previous release tag. For a quick manual
 before/after, `make bench-update` saves this machine's numbers to `benches/results.json`,
 which is gitignored, and `npm run bench:check` compares against it.
 
+Files named `*.chrome.bench.ts` run in Chrome instead, through `Chrome.bench`
+(`scripts/lib/chrome-bench.js`): the same signature as `Deno.bench` and the same JSON out, so
+they are checked and compared the same way. Neither Chrome nor the DevTools Protocol has a
+benchmark harness of its own, so this one warms up, sizes batches, samples and reports, on a
+cross-origin-isolated page for 5µs timer precision. They need Chrome: `CHROME_BIN`, or
+Playwright's. `CHROME_BENCH_CPU_THROTTLE=4` slows the CPU down 4× through CDP, roughly a
+mid-range phone. On this branch they are observational, for the reason in
+`benches/render.chrome.bench.ts`.
+
 Cases under 10µs (the string transforms and helpers) are reported but only fail on a
 catastrophic regression, ten times the threshold: at that scale the scheduler moves the
 numbers more than code does. qunitx-cli draws that line at 1ms; emberx's headline cost,

@@ -45,25 +45,34 @@ const LARGE = Array.from(
   </section>`,
 ).join('\n');
 
-export default [
-  {
-    name: 'precompileJSON: trivial (1 element)',
-    fn: () => precompileJSON(TRIVIAL, { strictMode: true }),
-  },
-  {
-    name: 'precompileJSON: typical component (~15 nodes)',
-    fn: () => precompileJSON(TYPICAL, { strictMode: true }),
-  },
-  {
-    name: 'precompileJSON: large page (24 sections)',
-    fn: () => precompileJSON(LARGE, { strictMode: true }),
-  },
-  {
-    name: 'createTemplate: trivial (1 element)',
-    fn: () => createTemplate(TRIVIAL, { strictMode: true }, {}),
-  },
-  {
-    name: 'createTemplate: typical component (~15 nodes)',
-    fn: () => createTemplate(TYPICAL, { strictMode: true }, {}),
-  },
-];
+// Every result is assigned here, so the optimiser cannot delete the work measured.
+export let sink: unknown;
+
+const group = 'template-compilation';
+const strictMode = { strictMode: true };
+
+Deno.bench({
+  name: 'template-compilation/precompileJSON: trivial (1 element)',
+  group,
+  fn: () => void (sink = precompileJSON(TRIVIAL, strictMode)),
+});
+Deno.bench({
+  name: 'template-compilation/precompileJSON: typical component (~15 nodes)',
+  group,
+  fn: () => void (sink = precompileJSON(TYPICAL, strictMode)),
+});
+Deno.bench({
+  name: 'template-compilation/precompileJSON: large page (24 sections)',
+  group,
+  fn: () => void (sink = precompileJSON(LARGE, strictMode)),
+});
+Deno.bench({
+  name: 'template-compilation/createTemplate: trivial (1 element)',
+  group,
+  fn: () => void (sink = createTemplate(TRIVIAL, { strictMode: true }, {})),
+});
+Deno.bench({
+  name: 'template-compilation/createTemplate: typical component (~15 nodes)',
+  group,
+  fn: () => void (sink = createTemplate(TYPICAL, { strictMode: true }, {})),
+});

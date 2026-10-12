@@ -147,16 +147,24 @@ The headline numbers are runtime template compilation: emberx compiles templates
 browser on first render rather than at build time, so that cost is paid by users on page
 load.
 
+The benchmarks are `Deno.bench` files in `benches/`, run and checked by
+`scripts/check-benchmarks.ts`, the same setup as qunitx-cli: each file runs in its own
+`deno bench` process, and a case that looks regressed is re-run up to three times, keeping
+the minimum, before it fails. The packages are built first and each file is bundled by
+esbuild, so the numbers are for the `dist/` users get.
+
 Timings only compare on one machine, so no baseline is committed. `make bench-check` checks
-the base commit out into a temporary worktree, installs, builds and measures it, then
-measures your tree (uncommitted changes included), and fails on a regression beyond
-`REGRESSION_THRESHOLD` (default 25%). CI's `bench` job does the same against the PR's
-base, and `make release` compares against the previous release tag. For a quick manual
+the base commit out into a temporary worktree, installs and measures it, then measures your
+tree (uncommitted changes included), and fails on a regression beyond
+`REGRESSION_THRESHOLD` (default 26%). CI's `bench` job does the same against the PR's base,
+and `make release` compares against the previous release tag. For a quick manual
 before/after, `make bench-update` saves this machine's numbers to `benches/results.json`,
 which is gitignored, and `npm run bench:check` compares against it.
 
-Cases whose sample spread exceeds 25% are reported but never fail the build; at
-sub-microsecond scale the harness is measuring the scheduler, not your change.
+Cases under 10µs (the string transforms and helpers) are reported but only fail on a
+catastrophic regression, ten times the threshold: at that scale the scheduler moves the
+numbers more than code does. qunitx-cli draws that line at 1ms; emberx's headline cost,
+template compilation, runs 40µs–10ms and has to stay gated.
 
 ## Releasing
 

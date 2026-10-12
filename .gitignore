@@ -12,5 +12,5 @@ yarn-error.log
 # Created by qunitx-cli's postinstall (deno install); not managed by this repo.
 deno.lock
 
-# Benchmark baselines only compare on the machine that recorded them; see benches/compare.js.
+# Benchmark baselines only compare on the machine that recorded them; see scripts/check-benchmarks.ts.
 benches/results.json

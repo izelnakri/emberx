@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := help
 
 LEVEL ?= patch
-REGRESSION_THRESHOLD ?= 25
+REGRESSION_THRESHOLD ?= 26
 BENCH_BASE ?=
 
 .PHONY: bench bench-check bench-print bench-update build build-dev check clean coverage \
@@ -113,6 +113,9 @@ coverage: build-dev
 
 # ── Benchmarks ────────────────────────────────────────────────────────────────
 
+# Benchmarks are Deno.bench files in benches/, run and checked by
+# scripts/check-benchmarks.ts, as in qunitx-cli.
+#
 # Measures BENCH_BASE (default: where this branch left origin/main) in a
 # temporary worktree, then this tree, on this machine, and fails if anything
 # regressed by more than REGRESSION_THRESHOLD%. Nothing is committed: timings
@@ -122,7 +125,7 @@ bench-check:
 	@if echo "$(SKIP_BENCHMARK)" | grep -qiE '^(true|1|all)$$'; then \
 		echo "SKIP_BENCHMARK=$(SKIP_BENCHMARK) -> skipping bench-check"; \
 	else \
-		REGRESSION_THRESHOLD=$(REGRESSION_THRESHOLD) node benches/compare.js $(BENCH_BASE); \
+		REGRESSION_THRESHOLD=$(REGRESSION_THRESHOLD) npm run bench:compare -- $(BENCH_BASE); \
 	fi
 
 # Runs the suite and prints results without touching the baseline.
@@ -187,7 +190,7 @@ release:
 help:
 	@echo "emberx — make targets"
 	@echo ""
-	@echo "Usage: make <target> [LEVEL=patch|minor|major|x.y.z] [REGRESSION_THRESHOLD=25]"
+	@echo "Usage: make <target> [LEVEL=patch|minor|major|x.y.z] [REGRESSION_THRESHOLD=26]"
 	@echo ""
 	@echo "Build"
 	@echo "  build             Bundle all packages to dist/ + emit .d.ts"

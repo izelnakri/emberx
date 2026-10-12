@@ -29,7 +29,7 @@ jobs:
           node-version-file: package.json
           cache: npm
       # Deno is not an npm dependency; this is the version `npm run lint` uses in
-      # CI, and the test and package jobs pin the same one, as does the
+      # CI, and the test, bench and package jobs pin the same one, as does the
       # Dockerfile. Bump them together.
       - uses: denoland/setup-deno@v2
         with:
@@ -139,10 +139,10 @@ jobs:
   # Measures what emberx sells: runtime template compilation, the work other
   # frameworks do at build time and emberx does on page load.
   #
-  # benches/compare.js measures the base commit and this one back to back on
-  # this runner, so the comparison is like for like; nothing is committed. The
-  # base is the PR's base, or where a pushed branch left main. Advisory while
-  # shared-runner noise on the sub-microsecond cases is still being learned.
+  # `bench:compare` (scripts/check-benchmarks.ts --base) measures the base commit
+  # and this one back to back on this runner, so the comparison is like for
+  # like; nothing is committed. The base is the PR's base, or where a pushed
+  # branch left main. Advisory while shared-runner noise is still being learned.
   bench:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork
     runs-on: ubuntu-latest
@@ -157,10 +157,13 @@ jobs:
         with:
           node-version-file: package.json
           cache: npm
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: 2.9.6
       - run: npm ci
-      - run: node benches/compare.js ${{ github.event.pull_request.base.sha }}
+      - run: npm run bench:compare -- ${{ github.event.pull_request.base.sha }}
         env:
-          FORCE_COLOR: 0
+          NO_COLOR: 1
 
   # Tests the packaged artefacts, not the checkout: scripts/test-release.sh packs
   # each workspace, installs the tarballs into a throwaway consumer, and runs a

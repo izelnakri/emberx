@@ -151,6 +151,12 @@ what such a change would eliminate.
   suite passes because esbuild bundles it from `@glimmer/core`'s ESM build, and
   `test:release` runs that suite against the tarballs but skips the native-import consumer
   test under Deno. Moving to `ember-source`, which is ESM with an exports map, removes it.
+- **`@glimmer/core` never lets go of a rendered root.** `renderComponent` pushes every
+  result onto a module-level array that nothing prunes, and every scheduled re-render
+  revalidates all of them. In an app, each route transition adds a root, so re-render
+  work and memory grow with navigation history. It also makes the Chrome render
+  benchmarks too noisy to gate. `ember-source`'s `renderComponent` replaces what it
+  rendered into an element before, which removes it.
 - **TypeScript 7** is current; this repo is on 5.9 because the codebase leans on legacy
   (`experimentalDecorators`) decorators. Worth evaluating, together with a move to standard
   decorators.

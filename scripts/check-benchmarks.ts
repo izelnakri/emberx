@@ -25,6 +25,10 @@
  * --print   Prints the measured values without checking or saving.
  * --files <file> [file…]   Bench files to run (default: benches/*.bench.ts).
  *
+ * emberx: `*.chrome.bench.ts` files use Chrome.bench, Deno.bench's shape in a
+ * real Chrome (scripts/lib/chrome-bench.js), and produce the same JSON, so they
+ * are checked, retried and compared exactly like the Deno ones.
+ *
  * Environment variables
  * ---------------------
  *   REGRESSION_THRESHOLD  percent threshold (default 26)
@@ -91,31 +95,52 @@ async function run(command: string, args: string[], cwd = ROOT, quiet = false): 
   return new TextDecoder().decode(stdout).trim();
 }
 
+/** emberx: `*.chrome.bench.ts` files run in Chrome, through scripts/lib/chrome-bench.js. */
+const isChromeBench = (file: string): boolean => file.endsWith('.chrome.bench.ts');
+
 /** emberx: builds the packages, then bundles every bench file once into tmp/benches/. */
 async function bundle(files: string[]): Promise<void> {
   await run('npm', ['run', 'build:dev', '--silent'], ROOT, true);
-  await esbuild.build({
-    entryPoints: files,
+  const common = {
     outdir: BUNDLE_DIR,
     outbase: `${ROOT}benches`,
-    outExtension: { '.js': '.js' },
     bundle: true,
-    format: 'esm',
-    platform: 'node',
+    format: 'esm' as const,
     target: 'esnext',
-    logLevel: 'warning',
+    logLevel: 'warning' as const,
     mainFields: ['module', 'main'],
-    conditions: ['node'],
     plugins: [glimmerCompilerCryptoPlugin()],
-  });
+  };
+  const denoFiles = files.filter((file) => !isChromeBench(file));
+  const chromeFiles = files.filter(isChromeBench);
+  if (denoFiles.length > 0) {
+    await esbuild.build({ ...common, entryPoints: denoFiles, platform: 'node', conditions: ['node'] });
+  }
+  if (chromeFiles.length > 0) {
+    await esbuild.build({ ...common, entryPoints: chromeFiles, platform: 'browser' });
+  }
   esbuild.stop();
 }
+
+/**
+ * emberx: Chrome benches are observational, gated only at the hard ceiling like
+ * sub-10µs ones. On @glimmer/core every renderComponent root stays alive and is
+ * revalidated forever (ROADMAP.md, dependency debt), so the heap grows during a
+ * render benchmark and its GC cost swings 15–55% between runs.
+ */
+const observational = new Set<string>();
 
 /** Runs a single bundled bench file in an isolated subprocess and returns its parsed results. */
 async function runBenchFile(file: string): Promise<BenchResult[]> {
   const bundled = `${BUNDLE_DIR}/${file.replace(/^.*\//, '').replace(/\.ts$/, '.js')}`;
-  const output = await run(Deno.execPath(), ['bench', '--json', '--no-check', '--allow-read', '--allow-env', bundled]);
-  return parseResults(output);
+  if (!isChromeBench(file)) {
+    return parseResults(
+      await run(Deno.execPath(), ['bench', '--json', '--no-check', '--allow-read', '--allow-env', bundled]),
+    );
+  }
+  const results = parseResults(await run('node', ['scripts/lib/chrome-bench.js', bundled]));
+  for (const { name } of results) observational.add(name);
+  return results;
 }
 
 /**
@@ -165,7 +190,7 @@ async function collectAdaptive(
     for (let attempt = 1; attempt < MAX_ATTEMPTS; attempt++) {
       const stillRegressing = results.some(({ name, avg }) => {
         const saved = baseline.results[name];
-        return saved !== undefined && isRegression(avg, saved, threshold, minAbsDeltaNs);
+        return saved !== undefined && isRegression(name, avg, saved, threshold, minAbsDeltaNs);
       });
       if (!stillRegressing) break;
       results = mergeMin(results, await runBenchFile(file));
@@ -193,7 +218,9 @@ function applySkipBenchmark(files: string[]): string[] {
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean);
-  const remaining = files.filter((f) => !skipNames.includes(f.replace(/^.*\//, '').replace(/\.bench\.ts$/, '')));
+  const remaining = files.filter(
+    (f) => !skipNames.includes(f.replace(/^.*\//, '').replace(/(\.chrome)?\.bench\.ts$/, '')),
+  );
   const skipped = files.filter((f) => !remaining.includes(f));
   if (skipped.length > 0) {
     console.log(
@@ -245,8 +272,8 @@ const SPAWN_NS = 100_000_000; // 100 ms — at or above this, work involves a pr
 // this multiple: an accidental O(n²) or a 10× hot-path slowdown still fires.
 const HARD_CEILING_MULTIPLIER = 10;
 
-function isGated(saved: number): boolean {
-  return saved >= GATE_FLOOR_NS;
+function isGated(saved: number, name: string): boolean {
+  return saved >= GATE_FLOOR_NS && !observational.has(name);
 }
 
 /**
@@ -261,11 +288,11 @@ function effectiveThreshold(saved: number, threshold: number): number {
   return threshold;
 }
 
-function isRegression(avg: number, saved: number, threshold: number, minAbsDeltaNs: number): boolean {
+function isRegression(name: string, avg: number, saved: number, threshold: number, minAbsDeltaNs: number): boolean {
   if (avg - saved <= minAbsDeltaNs) return false; // absolute floor: ignore JIT/GC noise
   const change = (avg - saved) / saved;
   const t = effectiveThreshold(saved, threshold);
-  return isGated(saved) ? change > t : change > t * HARD_CEILING_MULTIPLIER;
+  return isGated(saved, name) ? change > t : change > t * HARD_CEILING_MULTIPLIER;
 }
 
 // ─── Formatting ──────────────────────────────────────────────────────────────
@@ -304,8 +331,8 @@ function printTable(results: BenchResult[], baseline: Baseline | null, threshold
     }
     const change = (avg - saved) / saved;
     const t = effectiveThreshold(saved, threshold);
-    const fail = isRegression(avg, saved, threshold, minAbsDeltaNs);
-    const drift = !fail && !isGated(saved) && change > t;
+    const fail = isRegression(name, avg, saved, threshold, minAbsDeltaNs);
+    const drift = !fail && !isGated(saved, name) && change > t;
     const flag = fail ? bold(red(' FAIL')) : drift ? dim(' INFO') : '     ';
     console.log(
       `${flag} ${name.padEnd(66)}${fmtNs(avg).padStart(12)}${dim(fmtNs(saved).padStart(12))}${fmtChange(change, t).padStart(10)}`,
@@ -400,7 +427,7 @@ function check(
 
   const failures = results.filter(({ name, avg }) => {
     const saved = baseline.results[name];
-    return saved !== undefined && isRegression(avg, saved, threshold, minAbsDeltaNs);
+    return saved !== undefined && isRegression(name, avg, saved, threshold, minAbsDeltaNs);
   });
 
   if (failures.length > 0) {

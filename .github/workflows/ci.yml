@@ -160,9 +160,13 @@ jobs:
       - uses: denoland/setup-deno@v2
         with:
           deno-version: 2.9.6
+      # For the Chrome.bench files (benches/*.chrome.bench.ts).
+      - uses: browser-actions/setup-chrome@v2
+        id: setup-chrome
       - run: npm ci
       - run: npm run bench:compare -- ${{ github.event.pull_request.base.sha }}
         env:
+          CHROME_BIN: ${{ steps.setup-chrome.outputs.chrome-path }}
           NO_COLOR: 1
 
   # Tests the packaged artefacts, not the checkout: scripts/test-release.sh packs

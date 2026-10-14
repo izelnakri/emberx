@@ -3,20 +3,12 @@
 import RouterService, { type GlobalWithQUnit } from './router-service';
 import Router from './index';
 import Owner from './owner';
+import { buildQueryParams, type QueryParamDeclarations } from './query-params';
 import EmberXComponent, { renderComponent, service } from '@emberx/component';
+import { QUERY_PARAMS_SYMBOL } from 'router_js';
 
 interface FreeObject {
   [propName: string]: any;
-}
-
-/**
- * router_js does not call the `events` handlers as free functions: it looks them
- * up on the resolved route and `.apply()`s them with that route as the receiver
- * (see `RouterJSRouter#triggerEvent`). Since routes are resolved to the *class*,
- * the receiver is the static side, which is where `router` lives.
- */
-interface RouteEventContext {
-  router: RouterService;
 }
 
 /**
@@ -30,14 +22,8 @@ interface RouteInfo {
   context?: unknown;
 }
 
-/**
- * Query-param values are genuinely dynamic: they arrive off the URL as strings,
- * or as arrays/nested objects of strings, and leave as whatever JS value the
- * string denoted — number, boolean, null, or the string itself.
- */
-type QueryParamValue = any;
-
-// class Args implements FreeObject {};
+// Bumped by every route render, so a route can tell whether it is still the one on screen.
+let renderCount = 0;
 
 // TODO: maybe provide the associated routeInfo for router_js hacking and expose the Route itself on didTransition
 // TODO: serialize() model hook might be needed to make default params and queryParams for the route links
@@ -56,6 +42,12 @@ export default class Route extends EmberXComponent<FreeObject> {
       <h5>Route queryParams: {{debug @queryParams}}</h5>
     </div>
   `;
+
+  /**
+   * The query params this route reads, and how a change to each is handled.
+   * See ./query-params.ts for the shape.
+   */
+  static queryParams: QueryParamDeclarations = {};
 
   /** The model of `routeKey` in the transition under way, whether it resolved it or the route stays active. */
   static modelFor(routeKey: string) {
@@ -82,8 +74,28 @@ export default class Route extends EmberXComponent<FreeObject> {
     return Object.assign({}, ...currentRouteInfos(this.router).map((routeInfo) => routeInfo.params));
   }
 
-  static getQueryParams() {
-    return {}; // TODO: build this up
+  /** The query params of the current transition, cast, with the declared defaults filled in. */
+  static getQueryParams(): FreeObject {
+    const transition = this.router.activeTransition;
+    if (transition) {
+      return buildQueryParams(transition[QUERY_PARAMS_SYMBOL] ?? {}, transition.routeInfos);
+    }
+
+    return this.router.queryParamsWithDefaults;
+  }
+
+  /**
+   * router_js calls `deserialize`, when a route has one, in place of `model`.
+   * It is used to hand `model` its query params cast and with their declared
+   * defaults, rather than the raw strings off the URL.
+   */
+  static deserialize(params: FreeObject, transition: any) {
+    const { queryParams, ...segmentParams } = params;
+
+    return this.model(
+      { ...segmentParams, queryParams: buildQueryParams(queryParams ?? {}, transition.routeInfos) },
+      transition,
+    );
   }
 
   // NOTE: maybe move these to instance methods only?
@@ -125,44 +137,31 @@ export default class Route extends EmberXComponent<FreeObject> {
     containerElement.innerHTML = ''; // TODO: temporary solution, clear previously rendered route
 
     const target = getRenderedRouteInfo(routeInfos);
+    const router = this.router;
+    const render = ++renderCount;
+    let queryParams = router.queryParamsWithDefaults;
 
     await renderComponent(target.route as typeof Route, {
       element: containerElement as HTMLElement,
       args: {
         model: (target === routeInfos[routeInfos.length - 1] ? model : target.context) || {},
         params: Object.assign({}, ...routeInfos.map((routeInfo) => routeInfo.params)),
-        queryParams: this.getQueryParams(),
+        // A getter, so a query-param change that keeps the route updates it in
+        // place through the tracked router state. Only while it is on screen:
+        // @glimmer/core never lets go of a replaced route's root and re-renders
+        // it on every change (ROADMAP.md), and a list changing in its detached
+        // DOM throws.
+        get queryParams() {
+          if (render === renderCount) {
+            queryParams = router.queryParamsWithDefaults;
+          }
+
+          return queryParams;
+        },
       },
       owner: Owner,
     });
   }
-
-  static events = {
-    finalizeQueryParamChange(this: RouteEventContext, queryParams: FreeObject, finalQueryParams: FreeObject[]): void {
-      if (this.router.activeTransition) {
-        this.router.queryParams = queryParams;
-      }
-
-      for (const key in queryParams) {
-        const value = castCorrectValueFromString(queryParams[key]);
-        if (value === null) {
-          delete queryParams[key];
-          // NOTE: `finalQueryParams` is router_js's array of `{ key, value }`
-          // records and `key` is a query-param name, not an index, so this
-          // delete does nothing. Kept verbatim; the cast only restates that.
-          delete (finalQueryParams as FreeObject)[key];
-          delete this.router.queryParams[key];
-        } else {
-          Object.assign(this.router.queryParams, { [key]: value });
-          finalQueryParams.push({ key: key, value });
-        }
-      }
-    },
-
-    queryParamsDidChange(this: RouteEventContext, _changed: FreeObject, _all: FreeObject, _removed: FreeObject) {
-      return this.router.refresh(); // NOTE: this might cause a history registry problem for some queryParam routes
-    },
-  };
 
   get routeName(): string {
     return this.router.currentRouteName as string; // NOTE: there is also a this.router.routeName most likely
@@ -174,6 +173,10 @@ export default class Route extends EmberXComponent<FreeObject> {
 
   get params(): FreeObject {
     return this.args.params;
+  }
+
+  get queryParams(): FreeObject {
+    return this.args.queryParams;
   }
 }
 
@@ -192,32 +195,4 @@ function getRenderedRouteInfo(routeInfos: RouteInfo[]): RouteInfo {
   const hasOwnClass = !!Owner.routes[leaf.name]?.route;
 
   return leaf.name.endsWith('.index') && !hasOwnClass && parent ? parent : leaf;
-}
-
-function castCorrectValueFromString(value: QueryParamValue): QueryParamValue {
-  if (Array.isArray(value)) {
-    return value.map((element) => castCorrectValueFromString(element));
-  } else if (Number(value) && parseInt(value, 10)) {
-    return Number(value);
-  } else if (value === 'false') {
-    return false;
-  } else if (value === 'true') {
-    return true;
-  } else if (['null', 'undefined'].includes(value)) {
-    return null;
-  }
-
-  return nilifyStrings(value);
-}
-
-function nilifyStrings(value: QueryParamValue): QueryParamValue {
-  if (value !== null && typeof value === 'object') {
-    return Object.keys(value).reduce((object, key) => {
-      return Object.assign(object, { [key]: nilifyStrings(value[key]) });
-    }, {});
-  } else if (value === '') {
-    return null;
-  }
-
-  return value;
 }

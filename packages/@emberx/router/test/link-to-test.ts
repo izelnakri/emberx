@@ -158,7 +158,7 @@ module('@emberx/router | <LinkTo> tests', function (hooks) {
 
     await click('[data-test-link]');
 
-    // assert.equal(currentURL(), '/0d469c09-b6f6-4bce-999a-b7b528f86aac?page=1&per_page=20'); // TODO: make this when queryParams available
+    assert.equal(currentURL(), '/0d469c09-b6f6-4bce-999a-b7b528f86aac?page=1&per_page=20');
   });
 
   module('Complex route generation from dynamic @model', function () {

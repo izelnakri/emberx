@@ -14,9 +14,14 @@ class CommentStore {
   }
 }
 
-// TODO: we want to add replace behavior, defaultValue behavior(?), and refresh?() - should happen all the time
 export default class PreviewUserRoute extends Route {
   // @service intl;
+
+  // The comments are filtered by the server, so a change to either reloads them.
+  static queryParams = {
+    reviewed: { refreshModel: true },
+    status: { refreshModel: true },
+  };
 
   static model(params, transition) {
     console.log('!!!!!!!!!!!!!!!!MODEL CALLL!!!!!!!!!!!!');

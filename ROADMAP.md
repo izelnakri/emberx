@@ -64,10 +64,6 @@ The largest correctness gap, and what `@emberx/ssr` is waiting on. Each item bel
 test file that was deleted during the modernization because it was empty — they should come
 back as real tests:
 
-- **Query params** — `Route.getQueryParams()` returns `{}`. `finalizeQueryParamChange` has a
-  `delete finalQueryParams[key]` that cannot work: `finalQueryParams` is router_js's array
-  of `{ key, value }` records and `key` is a param name, not an index. Restore
-  `packages/@emberx/router/test/route/query-params-test.ts`.
 - **Loading and error substates** — no implementation. Restore
   `packages/@emberx/router/test/route/loading-and-error-substate-test.ts`.
 - **History back does not re-resolve routes** (carried over from `TODO`). This is a

@@ -28,7 +28,6 @@ let renderCount = 0;
 // TODO: maybe provide the associated routeInfo for router_js hacking and expose the Route itself on didTransition
 // TODO: serialize() model hook might be needed to make default params and queryParams for the route links
 // TODO: this must have .refresh() // NOTE: this has to be both on static and instance
-// TODO: implement didTransition, error, loading, willTransition hooks // this has to be on the static? how will it interact with the instance
 export default class Route extends EmberXComponent<FreeObject> {
   static router: RouterService;
 

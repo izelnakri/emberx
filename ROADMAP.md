@@ -9,14 +9,14 @@ Ordered by what unblocks the most downstream work, not by size.
 
 ## 0. Where things actually stand
 
-| Package                | Tests   | State                                                            |
-| ---------------------- | ------- | ---------------------------------------------------------------- |
-| `@emberx/string`       | ✅      | Complete. Zero dependencies.                                     |
-| `@emberx/helper`       | ✅      | Complete.                                                        |
-| `@emberx/component`    | ✅      | Complete for the current renderer.                               |
-| `@emberx/test-helpers` | ✅      | Complete; browser-only (see #3).                                 |
-| `@emberx/router`       | ⚠️ ~70% | Query params, substates and lifecycle hooks incomplete (see #2). |
-| `@emberx/ssr`          | ❌ 0%   | Untested, blocked on the router.                                 |
+| Package                | Tests | State                                                                         |
+| ---------------------- | ----- | ----------------------------------------------------------------------------- |
+| `@emberx/string`       | ✅    | Complete. Zero dependencies.                                                  |
+| `@emberx/helper`       | ✅    | Complete.                                                                     |
+| `@emberx/component`    | ✅    | Complete for the current renderer.                                            |
+| `@emberx/test-helpers` | ✅    | Complete; browser-only (see #3).                                              |
+| `@emberx/router`       | ✅    | Complete apart from history and re-rendering (see #2); browser-only (see #3). |
+| `@emberx/ssr`          | ❌ 0% | Untested, blocked on the router.                                              |
 
 221 tests pass: 215 in the browser (the full suite) and 6 under plain node.
 
@@ -60,20 +60,24 @@ the existing suite) → port the environment delegate and render loop behind the
 
 ## 2. Finish the router
 
-The largest correctness gap, and what `@emberx/ssr` is waiting on. Each item below had a
-test file that was deleted during the modernization because it was empty — they should come
-back as real tests:
+Query params (`static queryParams`), loading and error substates, route events and the
+model hook lifecycle are implemented and covered by `packages/@emberx/router/test/route/`.
+What is left:
 
-- **Loading and error substates** — no implementation. Restore
-  `packages/@emberx/router/test/route/loading-and-error-substate-test.ts`.
+- **Substates are not discovered by convention.** Ember creates a loading and an error
+  route under every route and enters one when the app has a template or class for it.
+  emberx enters a substate only when it is declared, in `Router.start()` or in a
+  `Router.map()` definition, and has a class. Finding them by file name is the job of the
+  classic and module-unification resolvers, which are still stubs.
 - **History back does not re-resolve routes** (carried over from `TODO`). This is a
   user-visible bug in any real app.
 - **`Route.setup` wipes `innerHTML`** on every transition and is marked "temporary
   solution" in the source. It defeats Glimmer's diffing — every navigation is a full
   re-render. Fixing this is both a correctness and a performance item.
 
-`router_js` is on `^8`; the suite passes against it, but the query-param and substate paths
-are the least exercised and most likely to hide v7→v8 differences.
+`router_js` is on `^8`. The lifecycle, query-param and substate suites pin its behaviour,
+including the parts emberx relies on that are not documented, such as `redirect` still
+running on a route whose `afterModel` redirected.
 
 ---
 

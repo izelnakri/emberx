@@ -1,4 +1,5 @@
 import Owner from './owner';
+import { isSubstateName, getSubstatePath } from './substates';
 import type { routerJSRouteDefinition } from './router';
 interface FreeObject {
   [propName: string]: any;
@@ -27,10 +28,15 @@ export default class RouteMapContext {
   static route(routeName: string, options: FreeObject, subRoute?: () => void): any {
     this._parentRoute = this._parentRoute ? `${this._parentRoute}.${routeName}` : routeName;
 
+    const hasOptions = typeof options === 'object' && options !== null;
+    // `this.route('loading')` and `this.route('error')`, or `post_loading` and
+    // the like, declare substates unless they are given a path of their own.
     const targetOptions =
-      typeof options === 'object' && options !== null
-        ? Object.assign(options, { path: options.path || getLastPath(this._parentRoute) })
-        : { path: getLastPath(this._parentRoute) };
+      isSubstateName(routeName) && !(hasOptions && options.path)
+        ? { ...(hasOptions ? options : {}), path: getSubstatePath(this._parentRoute), substate: true }
+        : hasOptions
+          ? Object.assign(options, { path: options.path || getLastPath(this._parentRoute) })
+          : { path: getLastPath(this._parentRoute) };
 
     const targetSubRoute = subRoute || returnOptionsAsSubRouteIfFunction(options);
     if (targetSubRoute) {

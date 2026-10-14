@@ -1,10 +1,11 @@
 import DefaultResolver from './resolvers/default';
-import router, { Route as RouterJSRoute } from 'router_js';
+import router, { logAbort, Route as RouterJSRoute } from 'router_js';
 import Owner from './owner';
 import EmberXRouter from './index';
 import { tracked } from '@emberx/component';
 import LocationBar from './vendor/location-bar';
 import { buildQueryParams, formatQueryParamValue, getQueryParamConfig, isEqual, isHiddenFromURL } from './query-params';
+import { findSubstate, type Substate } from './substates';
 
 /**
  * router_js publishes both an ESM and a CJS build; under the CJS interop shape
@@ -47,6 +48,10 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
   @tracked currentRouteName: string | undefined;
   @tracked currentURL: string | undefined;
 
+  /** Errors an error substate dealt with; visit() resolves for these instead of rejecting. */
+  #handledErrors = new Set<unknown>();
+  #loadingTimer: ReturnType<typeof setTimeout> | undefined;
+
   constructor(options: FreeObject | undefined) {
     super();
 
@@ -68,11 +73,23 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
     return buildQueryParams(this.queryParams, this.state?.routeInfos ?? []);
   }
 
-  triggerEvent(routeInfos: any[], _ignoreFailure: boolean, name: string, args: any[]) {
+  /**
+   * router_js's hook for the events it fires during a transition. The
+   * query-param events and loading/error go to the router's own handling.
+   */
+  triggerEvent(routeInfos: any[], ignoreFailure: boolean, name: string, args: any[]) {
     if (name === 'finalizeQueryParamChange') {
       return this.#finalizeQueryParams(routeInfos, args[0], args[1], args[2]);
     } else if (name === 'queryParamsDidChange') {
       return this.#refreshForQueryParams(routeInfos, args[0], args[2]);
+    } else if (name === 'willResolveModel') {
+      return this.#scheduleLoadingEvent(args[0], args[1]);
+    } else if (name === 'loading') {
+      return this.#enterSubstate(routeInfos, 'loading', args[0]);
+    } else if (name === 'error') {
+      return this.#enterSubstate(routeInfos, 'error', args[1], args[0]);
+    } else if (!ignoreFailure) {
+      throw new Error(`Nothing handles '${name}': emberx routes have no actions. Call a page's @action, or a service.`);
     }
   }
 
@@ -94,12 +111,29 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
 
   transitionDidError(error: any, transition: any) {
     if (error.wasAborted || transition.isAborted) {
-      // return logAbort(transition);
-    } else {
-      transition.trigger(false, 'error', error.error, this, error.route);
-      transition.abort();
-      return error.error;
+      return logAbort(transition);
     }
+
+    transition.trigger(false, 'error', error.error, transition, error.route);
+    transition.abort();
+
+    return error.error;
+  }
+
+  /** Whether an `error` handler or substate dealt with `error`. Each error is reported once. */
+  isErrorHandled(error: unknown): boolean {
+    return this.#handledErrors.delete(error);
+  }
+
+  intermediateTransitionTo(name: string, ...args: any[]): any {
+    const transition = super.intermediateTransitionTo(name, ...args);
+    const routeInfos = this.state!.routeInfos;
+    const targetRouteInfo = routeInfos[routeInfos.length - 1];
+
+    this.currentRoute = targetRouteInfo.route as any;
+    this.currentRouteName = targetRouteInfo.name;
+
+    return transition;
   }
 
   routeWillChange(): void {
@@ -139,8 +173,18 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
     return Object.assign(targetRoute, Owner.services);
   }
 
+  /**
+   * Transitions to `path`, following redirects. Resolves when an error substate
+   * dealt with a failure, and rejects when nothing did.
+   */
   async visit(path: string): Promise<void> {
-    return this.transitionTo(path).followRedirects();
+    try {
+      await this.transitionTo(path).followRedirects();
+    } catch (error) {
+      if (!this.isErrorHandled(error)) {
+        throw error;
+      }
+    }
   }
 
   /**
@@ -188,6 +232,46 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
 
     if (pivot && this.currentRouteInfos) {
       this.refresh(pivot.route);
+    }
+  }
+
+  /**
+   * Fires `loading` once the hooks of the route being resolved have not settled
+   * by the next task, which is how long Ember waits too: a model that resolves
+   * right away never shows a loading substate.
+   */
+  #scheduleLoadingEvent(transition: any, originRoute: unknown) {
+    clearTimeout(this.#loadingTimer);
+
+    this.#loadingTimer = setTimeout(() => {
+      if (this.activeTransition === transition && transition.isActive) {
+        transition.trigger(true, 'loading', transition, originRoute);
+      }
+    });
+  }
+
+  /** Enters the nearest declared loading or error substate, which nothing above handled. */
+  #enterSubstate(routeInfos: any[], substate: Substate, transition: any, error?: unknown) {
+    const name = findSubstate(
+      routeInfos,
+      substate,
+      (routeName) => {
+        const definition = Owner.routes[routeName];
+
+        // As in Ember, a substate is only entered when there is something to render.
+        return !!definition?.options?.substate && !!definition.route && this.hasRoute(routeName);
+      },
+      transition?.pivotHandler,
+    );
+    if (!name) {
+      return;
+    }
+
+    if (substate === 'error') {
+      this.#handledErrors.add(error);
+      this.intermediateTransitionTo(name, error);
+    } else {
+      this.intermediateTransitionTo(name);
     }
   }
 }

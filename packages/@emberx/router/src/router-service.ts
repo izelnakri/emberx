@@ -4,6 +4,7 @@ import Owner from './owner';
 import EmberXRouter from './index';
 import { tracked } from '@emberx/component';
 import LocationBar from './vendor/location-bar';
+import { buildQueryParams, formatQueryParamValue, getQueryParamConfig, isEqual, isHiddenFromURL } from './query-params';
 
 /**
  * router_js publishes both an ESM and a CJS build; under the CJS interop shape
@@ -30,13 +31,6 @@ interface FreeObject {
  */
 export type GlobalWithQUnit = typeof globalThis & { QUnit?: unknown };
 
-// routeWillChange handler
-// routeDidChange handler
-
-// recognize
-// replaceWith
-// urlFor
-
 // handleURL accepts slash-less URLs
 // route recognize and recognizeAndLoad
 export default class RouterJSRouter extends Router<RouterJSRoute> {
@@ -47,6 +41,7 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
 
   Resolver = DefaultResolver;
 
+  /** The query params in the URL, cast to the values they denote. Declared defaults are not in here. */
   @tracked queryParams: FreeObject = {};
   @tracked currentRoute: string | undefined;
   @tracked currentRouteName: string | undefined;
@@ -65,31 +60,31 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
     this.locationBar.start({ pushState: true });
   }
 
-  triggerEvent(handlerInfos: any[], _ignoreFailure: boolean, name: string, args: any[]) {
-    if (['finalizeQueryParamChange', 'queryParamsDidChange'].includes(name)) {
-      const currentHandlerInfo = handlerInfos[handlerInfos.length - 1];
-      const currentHandler = currentHandlerInfo.route;
+  /**
+   * The query params as the active routes see them: the ones in the URL, cast,
+   * plus the declared defaults of the ones missing from it.
+   */
+  get queryParamsWithDefaults(): FreeObject {
+    return buildQueryParams(this.queryParams, this.state?.routeInfos ?? []);
+  }
 
-      // If there is no handler, it means the handler hasn't resolved yet which
-      // means that we should trigger the event later when the handler is available
-      if (!currentHandler) {
-        currentHandlerInfo.routePromise!.then(function (resolvedHandler: any) {
-          resolvedHandler.events![name].apply(resolvedHandler, args);
-        });
-      } else if (currentHandler.events[name]) {
-        currentHandler.events[name].apply(currentHandler, args);
-      }
+  triggerEvent(routeInfos: any[], _ignoreFailure: boolean, name: string, args: any[]) {
+    if (name === 'finalizeQueryParamChange') {
+      return this.#finalizeQueryParams(routeInfos, args[0], args[1], args[2]);
+    } else if (name === 'queryParamsDidChange') {
+      return this.#refreshForQueryParams(routeInfos, args[0], args[2]);
     }
   }
 
-  replaceURL(name: string): void {
-    // TODO: check if additional history storage code needed
-    return this.updateURL(name);
+  replaceURL(url: string): void {
+    this.currentURL = url;
+
+    if (!this.testing) {
+      this.locationBar.update(url, { replace: true });
+    }
   }
 
-  // NOTE: is there handleURL(?)
   updateURL(url: string): void {
-    // console.log('updateURL call', url);
     this.currentURL = url;
 
     if (!this.testing) {
@@ -108,12 +103,10 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
   }
 
   routeWillChange(): void {
-    // console.log('routeWillChange call for', abc);
     return;
   }
 
   routeDidChange(): void {
-    // console.log('routeDidChange call for', abc);
     return;
   }
 
@@ -150,7 +143,51 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
     return this.transitionTo(path).followRedirects();
   }
 
-  // transitionTo(routeName: string, params: object, options: object): object {
-  //   return this.router.transitionTo(routeName, params, options);
-  // }
+  /**
+   * Keeps the params in the URL that are set and not at their declared default,
+   * cast to the values they denote, and switches the URL update to replaceState
+   * when a changed param is declared with `replace: true`.
+   */
+  #finalizeQueryParams(routeInfos: any[], queryParams: FreeObject, finalQueryParams: FreeObject[], transition: any) {
+    const values: FreeObject = {};
+
+    for (const key in queryParams) {
+      const value = formatQueryParamValue(queryParams[key]);
+      if (!isHiddenFromURL(value, getQueryParamConfig(routeInfos, key))) {
+        values[key] = value;
+        finalQueryParams.push({ key, value });
+      }
+    }
+
+    const keys = new Set([...Object.keys(values), ...Object.keys(this.queryParams)]);
+    const replace = [...keys].some((key) => {
+      return getQueryParamConfig(routeInfos, key)?.replace && !isEqual(values[key], this.queryParams[key]);
+    });
+    if (replace && transition) {
+      transition.method('replace');
+    }
+
+    this.queryParams = values;
+  }
+
+  /**
+   * Re-runs the model hooks from the topmost route that declares a changed param
+   * with `refreshModel: true`. Routes the transition resolves anyway are skipped.
+   */
+  #refreshForQueryParams(routeInfos: any[], changed: FreeObject, removed: FreeObject) {
+    const changedKeys = [...Object.keys(changed), ...Object.keys(removed)].filter((key) => {
+      const defaultValue = getQueryParamConfig(routeInfos, key)?.defaultValue;
+      const before = this.queryParams[key] ?? defaultValue;
+      const after = formatQueryParamValue(changed[key]) ?? defaultValue;
+
+      return !isEqual(before, after);
+    });
+    const pivot = routeInfos.find((routeInfo) => {
+      return routeInfo.isResolved && changedKeys.some((key) => getQueryParamConfig([routeInfo], key)?.refreshModel);
+    });
+
+    if (pivot && this.currentRouteInfos) {
+      this.refresh(pivot.route);
+    }
+  }
 }

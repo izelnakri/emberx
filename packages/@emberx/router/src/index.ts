@@ -8,3 +8,4 @@ import { hbs, service, action, on, tracked } from '@emberx/component';
 
 export default Router;
 export { Route, LinkTo, Owner, RouterService, hbs, service, action, on, tracked };
+export type { QueryParamConfig } from './query-params';

@@ -53,6 +53,10 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
   @tracked currentRoute: string | undefined;
   @tracked currentRouteName: string | undefined;
   @tracked currentURL: string | undefined;
+  /** Whether a transition is under way. currentURL is already its destination by then. */
+  @tracked isTransitioning = false;
+  /** The URL the transition under way is leaving. */
+  @tracked transitionFromURL: string | undefined;
 
   /** Errors an error substate dealt with; visit() resolves for these instead of rejecting. */
   #handledErrors = new Set<unknown>();
@@ -117,11 +121,17 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
 
   transitionDidError(error: any, transition: any) {
     if (error.wasAborted || transition.isAborted) {
+      // A redirect aborts the transition too, and leaves the next one active.
+      if (!this.activeTransition) {
+        this.#endTransition();
+      }
+
       return logAbort(transition);
     }
 
     transition.trigger(false, 'error', error.error, transition, error.route);
     transition.abort();
+    this.#endTransition();
 
     return error.error;
   }
@@ -157,6 +167,8 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
   willTransition(_oldRouteInfos: any, _newRouteInfos: any, transition: any) {
     const targetRouteInfo = transition.routeInfos[transition.resolveIndex];
 
+    this.isTransitioning = true;
+    this.transitionFromURL = this.currentURL;
     this.currentRoute = targetRouteInfo._route;
     this.currentRouteName = targetRouteInfo.name;
     this.currentURL = transition.intent.url;
@@ -167,6 +179,7 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
 
     this.currentRoute = targetRouteInfo._route;
     this.currentRouteName = targetRouteInfo.name;
+    this.#endTransition();
   }
 
   getRoute(name: string): any {
@@ -191,6 +204,11 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
         throw error;
       }
     }
+  }
+
+  #endTransition() {
+    this.isTransitioning = false;
+    this.transitionFromURL = undefined;
   }
 
   /**

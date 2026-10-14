@@ -239,5 +239,27 @@ module('@emberx/router | <LinkTo> tests', function (hooks) {
 
       assert.dom('a.active').hasText('Last reviewed comments of user 12');
     });
+
+    test('links show the route a transition is leaving and the one it is entering, until it is done', async function (assert) {
+      await visit('/preview/11');
+
+      assert.dom('.ember-transitioning-in').doesNotExist();
+      assert.dom('.ember-transitioning-out').doesNotExist('an active link at rest is not transitioning out');
+
+      const promise = visit('/preview/12?reviewed=true&status=complete');
+
+      await waitFor('.ember-transitioning-in');
+
+      assert.dom('.ember-transitioning-in').exists({ count: 1 });
+      assert.dom('.ember-transitioning-in').hasText('Last reviewed comments of user 12');
+      assert.dom('.ember-transitioning-out').exists({ count: 1 });
+      assert.dom('.ember-transitioning-out').hasText('All users comments');
+
+      await promise;
+
+      assert.dom('.ember-transitioning-in').doesNotExist();
+      assert.dom('.ember-transitioning-out').doesNotExist();
+      assert.dom('a.active').hasText('Last reviewed comments of user 12');
+    });
   });
 });

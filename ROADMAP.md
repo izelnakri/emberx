@@ -18,7 +18,7 @@ Ordered by what unblocks the most downstream work, not by size.
 | `@emberx/router`       | ✅    | Complete apart from history and re-rendering (see #2); browser-only (see #3). |
 | `@emberx/ssr`          | ❌ 0% | Untested, blocked on the router.                                              |
 
-269 tests pass in the browser (the full suite). The 65 of them that need no router
+270 tests pass in the browser (the full suite). The 65 of them that need no router
 also pass under node and under Deno, and the 13 code examples in the docs run as
 doctests. See #3 for what keeps the rest browser-only.
 

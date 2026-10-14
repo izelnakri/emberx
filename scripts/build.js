@@ -15,7 +15,7 @@
  * babel-plugin-module-extension-resolver to make relative imports node-ESM
  * resolvable. Bundling removes that problem entirely.
  */
-import { cp, rm, mkdir } from 'node:fs/promises';
+import { cp, rm, mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { execFile } from 'node:child_process';
@@ -91,6 +91,7 @@ async function emitTypes() {
     throw new Error('Type declaration emit failed');
   }
 
+  await pointDeclarationsAtJavaScript(staging);
   await Promise.all(
     PACKAGES.map((name) =>
       cp(`${staging}/@emberx/${name}/src`, `${ROOT}/packages/@emberx/${name}/dist`, {
@@ -100,6 +101,25 @@ async function emitTypes() {
   );
 
   await rm(`${ROOT}/.tmp`, { recursive: true, force: true });
+}
+
+/**
+ * Sources import each other as `./module.ts`, which is what node and Deno need
+ * to run them unbundled. tsc copies those specifiers into the declarations
+ * as they are (`rewriteRelativeImportExtensions` only covers JavaScript), but a
+ * consumer has `./module.d.ts` and `./module.js`, never `./module.ts`.
+ */
+async function pointDeclarationsAtJavaScript(directory) {
+  const declarations = (await readdir(directory, { recursive: true })).filter((path) => path.endsWith('.d.ts'));
+
+  await Promise.all(
+    declarations.map(async (path) => {
+      const file = `${directory}/${path}`;
+      const source = await readFile(file, 'utf8');
+
+      await writeFile(file, source.replace(/((?:from|import)\s*\(?\s*['"]\.{1,2}\/[^'"]*)\.ts(['"])/g, '$1.js$2'));
+    }),
+  );
 }
 
 async function main() {

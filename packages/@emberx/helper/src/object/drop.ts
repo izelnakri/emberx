@@ -1,5 +1,5 @@
 // @ts-nocheck
-import helper from '../helper';
+import helper from '../helper.ts';
 
 const drop = helper(function ([object, keysToDrop]) {
   return Object.keys(object).reduce((result, key) => {

@@ -1,4 +1,4 @@
-import helper from './helper';
+import helper from './helper.ts';
 
 const eq = helper(function (params) {
   return params[0] === params[1];

@@ -1,14 +1,14 @@
 import { module, test } from 'qunitx';
 import Router from '@emberx/router';
 import { visit, currentURL } from '@emberx/test-helpers';
-import setupTest from '../helpers/index';
-import setupMemserver from '../helpers/setup-memserver';
-import Session from '../helpers/services/session';
-import BasicRoute from '../helpers/routes/basic-route';
-import ParentRoute from '../helpers/routes/parent-route';
-import ChildRoute from '../helpers/routes/child-route';
-import NewCommentRoute from '../helpers/routes/new-comment-route';
-import LoginRoute from '../helpers/routes/login-route';
+import setupTest from '../helpers/index.ts';
+import setupMemserver from '../helpers/setup-memserver.ts';
+import Session from '../helpers/services/session.ts';
+import BasicRoute from '../helpers/routes/basic-route.ts';
+import ParentRoute from '../helpers/routes/parent-route.ts';
+import ChildRoute from '../helpers/routes/child-route.ts';
+import NewCommentRoute from '../helpers/routes/new-comment-route.ts';
+import LoginRoute from '../helpers/routes/login-route.ts';
 
 module('@emberx/router | Route Internal Transitions', function (hooks) {
   setupTest(hooks, () => {

@@ -1,10 +1,10 @@
 import { module, test } from 'qunitx';
 import Router, { Route, hbs } from '@emberx/router';
 import { visit, currentURL, click, settled } from '@emberx/test-helpers';
-import setupTest from '../helpers/index';
-import { setupHookSteps } from '../helpers/routes/logged-route';
-import QueryParamParentRoute from '../helpers/routes/query-param-parent-route';
-import QueryParamChildRoute from '../helpers/routes/query-param-child-route';
+import setupTest from '../helpers/index.ts';
+import { setupHookSteps } from '../helpers/routes/logged-route.ts';
+import QueryParamParentRoute from '../helpers/routes/query-param-parent-route.ts';
+import QueryParamChildRoute from '../helpers/routes/query-param-child-route.ts';
 
 class HomeRoute extends Route {
   static template = hbs`<h1 data-test-title>Home</h1>`;

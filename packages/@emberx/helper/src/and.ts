@@ -1,4 +1,4 @@
-import helper from './helper';
+import helper from './helper.ts';
 
 const and = helper(function (params) {
   for (let i = 0, len = params.length; i < len; i++) {

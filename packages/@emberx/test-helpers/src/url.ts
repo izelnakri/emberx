@@ -1,5 +1,5 @@
 import { didRender } from '@emberx/component';
-import { getContext } from './context';
+import { getContext } from './context.ts';
 
 export async function visit(path: string): Promise<void> {
   const context = getContext();

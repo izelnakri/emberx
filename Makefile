@@ -50,8 +50,7 @@ fix fmt:
 	npm run format:fix
 
 # `deno lint`, from your installed Deno (CONTRIBUTING.md), configured by flags in
-# package.json's lint script. Its recommended rules, minus six that don't fit:
-#   no-sloppy-imports      extensionless relative imports are the convention; esbuild resolves them
+# package.json's lint script. Its recommended rules, minus five that don't fit:
 #   no-window, no-window-prefix   these are browser packages
 #   require-await          `async` is semantic here: @action detects AsyncFunction to track settledness
 #   no-explicit-any, ban-ts-comment   existing type debt, tightened separately

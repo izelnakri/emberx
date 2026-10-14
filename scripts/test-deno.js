@@ -4,10 +4,10 @@
  * by scripts/lib/test-bundle.js with qunitx's Deno build, which reports through
  * Deno.test.
  *
- * Deno does not run the test modules directly for the same reason node does
- * not, and one more: it compiles decorators with standard class-field
- * semantics, under which a legacy `@tracked` field is overwritten by its own
- * initializer. esbuild compiles them as the rest of emberx does.
+ * Deno does not run most test modules directly: it compiles decorators with
+ * standard class-field semantics, under which a legacy `@tracked` field is
+ * overwritten by its own initializer. esbuild compiles them as the rest of
+ * emberx does.
  *
  *   node scripts/test-deno.js                      against the workspace sources
  *   node scripts/test-deno.js --packages-from=DIR  against packages installed in DIR

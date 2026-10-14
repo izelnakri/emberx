@@ -1,5 +1,5 @@
-import Memserver from './memserver/index';
-import startRouter from './start-router';
+import Memserver from './memserver/index.ts';
+import startRouter from './start-router.ts';
 
 window.Memserver = Memserver;
 

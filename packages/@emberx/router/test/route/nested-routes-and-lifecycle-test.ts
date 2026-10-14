@@ -1,8 +1,8 @@
 import { module, test } from 'qunitx';
 import Router, { hbs } from '@emberx/router';
 import { visit, currentURL, settled } from '@emberx/test-helpers';
-import setupTest from '../helpers/index';
-import LoggedRoute, { setupHookSteps } from '../helpers/routes/logged-route';
+import setupTest from '../helpers/index.ts';
+import LoggedRoute, { setupHookSteps } from '../helpers/routes/logged-route.ts';
 
 const USERS = [
   {

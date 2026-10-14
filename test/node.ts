@@ -12,6 +12,6 @@
  * down. The browser tolerates that; node:test reports it as a failure.
  * ROADMAP.md #3 tracks the fix.
  */
-import '../packages/@emberx/string/test/index';
-import '../packages/@emberx/helper/test/index';
-import '../packages/@emberx/component/test/index';
+import '../packages/@emberx/string/test/index.ts';
+import '../packages/@emberx/helper/test/index.ts';
+import '../packages/@emberx/component/test/index.ts';

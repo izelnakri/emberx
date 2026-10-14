@@ -1,15 +1,15 @@
-import blur from './blur';
-import click from './click';
-import doubleClick from './double-click';
-import fillIn from './fill-in';
-import fireEvent from './fire-event';
-import focus from './focus';
-import scrollTo from './scroll-to';
-import select from './select';
-import tap from './tap';
-import triggerEvent from './trigger-event';
-import triggerKeyEvent from './trigger-key-event';
-import typeIn from './type-in';
+import blur from './blur.ts';
+import click from './click.ts';
+import doubleClick from './double-click.ts';
+import fillIn from './fill-in.ts';
+import fireEvent from './fire-event.ts';
+import focus from './focus.ts';
+import scrollTo from './scroll-to.ts';
+import select from './select.ts';
+import tap from './tap.ts';
+import triggerEvent from './trigger-event.ts';
+import triggerKeyEvent from './trigger-key-event.ts';
+import typeIn from './type-in.ts';
 
 export {
   blur,

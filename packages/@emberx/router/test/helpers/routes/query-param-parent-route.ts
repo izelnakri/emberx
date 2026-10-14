@@ -1,5 +1,5 @@
 import { Route, hbs, action, tracked } from '@emberx/router';
-import { step } from './logged-route';
+import { step } from './logged-route.ts';
 
 export const POSTS = [
   { id: 1, title: 'Compilers are the New Frameworks', category: 'compilers' },

@@ -1,6 +1,6 @@
 import Component, { renderComponent } from '@emberx/component';
 import { module, test } from 'qunitx';
-import { setupRenderingTest } from './helpers/index';
+import { setupRenderingTest } from './helpers/index.ts';
 
 module('@emberx/component | Public API', function (hooks) {
   setupRenderingTest(hooks);

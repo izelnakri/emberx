@@ -1,6 +1,6 @@
 import { Route, hbs } from '@emberx/router';
-import { step } from './logged-route';
-import { POSTS } from './query-param-parent-route';
+import { step } from './logged-route.ts';
+import { POSTS } from './query-param-parent-route.ts';
 
 const COMMENTS = {
   1: ['This is great', 'Wow!'],

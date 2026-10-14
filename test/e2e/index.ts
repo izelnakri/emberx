@@ -1,2 +1,2 @@
-import './index-test';
-import './admin/posts/post-test';
+import './index-test.ts';
+import './admin/posts/post-test.ts';

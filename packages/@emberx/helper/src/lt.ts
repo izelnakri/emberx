@@ -1,4 +1,4 @@
-import helper from './helper';
+import helper from './helper.ts';
 
 const lt = helper(function ([left, right]: number[], hash) {
   if (hash.forceNumber) {

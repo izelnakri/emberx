@@ -1,6 +1,6 @@
 import { Owner } from '@emberx/router';
 import Component, { renderComponent } from '@emberx/component';
-import { getContext } from './context';
+import { getContext } from './context.ts';
 
 interface FreeObject {
   [propName: string]: any;

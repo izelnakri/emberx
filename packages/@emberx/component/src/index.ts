@@ -8,11 +8,11 @@ import {
 
 // The Glimmer component base class, vendored in ./glimmer-component. See that
 // file for why it is not the `@glimmer/component` package.
-import Component from './glimmer-component';
+import Component from './glimmer-component.ts';
 
 import { fn, hash, array, get, concat, on } from '@glimmer/runtime';
 import { and, or, not, eq, neq, gt, gte, lt, lte, assign, debug, drop, take } from '@emberx/helper';
-import createTemplate from './create-template';
+import createTemplate from './create-template.ts';
 
 import { tracked } from '@glimmer/tracking';
 import { action as glimmerAction } from '@glimmer/modifier';

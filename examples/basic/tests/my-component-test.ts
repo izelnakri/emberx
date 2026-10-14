@@ -1,8 +1,8 @@
 import { module, test } from 'qunitx';
 import { render, click, hbs } from '@emberx/test-helpers';
-import { setupRenderingTest } from '../../../test/helpers';
-import MyComponent from '../src/MyComponent';
-import LocaleService from '../src/services/LocaleService';
+import { setupRenderingTest } from '../../../test/helpers.ts';
+import MyComponent from '../src/MyComponent.ts';
+import LocaleService from '../src/services/LocaleService.ts';
 
 module('examples/basic | MyComponent', function (hooks) {
   setupRenderingTest(hooks);

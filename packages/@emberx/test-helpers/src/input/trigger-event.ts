@@ -1,6 +1,6 @@
 import { didRender } from '@emberx/component';
 import inputs, { Target } from 'browser-inputs';
-import { settled } from '../wait';
+import { settled } from '../wait.ts';
 
 export default async function triggerEvent(target: Target, eventType: string, options?: object): Promise<void> {
   await inputs.triggerEvent(target, eventType, options);

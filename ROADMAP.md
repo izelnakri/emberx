@@ -70,10 +70,6 @@ back as real tests:
   `packages/@emberx/router/test/route/query-params-test.ts`.
 - **Loading and error substates** — no implementation. Restore
   `packages/@emberx/router/test/route/loading-and-error-substate-test.ts`.
-- **Nested routes and lifecycle** — `beforeModel`/`afterModel` are mentioned in the README
-  and the TODO but do not exist; only `model` and `setup` do. `Route.getParams()` returns
-  `{}`, and `this.paramsFor()` is unimplemented. Restore
-  `packages/@emberx/router/test/route/nested-routes-and-lifecycle-test.ts`.
 - **History back does not re-resolve routes** (carried over from `TODO`). This is a
   user-visible bug in any real app.
 - **`Route.setup` wipes `innerHTML`** on every transition and is marked "temporary

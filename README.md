@@ -68,7 +68,7 @@ Although the project is not production-ready one can still experiment with it us
 - No runloop, we dont need it anymore.
 - test helpers(`click()`, `keyPress()` etc.) wait without a waiter when the fired action returns a promise during tests.
 - Explicit and flexible routes declarations with @emberx/router.
-- Ember Route `model` hook is a static method instead of an instance method. `beforeModel` and `afterModel` aren't implemented yet.
+- Ember Route hooks (`beforeModel`, `model`, `afterModel`, `redirect`) are static methods instead of instance methods.
 - No sticky queryParams, instead link building is explicit with `<LinkTo @query={{hash param=value}}/>` or with object helpers `<LinkTo @query={{assign (hash active=true) this.router.queryParams}}/>`.
 - No `{{outlet}}`, instead parent routes included in the child route template with `{{yield}}`. This allows compiling individual route files for the browser without a magical build step.
 - No need for initializers and instance initializers, all code runs in module file import and execution order.

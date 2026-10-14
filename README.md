@@ -55,7 +55,7 @@ make test-browser
 - @emberx/string - Test coverage: ✔️
 - @emberx/helper - Test coverage: ✔️
 - @emberx/test-helpers - Test coverage: ✔️
-- @emberx/router - Test coverage: ~70%. Missing: query param handling, loading states, error states, this.paramsFor()
+- @emberx/router - Test coverage: ✔️
 - @emberx/ssr - Test coverage: 0%. Waiting to finish @emberx.router.
 
 Although the project is not production-ready one can still experiment with it using the blog example as a guide.
@@ -231,6 +231,48 @@ export default class IndexRoute extends Route {
     this.intl.currentLocale = this.intl.currentLocale === 'en' ? 'es' : 'en';
   }
 }
+```
+
+#### Route hooks, query params and substates:
+
+```ts ignore
+import Router, { Route, hbs } from '@emberx/router';
+
+class PostsRoute extends Route {
+  // A change to `page` runs the model hook again; `sort` only updates the template,
+  // and swaps the history entry instead of adding one. Defaults stay out of the URL.
+  static queryParams = {
+    page: { defaultValue: 1, refreshModel: true },
+    sort: { defaultValue: 'newest', replace: true },
+  };
+
+  static beforeModel(transition) {
+    if (!this.session.currentUser) {
+      return this.router.transitionTo('login');
+    }
+  }
+
+  static model({ queryParams }) {
+    return fetch(`/posts?page=${queryParams.page}`).then((response) => response.json());
+  }
+
+  static template = hbs`
+    <h1>Page {{@queryParams.page}}, {{@queryParams.sort}} first</h1>
+    {{#each this.model as |post|}}<p>{{post.title}}</p>{{/each}}
+  `;
+}
+
+Router.start([
+  { path: '/posts', name: 'posts', route: PostsRoute },
+  { path: '/posts/:post_id', name: 'posts.post', route: PostRoute },
+  // Substates take no path, here or as this.route('loading') in a Router.map() definition.
+  // The router enters them, without changing the URL, while a model hook is pending or
+  // once one has failed; an error route gets the error as @model.
+  { name: 'posts_loading', route: PostsLoadingRoute }, // while posts loads
+  { name: 'posts.loading', route: PostLoadingRoute }, // while a route under posts loads
+  { name: 'posts_error', route: PostsErrorRoute },
+  { name: 'error', route: ErrorRoute }, // for any route without an error substate of its own
+]);
 ```
 
 #### Familiar @emberx/component:

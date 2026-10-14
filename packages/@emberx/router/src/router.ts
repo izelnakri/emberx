@@ -4,6 +4,7 @@ import Route from './route';
 import Owner, { RouteRegistry } from './owner';
 import RouteMapContext from './route-map-context';
 import DefaultResolver from './resolvers/default';
+import { isSubstateName, getSubstatePath } from './substates';
 
 export interface FreeObject {
   [propName: string]: any;
@@ -83,8 +84,14 @@ export default class Router {
   }
 
   static convertDefinitionsToRegistry(arrayOfRouteDefinitions: Array<RouteDefinition> = []): RouteRegistry {
+    const substateDefinitions: Array<RouteDefinition> = [];
+
     arrayOfRouteDefinitions.forEach((routeDefinition: RouteDefinition) => {
-      if (!routeDefinition.path) {
+      if (!routeDefinition.path && routeDefinition.name && isSubstateName(routeDefinition.name)) {
+        // Registered once every route they could hang off is: see registerSubstate.
+        substateDefinitions.push(routeDefinition);
+        return;
+      } else if (!routeDefinition.path) {
         throw new Error('One of the RouteDefinition on Router.start(RouteDefinition[]) misses "path" key');
       } else if (!routeDefinition.path.startsWith('/')) {
         throw new Error(`RouteDefinition paths must start with "/". Eg: { path: /${routeDefinition.path} }`);
@@ -134,8 +141,9 @@ export default class Router {
       }
     });
 
-    // @ts-ignore
-    if (!arrayOfRouteDefinitions.find((routeDefinition) => routeDefinition.path.startsWith('/*'))) {
+    substateDefinitions.forEach(registerSubstate);
+
+    if (!arrayOfRouteDefinitions.find((routeDefinition) => routeDefinition.path?.startsWith('/*'))) {
       Owner.routes['not-found'] = {
         name: 'not-found',
         options: { path: '/*slug' },
@@ -195,6 +203,24 @@ function checkInRouteRegistryOrCreateRoute(registry: RouteRegistry, targetRoute:
   }
 
   return registry[routeName];
+}
+
+/**
+ * A loading or error substate is declared without a path (see ./substates.ts):
+ * it hangs off the route its name puts it under, which therefore gains an index
+ * route, and it is marked so that only declared substates are ever entered as one.
+ */
+function registerSubstate({ name, route }: RouteDefinition) {
+  const parentName = name.split('.').slice(0, -1).join('.');
+  if (parentName && !Owner.routes[parentName]) {
+    throw new Error(`The "${name}" substate needs its parent route "${parentName}" to be defined too.`);
+  }
+
+  Owner.routes[name] = { name, options: { path: getSubstatePath(name), substate: true }, route };
+
+  if (parentName && !Owner.routes[`${parentName}.index`]) {
+    Owner.routes[`${parentName}.index`] = { name: `${parentName}.index`, options: { path: '/' }, route: undefined };
+  }
 }
 
 function findNestedRoute(routerJSRouteArray: Array<routerJSRouteDefinition>, routeNameSegments: string[]) {

@@ -1,4 +1,4 @@
-import { Route, hbs, service } from '@emberx/router';
+import { Route, LinkTo, hbs, service } from '@emberx/router';
 
 // NOTE: used for /posts
 export default class ParentRoute extends Route {
@@ -23,7 +23,7 @@ export default class ParentRoute extends Route {
     }
   }
 
-  // TODO: test <LinkTo/> first?
+  static includes = { LinkTo };
   static template = hbs`
     <h1 data-test-route-title>This is parent route: {{this.router.currentRouteName}}</h1>
 
@@ -31,7 +31,7 @@ export default class ParentRoute extends Route {
       {{#each this.model.posts as |post index|}}
         <div data-test-post="{{index}}">
           <h5 data-test-post-title="{{index}}">{{post.title}}</h5>
-          <p data-test-post-content="{{index}}">{{post.content}}</h5>
+          <p data-test-post-content="{{index}}">{{post.content}}</p>
 
           <LinkTo @route="posts.post" @model={{post}} data-test-post-link="{{index}}">Go to this post</LinkTo>
         </div>

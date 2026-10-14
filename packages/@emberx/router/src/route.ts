@@ -1,4 +1,3 @@
-// TODO: test that redirect hook works and dont get called on parent routes
 // NOTE: params could be manipulated if needed during routeWillChange and routeDidChange
 // TODO: make this sticky params if needed
 import RouterService, { type GlobalWithQUnit } from './router-service';
@@ -18,6 +17,17 @@ interface FreeObject {
  */
 interface RouteEventContext {
   router: RouterService;
+}
+
+/**
+ * The route-info fields router_js hands its hooks. `route` is the resolved
+ * route class; `context` its resolved model.
+ */
+interface RouteInfo {
+  name: string;
+  params: FreeObject;
+  route?: typeof Route;
+  context?: unknown;
 }
 
 /**
@@ -47,9 +57,7 @@ export default class Route extends EmberXComponent<FreeObject> {
     </div>
   `;
 
-  // TODO:
-  // static paramsFor(routeName) {
-  // }
+  /** The model of `routeKey` in the transition under way, whether it resolved it or the route stays active. */
   static modelFor(routeKey: string) {
     const transition = this.router.activeTransition;
     if (!transition || !transition.resolvedModels[routeKey]) {
@@ -58,9 +66,22 @@ export default class Route extends EmberXComponent<FreeObject> {
 
     return transition.resolvedModels[routeKey];
   }
-  static getParams() {
-    return {}; // TODO: build this up
+
+  /** The dynamic-segment params of `routeName`, which must be active or part of the current transition. */
+  static paramsFor(routeName: string): FreeObject {
+    const routeInfo = currentRouteInfos(this.router).find((routeInfo) => routeInfo.name === routeName);
+    if (!routeInfo) {
+      throw new Error(`@emberx/router Route: ${routeName} is not part of the current transition!`);
+    }
+
+    return { ...routeInfo.params };
   }
+
+  /** The dynamic-segment params of every route in the current transition, merged. */
+  static getParams(): FreeObject {
+    return Object.assign({}, ...currentRouteInfos(this.router).map((routeInfo) => routeInfo.params));
+  }
+
   static getQueryParams() {
     return {}; // TODO: build this up
   }
@@ -78,7 +99,7 @@ export default class Route extends EmberXComponent<FreeObject> {
     this.deactivate(transition);
   }
 
-  static model() {
+  static model(_params?: FreeObject, _transition?: any): unknown {
     return {};
   }
 
@@ -86,6 +107,11 @@ export default class Route extends EmberXComponent<FreeObject> {
     if (Router.LOG_MODELS) {
       console.log(`'${transition.targetName}' Route[model] is`, model);
       console.log(`'${transition.targetName}' Route[transition] is`, transition);
+    }
+
+    const routeInfos: RouteInfo[] = transition.routeInfos;
+    if (routeInfos[routeInfos.length - 1].route !== this) {
+      return;
     }
 
     const containerElement: HTMLElement | null = (globalThis as GlobalWithQUnit).QUnit
@@ -98,13 +124,17 @@ export default class Route extends EmberXComponent<FreeObject> {
 
     containerElement.innerHTML = ''; // TODO: temporary solution, clear previously rendered route
 
-    if (transition.routeInfos[transition.routeInfos.length - 1]._route === this) {
-      await renderComponent(this, {
-        element: containerElement as HTMLElement, // containerElement,
-        args: { model: model || {}, params: this.getParams(), queryParams: this.getQueryParams() },
-        owner: Owner,
-      });
-    }
+    const target = getRenderedRouteInfo(routeInfos);
+
+    await renderComponent(target.route as typeof Route, {
+      element: containerElement as HTMLElement,
+      args: {
+        model: (target === routeInfos[routeInfos.length - 1] ? model : target.context) || {},
+        params: Object.assign({}, ...routeInfos.map((routeInfo) => routeInfo.params)),
+        queryParams: this.getQueryParams(),
+      },
+      owner: Owner,
+    });
   }
 
   static events = {
@@ -141,6 +171,27 @@ export default class Route extends EmberXComponent<FreeObject> {
   get model(): any {
     return this.args.model;
   }
+
+  get params(): FreeObject {
+    return this.args.params;
+  }
+}
+
+function currentRouteInfos(router: RouterService): RouteInfo[] {
+  return (router.activeTransition?.routeInfos ?? router.state?.routeInfos ?? []) as RouteInfo[];
+}
+
+/**
+ * The route whose template shows for `routeInfos`: the deepest one, unless it is
+ * an index route nobody gave a class, in which case its parent renders. Without
+ * this, visiting a parent route such as /posts rendered the placeholder route.
+ */
+function getRenderedRouteInfo(routeInfos: RouteInfo[]): RouteInfo {
+  const leaf = routeInfos[routeInfos.length - 1];
+  const parent = routeInfos[routeInfos.length - 2];
+  const hasOwnClass = !!Owner.routes[leaf.name]?.route;
+
+  return leaf.name.endsWith('.index') && !hasOwnClass && parent ? parent : leaf;
 }
 
 function castCorrectValueFromString(value: QueryParamValue): QueryParamValue {

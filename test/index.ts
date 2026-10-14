@@ -11,3 +11,5 @@ import '../packages/@emberx/helper/test/index';
 import '../packages/@emberx/component/test/index';
 import '../packages/@emberx/router/test/index';
 import '../packages/@emberx/test-helpers/test/index';
+import '../examples/basic/tests/my-component-test';
+import './e2e/index';

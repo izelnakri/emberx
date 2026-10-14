@@ -18,12 +18,9 @@ Ordered by what unblocks the most downstream work, not by size.
 | `@emberx/router`       | ✅    | Complete apart from history and re-rendering (see #2); browser-only (see #3). |
 | `@emberx/ssr`          | ❌ 0% | Untested, blocked on the router.                                              |
 
-221 tests pass: 215 in the browser (the full suite) and 6 under plain node.
-
-The node suite is small because of the assertion library, not emberx: every
-suite other than `@emberx/string` asserts with `assert.dom(...)` from qunit-dom,
-which installs onto `QUnit.assert`, and under node qunitx delegates to
-`node:test` where no such object exists. See #3 and the DOM-assertion note there.
+269 tests pass in the browser (the full suite). The 65 of them that need no router
+also pass under node and under Deno, and the 13 code examples in the docs run as
+doctests. See #3 for what keeps the rest browser-only.
 
 ---
 

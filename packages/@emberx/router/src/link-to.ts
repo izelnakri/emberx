@@ -70,7 +70,7 @@ export default class extends Component<{
 
     return (
       isMissing(this.args.route) ||
-      this.willBeActive ||
+      this.isTransitioningIn ||
       Object.keys(this.models)
         .map((key) => this.models[key])
         .some((model) => isMissing(model))
@@ -81,12 +81,14 @@ export default class extends Component<{
     return this.router.currentURL === this.link;
   }
 
-  get willBeActive() {
-    if (this.router.activeTransition) {
-      return this.router.currentURL === this.link;
-    }
+  /** The link leads where the transition under way is going. */
+  get isTransitioningIn() {
+    return this.router.isTransitioning && this.isActive && this.router.transitionFromURL !== this.link;
+  }
 
-    return false;
+  /** The link leads where the transition under way is leaving. */
+  get isTransitioningOut() {
+    return this.router.isTransitioning && !this.isActive && this.router.transitionFromURL === this.link;
   }
 
   get models() {
@@ -134,8 +136,8 @@ export default class extends Component<{
       this.args.disabled ? 'disabled' : null,
       this.isActive ? 'active' : null,
       this.isLoading ? 'loading' : null,
-      !this.isActive && this.willBeActive ? 'ember-transitioning-in' : null,
-      this.isActive && !this.willBeActive ? 'ember-transitioning-out' : null,
+      this.isTransitioningIn ? 'ember-transitioning-in' : null,
+      this.isTransitioningOut ? 'ember-transitioning-out' : null,
     ].join(' ');
   }
 

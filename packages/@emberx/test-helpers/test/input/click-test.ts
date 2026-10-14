@@ -1,7 +1,7 @@
 import { hbs } from '@emberx/component';
 import { module, test } from 'qunitx';
 import { click, render } from '@emberx/test-helpers';
-import { setupRenderingTest } from '../helpers/index';
+import { setupRenderingTest } from '../helpers/index.ts';
 
 function setupEventStepListeners(assert, element) {
   ['mousedown', 'focus', 'mouseup', 'click'].forEach((eventName) => {

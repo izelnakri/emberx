@@ -2,7 +2,7 @@ import Component, { hbs, service } from '@emberx/component';
 import { tracked } from '@glimmer/tracking';
 import { on, action } from '@glimmer/modifier';
 import helper from '@emberx/helper';
-import OtherComponent from './OtherComponent';
+import OtherComponent from './OtherComponent.ts';
 
 const myHelper = helper(function ([name], { greeting }) {
   return `Helper: ${greeting} ${name}`;

@@ -1,8 +1,10 @@
 /**
  * Bundles test/node.ts, the suite that runs outside a browser, for node or Deno.
- * Neither can run the test modules directly: they use extensionless relative imports, which its
- * ESM resolver rejects. esbuild resolves them the way the rest of the build
- * does, and transpiles the legacy decorators the suite is written with.
+ * Neither can run most test modules directly: they use legacy decorators
+ * (@tracked, @action, @service), which node's type stripping rejects and Deno
+ * compiles with standard class-field semantics. esbuild transpiles them the way
+ * the rest of the build does. The modules that use none, such as
+ * @emberx/string's, already run as they are: `node --test` or `deno test` on them.
  *
  * `packagesFrom` points the bundle at installed @emberx packages instead of the
  * workspace sources: scripts/test-release.sh uses it to run this suite against

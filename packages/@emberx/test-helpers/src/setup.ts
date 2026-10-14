@@ -1,5 +1,5 @@
 import { Owner } from '@emberx/router';
-import { setContext } from './context';
+import { setContext } from './context.ts';
 
 declare global {
   interface Window {

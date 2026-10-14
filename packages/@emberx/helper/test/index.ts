@@ -1,8 +1,8 @@
-import './and-test';
-import './eq-test';
-import './gt-test';
-import './helper-test';
-import './lt-test';
-import './neq-test';
-import './not-test';
-import './or-test';
+import './and-test.ts';
+import './eq-test.ts';
+import './gt-test.ts';
+import './helper-test.ts';
+import './lt-test.ts';
+import './neq-test.ts';
+import './not-test.ts';
+import './or-test.ts';

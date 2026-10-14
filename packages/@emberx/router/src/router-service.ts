@@ -1,11 +1,17 @@
-import DefaultResolver from './resolvers/default';
+import DefaultResolver from './resolvers/default.ts';
 import router, { logAbort, Route as RouterJSRoute } from 'router_js';
-import Owner from './owner';
-import EmberXRouter from './index';
+import Owner from './owner.ts';
+import EmberXRouter from './index.ts';
 import { tracked } from '@emberx/component';
-import LocationBar from './vendor/location-bar';
-import { buildQueryParams, formatQueryParamValue, getQueryParamConfig, isEqual, isHiddenFromURL } from './query-params';
-import { findSubstate, type Substate } from './substates';
+import LocationBar from './vendor/location-bar.js';
+import {
+  buildQueryParams,
+  formatQueryParamValue,
+  getQueryParamConfig,
+  isEqual,
+  isHiddenFromURL,
+} from './query-params.ts';
+import { findSubstate, type Substate } from './substates.ts';
 
 /**
  * router_js publishes both an ESM and a CJS build; under the CJS interop shape

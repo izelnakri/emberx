@@ -1,11 +1,11 @@
-import and from './and';
-import { assign, debug, drop, take } from './object/index';
-import { eq, neq } from './eq';
-import { gt, gte } from './gt';
-import { lt, lte } from './lt';
-import helper from './helper';
-import not from './not';
-import or from './or';
+import and from './and.ts';
+import { assign, debug, drop, take } from './object/index.ts';
+import { eq, neq } from './eq.ts';
+import { gt, gte } from './gt.ts';
+import { lt, lte } from './lt.ts';
+import helper from './helper.ts';
+import not from './not.ts';
+import or from './or.ts';
 
 export default helper;
 

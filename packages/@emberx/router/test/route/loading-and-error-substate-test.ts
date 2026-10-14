@@ -2,12 +2,12 @@
 import { module, test } from 'qunitx';
 import Router, { Route, hbs } from '@emberx/router';
 import { visit, currentURL, currentRouteName, wait, waitFor, waitUntil } from '@emberx/test-helpers';
-import setupTest from '../helpers/index';
-import API from '../helpers/services/api';
-import ParentLoadingRoute from '../helpers/routes/parent-loading-route';
-import ChildLoadingRoute from '../helpers/routes/child-loading-route';
-import ParentErrorRoute from '../helpers/routes/parent-error-route';
-import ChildErrorRoute from '../helpers/routes/child-error-route';
+import setupTest from '../helpers/index.ts';
+import API from '../helpers/services/api.ts';
+import ParentLoadingRoute from '../helpers/routes/parent-loading-route.ts';
+import ChildLoadingRoute from '../helpers/routes/child-loading-route.ts';
+import ParentErrorRoute from '../helpers/routes/parent-error-route.ts';
+import ChildErrorRoute from '../helpers/routes/child-error-route.ts';
 
 const POSTS = [
   { id: 1, title: 'Compilers are the New Frameworks' },

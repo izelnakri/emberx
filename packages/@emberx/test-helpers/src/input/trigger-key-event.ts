@@ -1,7 +1,7 @@
 import { didRender } from '@emberx/component';
 import inputs, { Target } from 'browser-inputs';
-import type { KeyboardEventType } from './fire-event';
-import { settled } from '../wait';
+import type { KeyboardEventType } from './fire-event.ts';
+import { settled } from '../wait.ts';
 
 export interface KeyModifiers {
   ctrlKey?: boolean;

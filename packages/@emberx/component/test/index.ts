@@ -1,4 +1,4 @@
-import './api-test';
-import './create-template-test';
-import './render-test';
-import './action-test';
+import './api-test.ts';
+import './create-template-test.ts';
+import './render-test.ts';
+import './action-test.ts';

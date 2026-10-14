@@ -1,4 +1,4 @@
-import helper from '../helper';
+import helper from '../helper.ts';
 
 const assign = helper(function (params) {
   return Object.assign({}, ...params);

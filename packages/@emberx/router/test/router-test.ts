@@ -1,9 +1,9 @@
 import { module, test } from 'qunitx';
 import Router from '@emberx/router';
-import oldRouterMap from './helpers/old-router-map';
-import targetFlatRegistry from './helpers/outputs/target-flat-registry';
-import targetRouterJSArray from './helpers/outputs/target-router-js-array';
-import setupTest from './helpers/index';
+import oldRouterMap from './helpers/old-router-map.ts';
+import targetFlatRegistry from './helpers/outputs/target-flat-registry.ts';
+import targetRouterJSArray from './helpers/outputs/target-router-js-array.ts';
+import setupTest from './helpers/index.ts';
 
 function removeRoute(routeRegistry, targetKey) {
   return Object.keys(routeRegistry).reduce((result, routeKey) => {

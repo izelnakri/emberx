@@ -1,8 +1,8 @@
 import { Route, LinkTo, tracked, action, hbs, service } from '@emberx/router';
-import t from '../helpers/t';
+import t from '../helpers/t.js';
 
-import BlogHeader from '../components/BlogHeader';
-import Counter from '../components/Counter';
+import BlogHeader from '../components/BlogHeader.ts';
+import Counter from '../components/Counter.ts';
 
 export default class PublicIndexRoute extends Route {
   @service intl;

@@ -1,8 +1,8 @@
 import Component, { hbs, renderComponent, action, tracked } from '@emberx/component';
 import { module, test } from 'qunitx';
 import { click, wait, waitFor } from '@emberx/test-helpers';
-import { setupRenderingTest } from './helpers/index';
-import setupMemserver from './helpers/setup-memserver';
+import { setupRenderingTest } from './helpers/index.ts';
+import setupMemserver from './helpers/setup-memserver.ts';
 
 /** GET a JSON document over XMLHttpRequest, so the XHR path stays covered. */
 function getJSONWithXHR(url: string): Promise<any> {

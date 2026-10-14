@@ -1,5 +1,5 @@
-import Owner from '../owner';
-import Route from '../route';
+import Owner from '../owner.ts';
+import Route from '../route.ts';
 
 class DefaultRoute extends Route {}
 

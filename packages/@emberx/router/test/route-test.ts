@@ -1,9 +1,9 @@
 import { module, test } from 'qunitx';
 import Router, { Route } from '@emberx/router';
-import BasicRoute from './helpers/routes/basic-route';
+import BasicRoute from './helpers/routes/basic-route.ts';
 import { visit, click, waitFor } from '@emberx/test-helpers';
-import setupTest from './helpers/index';
-import setupMemserver from './helpers/setup-memserver';
+import setupTest from './helpers/index.ts';
+import setupMemserver from './helpers/setup-memserver.ts';
 
 module('@emberx/router | Route Unit Test', function (hooks) {
   setupTest(hooks, () => {

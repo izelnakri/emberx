@@ -1,6 +1,6 @@
-import assign from './assign';
-import debug from './debug';
-import drop from './drop';
-import take from './take';
+import assign from './assign.ts';
+import debug from './debug.ts';
+import drop from './drop.ts';
+import take from './take.ts';
 
 export { assign, debug, drop, take };

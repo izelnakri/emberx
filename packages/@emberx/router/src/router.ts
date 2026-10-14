@@ -1,10 +1,10 @@
 export { hbs } from '@emberx/component';
-import RouterService from './router-service';
-import Route from './route';
-import Owner, { RouteRegistry } from './owner';
-import RouteMapContext from './route-map-context';
-import DefaultResolver from './resolvers/default';
-import { isSubstateName, getSubstatePath } from './substates';
+import RouterService from './router-service.ts';
+import Route from './route.ts';
+import Owner, { RouteRegistry } from './owner.ts';
+import RouteMapContext from './route-map-context.ts';
+import DefaultResolver from './resolvers/default.ts';
+import { isSubstateName, getSubstatePath } from './substates.ts';
 
 export interface FreeObject {
   [propName: string]: any;

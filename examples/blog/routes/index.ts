@@ -1,6 +1,6 @@
 import { Route, tracked, action, LinkTo, service } from '@emberx/router';
 
-import Counter from '../components/Counter';
+import Counter from '../components/Counter.ts';
 
 export default class IndexRoute extends Route {
   @service intl;

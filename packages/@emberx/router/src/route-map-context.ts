@@ -1,6 +1,6 @@
-import Owner from './owner';
-import { isSubstateName, getSubstatePath } from './substates';
-import type { routerJSRouteDefinition } from './router';
+import Owner from './owner.ts';
+import { isSubstateName, getSubstatePath } from './substates.ts';
+import type { routerJSRouteDefinition } from './router.ts';
 interface FreeObject {
   [propName: string]: any;
 }

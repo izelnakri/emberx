@@ -1,7 +1,7 @@
-import './router-test';
-import './route-test';
-import './link-to-test';
-import './route/internal-transition-test';
-import './route/nested-routes-and-lifecycle-test';
-import './route/query-params-test';
-import './route/loading-and-error-substate-test';
+import './router-test.ts';
+import './route-test.ts';
+import './link-to-test.ts';
+import './route/internal-transition-test.ts';
+import './route/nested-routes-and-lifecycle-test.ts';
+import './route/query-params-test.ts';
+import './route/loading-and-error-substate-test.ts';

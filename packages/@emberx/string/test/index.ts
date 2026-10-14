@@ -1,6 +1,6 @@
-import './camelize-test';
-import './capitalize-test';
-import './classify-test';
-import './dasherize-test';
-import './decamelize-test';
-import './underscore-test';
+import './camelize-test.ts';
+import './capitalize-test.ts';
+import './classify-test.ts';
+import './dasherize-test.ts';
+import './decamelize-test.ts';
+import './underscore-test.ts';

@@ -6,10 +6,10 @@
  * package entry point. Test modules are not part of the published surface, so
  * they are reached by path from here.
  */
-import '../packages/@emberx/string/test/index';
-import '../packages/@emberx/helper/test/index';
-import '../packages/@emberx/component/test/index';
-import '../packages/@emberx/router/test/index';
-import '../packages/@emberx/test-helpers/test/index';
-import '../examples/basic/tests/my-component-test';
-import './e2e/index';
+import '../packages/@emberx/string/test/index.ts';
+import '../packages/@emberx/helper/test/index.ts';
+import '../packages/@emberx/component/test/index.ts';
+import '../packages/@emberx/router/test/index.ts';
+import '../packages/@emberx/test-helpers/test/index.ts';
+import '../examples/basic/tests/my-component-test.ts';
+import './e2e/index.ts';

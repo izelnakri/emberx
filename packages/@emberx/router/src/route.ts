@@ -1,9 +1,9 @@
 // NOTE: params could be manipulated if needed during routeWillChange and routeDidChange
 // TODO: make this sticky params if needed
-import RouterService, { type GlobalWithQUnit } from './router-service';
-import Router from './index';
-import Owner from './owner';
-import { buildQueryParams, type QueryParamDeclarations } from './query-params';
+import RouterService, { type GlobalWithQUnit } from './router-service.ts';
+import Router from './index.ts';
+import Owner from './owner.ts';
+import { buildQueryParams, type QueryParamDeclarations } from './query-params.ts';
 import EmberXComponent, { renderComponent, service } from '@emberx/component';
 import { QUERY_PARAMS_SYMBOL } from 'router_js';
 

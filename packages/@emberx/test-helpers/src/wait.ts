@@ -1,5 +1,5 @@
 import { didRender, getAsyncActionsQueue } from '@emberx/component';
-import { find, findAll } from './query';
+import { find, findAll } from './query.ts';
 
 const TIMEOUTS = [0, 1, 2, 5, 7];
 const MAX_TIMEOUT = 10;

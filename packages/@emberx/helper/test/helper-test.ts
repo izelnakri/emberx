@@ -4,7 +4,7 @@ import { tracked } from '@glimmer/tracking';
 import { action } from '@glimmer/modifier';
 import { module, test } from 'qunitx';
 import { click } from '@emberx/test-helpers';
-import { setupRenderingTest } from './helpers/index';
+import { setupRenderingTest } from './helpers/index.ts';
 
 module('@emberx/helper | Public API', function (hooks) {
   setupRenderingTest(hooks);

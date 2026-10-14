@@ -1,6 +1,6 @@
 import { hbs } from '@emberx/component';
-import { getContext } from './context';
-import { setupTest, setupRenderingTest, setupApplicationTest } from './setup';
+import { getContext } from './context.ts';
+import { setupTest, setupRenderingTest, setupApplicationTest } from './setup.ts';
 import {
   blur,
   click,
@@ -14,11 +14,11 @@ import {
   triggerEvent,
   triggerKeyEvent,
   typeIn,
-} from './input';
-import render from './render';
-import { find, findAll } from './query';
-import { currentRouteName, currentURL, visit } from './url';
-import { wait, waitFor, waitUntil, settled } from './wait';
+} from './input/index.ts';
+import render from './render.ts';
+import { find, findAll } from './query.ts';
+import { currentRouteName, currentURL, visit } from './url.ts';
+import { wait, waitFor, waitUntil, settled } from './wait.ts';
 
 export {
   blur,

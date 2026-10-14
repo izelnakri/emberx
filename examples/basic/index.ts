@@ -1,6 +1,6 @@
 import { renderComponent } from '@emberx/component';
-import MyComponent from './src/MyComponent';
-import LocaleService from './src/services/LocaleService';
+import MyComponent from './src/MyComponent.ts';
+import LocaleService from './src/services/LocaleService.ts';
 
 export interface Owner {
   services: {

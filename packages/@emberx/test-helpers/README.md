@@ -73,7 +73,10 @@ module('@emberx/test-helpers | url helpers', function (hooks) {
 });
 
 // Waiters and Query methods:
-import { wait, waitFor, waitUntil, settled, find, findAll } from '@emberx/test-helpers';
+import { wait, waitFor, waitUntil, settled, isSettled, getSettledState, find, findAll } from '@emberx/test-helpers';
+// async settled();    pending @action promises, router transitions and the renders they cause
+// isSettled();        nothing settled() waits for is under way
+// getSettledState();  { hasPendingActions, pendingActionCount, hasPendingTransitions }
 
 // Debugging: stop a test to look at the page, and carry on with resumeTest(),
 // which is also on window while paused. Run with `qunitx <test file> --open`.

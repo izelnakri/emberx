@@ -1,4 +1,5 @@
 import { didRender, getAsyncActionsQueue } from '@emberx/component';
+import { Owner } from '@emberx/router';
 import { find, findAll } from './query.ts';
 
 const TIMEOUTS = [0, 1, 2, 5, 7];
@@ -114,10 +115,61 @@ export function waitFor(selector: string, options: Options = {}): Promise<Elemen
   });
 }
 
-// NOTE: build a new waiting system? (Should only have route transition and request waiting?
-export async function settled() {
+/** What settled() is waiting on: see getSettledState(). */
+export interface SettledState {
+  /** An `@action` returned a promise that has not settled yet. */
+  hasPendingActions: boolean;
+  pendingActionCount: number;
+  /** A router transition, including its redirects, is under way. */
+  hasPendingTransitions: boolean;
+}
+
+/**
+  What async work is still under way, as settled() sees it: pending `@action`
+  promises and router transitions. For finding out what a test that hangs on
+  `await settled()` is waiting for.
+
+  Rendering is not in it: emberx cannot tell from outside the renderer whether
+  a render is scheduled. settled() still waits for one.
+*/
+export function getSettledState(): SettledState {
+  const pendingActionCount = getAsyncActionsQueue().size;
+
+  return {
+    hasPendingActions: pendingActionCount > 0,
+    pendingActionCount,
+    hasPendingTransitions: !!routerService()?.activeTransition,
+  };
+}
+
+/** Whether nothing settled() waits for is under way. Rendering aside, see getSettledState(). */
+export function isSettled(): boolean {
+  const { hasPendingActions, hasPendingTransitions } = getSettledState();
+
+  return !hasPendingActions && !hasPendingTransitions;
+}
+
+/**
+  Resolves once every pending `@action` promise and router transition has
+  finished, and the renders they caused are done. Work that starts more work,
+  an action that transitions for example, is waited for too.
+*/
+export async function settled(): Promise<void> {
   await Promise.all(getAsyncActionsQueue());
+  // Only waits: whether the transition succeeded is for the test to check.
+  await routerService()
+    ?.activeTransition?.followRedirects()
+    .catch(() => {});
   await didRender();
+
+  // The work just awaited may have started more; each round awaits first, so the stack never grows.
+  if (!isSettled()) {
+    return settled();
+  }
+}
+
+function routerService() {
+  return Owner.lookup('service:router') as { activeTransition?: any } | undefined;
 }
 
 export async function wait(timeout: number = 500): Promise<void> {
@@ -125,10 +177,3 @@ export async function wait(timeout: number = 500): Promise<void> {
     setTimeout(() => resolve(null), timeout);
   });
 }
-
-// export function isSettled() {
-//   return;
-// }
-
-// export function getSettledState() {
-//   return;

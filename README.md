@@ -22,7 +22,7 @@ Everything runs through `make`; run `make` on its own for the full list.
 | Command              | What it does                                            |
 | -------------------- | ------------------------------------------------------- |
 | `make check`         | format + lint + typecheck + tests, the core CI checks   |
-| `make test`          | build, then the node suite, then the browser suite      |
+| `make test`          | build, then the node, Deno and browser suites           |
 | `make test-node`     | string, helper and component under node + jsdom         |
 | `make test-deno`     | the same suite under Deno                               |
 | `make test-doctests` | the code examples in the docs, run and checked          |
@@ -66,7 +66,7 @@ Although the project is not production-ready one can still experiment with it us
 - Everything is resolvable without a build system on node.js or JS module bundlers.
 - No controller abstraction, you can simply use the route object.
 - No runloop, we dont need it anymore.
-- test helpers(`click()`, `keyPress()` etc.) wait without a waiter when the fired action returns a promise during tests.
+- test helpers(`click()`, `keyPress()` etc.) wait without a waiter when the fired action returns a promise, and for any router transition it started.
 - Explicit and flexible routes declarations with @emberx/router.
 - Ember Route hooks (`beforeModel`, `model`, `afterModel`, `redirect`) are static methods instead of instance methods.
 - No sticky queryParams, instead link building is explicit with `<LinkTo @query={{hash param=value}}/>` or with object helpers `<LinkTo @query={{assign (hash active=true) this.router.queryParams}}/>`.
@@ -273,6 +273,11 @@ Router.start([
   { name: 'posts_error', route: PostsErrorRoute },
   { name: 'error', route: ErrorRoute }, // for any route without an error substate of its own
 ]);
+
+// The router service, `this.router` in routes and components, as in Ember:
+router.on('routeDidChange', (transition) => analytics.trackPage(transition.to.name));
+router.urlFor('posts.post', post, { queryParams: { page: 2 } }); // '/posts/1?page=2', no transition
+PostsRoute.refresh(); // its model hooks again, and its children's; {{on "click" this.refresh}} in a template
 ```
 
 #### Familiar @emberx/component:

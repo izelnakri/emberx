@@ -1,5 +1,5 @@
 import { Owner } from '@emberx/router';
-import Component, { renderComponent } from '@emberx/component';
+import Component, { didRender, renderComponent } from '@emberx/component';
 import { getContext } from './context.ts';
 
 interface FreeObject {
@@ -34,4 +34,31 @@ export default async function render(templateString: string, includes: object = 
     element: container,
     owner: Owner,
   });
+}
+
+/**
+  Waits for the render that changing tracked state scheduled. Renders happen
+  on their own a moment after a change; input helpers such as click() already
+  wait for them, so this is for state a test changes directly:
+
+  ```ts ignore
+  this.counter.count = 2;
+  await rerender();
+  assert.dom('p').hasText('2');
+  ```
+*/
+export async function rerender(): Promise<void> {
+  await didRender();
+}
+
+/**
+  Renders nothing in place of what render() rendered, to test what a component
+  leaves behind once it is gone. The container is emptied, and a later render()
+  starts afresh.
+
+  The component is not destroyed: @glimmer/core's renderComponent gives no way
+  to tear a rendered component down (ROADMAP.md, dependency debt).
+*/
+export async function clearRender(): Promise<void> {
+  await render('');
 }

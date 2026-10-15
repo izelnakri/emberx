@@ -17,3 +17,4 @@ import './wait/wait-until-test.ts';
 import './url-test.ts';
 import './pause-test.ts';
 import './wait/settled-test.ts';
+import './render-test.ts';

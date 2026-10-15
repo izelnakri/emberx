@@ -74,4 +74,10 @@ module('@emberx/test-helpers | url helpers', function (hooks) {
 
 // Waiters and Query methods:
 import { wait, waitFor, waitUntil, settled, find, findAll } from '@emberx/test-helpers';
+
+// Debugging: stop a test to look at the page, and carry on with resumeTest(),
+// which is also on window while paused. Run with `qunitx <test file> --open`.
+import { pauseTest, resumeTest } from '@emberx/test-helpers';
+// async pauseTest();  or this.pauseTest() inside a test
+// resumeTest();       or this.resumeTest()
 ```

@@ -10,10 +10,18 @@ interface FreeObject {
 // that still returns `undefined` at runtime.
 let context!: FreeObject;
 
-export function setContext(targetContext: FreeObject): FreeObject {
+/** The running test's `assert`, for helpers that act on the test itself, such as pauseTest. */
+let assert: { timeout(duration: number): void } | undefined;
+
+export function setContext(targetContext: FreeObject, targetAssert?: { timeout(duration: number): void }): FreeObject {
   context = targetContext;
+  assert = targetAssert;
 
   return context;
+}
+
+export function getAssert() {
+  return assert;
 }
 
 export function getContext(): FreeObject {

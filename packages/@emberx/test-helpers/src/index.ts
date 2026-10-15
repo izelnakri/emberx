@@ -19,6 +19,7 @@ import render from './render.ts';
 import { find, findAll } from './query.ts';
 import { currentRouteName, currentURL, visit } from './url.ts';
 import { wait, waitFor, waitUntil, settled } from './wait.ts';
+import { pauseTest, resumeTest } from './pause.ts';
 
 export {
   blur,
@@ -33,6 +34,8 @@ export {
   focus,
   getContext,
   hbs,
+  pauseTest,
+  resumeTest,
   scrollTo,
   select,
   tap,
@@ -63,6 +66,8 @@ export default {
   focus,
   getContext,
   hbs,
+  pauseTest,
+  resumeTest,
   scrollTo,
   select,
   tap,

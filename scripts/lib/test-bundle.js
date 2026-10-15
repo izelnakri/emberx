@@ -16,7 +16,7 @@ import { fileURLToPath } from 'node:url';
 import * as esbuild from 'esbuild';
 
 import { glimmerCompilerCryptoPlugin, emberxWorkspacePlugin } from './glimmer-compat.js';
-import { PACKAGES } from '../build.js';
+import { PACKAGES } from '../build.ts';
 
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 

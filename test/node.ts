@@ -1,5 +1,5 @@
 /**
- * Node and Deno suite entry point (scripts/test-node.js, scripts/test-deno.js).
+ * Node and Deno suite entry point (scripts/test-node.ts, scripts/test-deno.ts).
  *
  * emberx's central claim is that its packages resolve and run outside a browser
  * without a framework-specific build system. This suite is what proves it: the

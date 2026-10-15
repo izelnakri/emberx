@@ -6,8 +6,11 @@
  *
  * qunitx-cli is a browser runner with no node mode, so it cannot run this suite.
  *
- *   node scripts/test-node.js                      against the workspace sources
- *   node scripts/test-node.js --packages-from=DIR  against packages installed in DIR
+ *   node scripts/test-node.ts                      against the workspace sources
+ *   node scripts/test-node.ts --packages-from=DIR  against packages installed in DIR
+ *
+ * The one script that has to run in node, since node is what it tests. Node 24
+ * runs TypeScript as it is.
  */
 import { pathToFileURL } from 'node:url';
 

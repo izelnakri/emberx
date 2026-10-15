@@ -175,7 +175,7 @@ release:
 	$(MAKE) check
 	$(MAKE) test-release
 	$(MAKE) bench-check BENCH_BASE=$$(git describe --tags --abbrev=0 2>/dev/null)
-	node scripts/release.js $(LEVEL)
+	deno run -A scripts/release.ts $(LEVEL)
 	@VERSION=$$(node -p "require('./package.json').version"); \
 	npm install --package-lock-only --ignore-scripts && \
 	npm run changelog:update -- --tag "v$$VERSION" && \

@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env -S deno run -A
 /**
  * Development server for the example apps.
  *
@@ -8,6 +8,9 @@
  *
  *   npm run dev              -> http://localhost:1234        (blog example)
  *   npm run dev -- --basic   -> serves the basic example shell instead
+ *
+ * Runs under Deno, through its node: modules, like the other scripts that do
+ * not have to prove something about node itself.
  */
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
@@ -16,7 +19,7 @@ import { dirname, extname, join, normalize, resolve } from 'node:path';
 import * as esbuild from 'esbuild';
 
 import { glimmerCompilerCryptoPlugin, emberxWorkspacePlugin } from './lib/glimmer-compat.js';
-import { PACKAGES } from './build.js';
+import { PACKAGES } from './build.ts';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = Number(process.env.PORT || 1234);
@@ -52,7 +55,7 @@ const context = await esbuild.context({
 await context.watch();
 
 /** Resolves a URL path to a file on disk, refusing to escape the served roots. */
-async function readStatic(urlPath) {
+async function readStatic(urlPath: string) {
   for (const base of [`${ROOT}/public`, `${ROOT}/dist`]) {
     const candidate = join(base, normalize(urlPath));
     if (!candidate.startsWith(base)) continue;

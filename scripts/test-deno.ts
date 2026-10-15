@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env -S deno run -A
 /**
  * Runs the node test suite (test/node.ts) under Deno: the same 65 tests, bundled
  * by scripts/lib/test-bundle.js with qunitx's Deno build, which reports through
@@ -9,8 +9,8 @@
  * overwritten by its own initializer. esbuild compiles them as the rest of
  * emberx does.
  *
- *   node scripts/test-deno.js                      against the workspace sources
- *   node scripts/test-deno.js --packages-from=DIR  against packages installed in DIR
+ *   deno run -A scripts/test-deno.ts                      against the workspace sources
+ *   deno run -A scripts/test-deno.ts --packages-from=DIR  against packages installed in DIR
  */
 import { writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';

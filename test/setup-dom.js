@@ -1,7 +1,7 @@
 /**
  * Gives the node test run a DOM.
  *
- * Imported by scripts/test-node.js before the test bundle, so that @emberx
+ * Imported by scripts/test-node.ts before the test bundle, so that @emberx
  * packages see `window`/`document` at module-eval time. In the browser suite
  * this file is not used at all.
  */

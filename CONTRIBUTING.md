@@ -10,7 +10,8 @@ make check     # format + lint + typecheck + node, Deno and browser suites + doc
 
 Node 24 or newer is required (`engines.node`, and `volta.node` pins the exact version
 used in CI). [Deno](https://docs.deno.com/runtime/getting_started/installation/) 2.9 or newer
-is required for `make lint` and `make test-deno` (`engines.deno`). It is not an npm dependency: installed once, it
+is required for linting, the Deno suite, the doctests, the dev server and the benchmarks
+(`engines.deno`). It is not an npm dependency: installed once, it
 is shared across projects instead of adding ~90 MB to every clone's `node_modules`. CI and
 the Dockerfile pin the exact version (2.9.6); bump the two together. The browser suite needs a Chrome/Chromium binary, discovered from
 `CHROME_BIN` or your `PATH`:
@@ -40,12 +41,20 @@ test/                   entry points (index.html, index.ts, node.ts, setup-dom.j
                         live in packages/@emberx/*/test/
 ```
 
+Every script in `scripts/` is TypeScript run by Deno, as in qunitx and qunitx-cli: the build,
+the release, the dev server, `clean`, the benchmarks and the test runners. Two exceptions:
+`scripts/test-node.ts` runs in node, since node is what it tests (Node 24 runs `.ts` files as
+they are), and `scripts/test-release.sh` stays bash, since it drives `npm pack` and
+`npm install`, then runs `scripts/release-consumer-test.ts` in the throwaway project it
+installs the tarballs into. The helpers in `scripts/lib/` are plain JavaScript modules that
+both runtimes import.
+
 ## How the build works
 
-`scripts/build.js` bundles each package to a single ESM file with esbuild, leaving every
+`scripts/build.ts` bundles each package to a single ESM file with esbuild, leaving every
 bare specifier external — so `@emberx/router` still _imports_ `@emberx/component` at
-runtime instead of inlining a copy. `tsc --emitDeclarationOnly` then emits the `.d.ts`
-files, which is the only thing esbuild cannot do.
+runtime instead of inlining a copy. The TypeScript compiler API then emits the `.d.ts`
+files, in the same process, which is the only thing esbuild cannot do.
 
 There is no Babel and no webpack. Relative imports name the file they import, `.ts`
 included (`import Route from './route.ts'`), as in qunitx and qunitx-cli, so node and
@@ -138,9 +147,10 @@ drift from the code. Write them self-contained: import what they use, and render
 `// => value` to assert what it returns, as `String(statement)`. A multi-file sketch that
 imports files a reader would write themselves is marked ` ```ts ignore `.
 
-This is qunitx's `deno test --doc` in spirit, but the examples run under node: Deno compiles
-decorators with standard class-field semantics, under which a legacy `@tracked` field is
-overwritten by its initializer, and nearly every emberx example uses `@tracked`.
+This is qunitx's `deno test --doc` in spirit, and it runs under `deno test` too, but esbuild
+bundles the examples first: `deno test --doc` would compile them itself, with standard
+decorator semantics, under which a legacy `@tracked` field is overwritten by its
+initializer, and nearly every emberx example uses `@tracked`.
 
 ## Benchmarks
 

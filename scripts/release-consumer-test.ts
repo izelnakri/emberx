@@ -3,8 +3,8 @@
  * directory where only the packed @emberx tarballs (and jsdom) are installed,
  * so every import below resolves to a published artefact, never the checkout.
  *
- * Plain JavaScript run directly by the runtime, so there are no decorators:
- * `tracked` is applied by hand, the way the decorator would.
+ * Run directly by the runtime, with no bundler and so no decorators: `tracked`
+ * is applied by hand, the way the decorator would.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';

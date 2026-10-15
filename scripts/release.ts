@@ -1,10 +1,10 @@
-#!/usr/bin/env node
+#!/usr/bin/env -S deno run -A
 /**
  * Version-bumps and publishes every @emberx package.
  *
- *   node scripts/release.js patch            # or minor / major
- *   node scripts/release.js 0.1.0
- *   node scripts/release.js patch --dry-run
+ *   deno run -A scripts/release.ts patch            # or minor / major
+ *   deno run -A scripts/release.ts 0.1.0
+ *   deno run -A scripts/release.ts patch --dry-run
  *
  * Replaces release-it plus the old scripts/release-libraries.js. Driven by
  * `make release LEVEL=<patch|minor|major|x.y.z>`, which runs the checks first,
@@ -19,23 +19,23 @@ import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
-import { PACKAGES } from './build.js';
+import { PACKAGES } from './build.ts';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 const level = process.argv[2];
 const isDryRun = process.argv.includes('--dry-run');
 
-async function readJSON(path) {
+async function readJSON(path: string) {
   return JSON.parse(await readFile(path, 'utf8'));
 }
 
-async function writeJSON(path, value) {
+async function writeJSON(path: string, value: unknown) {
   await writeFile(path, `${JSON.stringify(value, null, 2)}\n`);
 }
 
 /** `patch`/`minor`/`major` relative to `current`, or an explicit version passed through. */
-function nextVersion(current, level) {
+function nextVersion(current: string, level: string | undefined): string {
   const [major, minor, patch] = current.split('.').map(Number);
   if (level === 'major') return `${major + 1}.0.0`;
   if (level === 'minor') return `${major}.${minor + 1}.0`;
@@ -43,20 +43,20 @@ function nextVersion(current, level) {
   if (/^\d+\.\d+\.\d+(-[\w.]+)?$/.test(level ?? '')) return level;
 
   process.stderr.write(
-    'Usage: node scripts/release.js <patch|minor|major|x.y.z> [--dry-run]\n' +
-      'Example: node scripts/release.js patch\n',
+    'Usage: deno run -A scripts/release.ts <patch|minor|major|x.y.z> [--dry-run]\n' +
+      'Example: deno run -A scripts/release.ts patch\n',
   );
   process.exit(1);
 }
 
 /** Runs npm with the terminal attached, so publish output streams and an OTP prompt can be answered. */
-function npm(args) {
+function npm(args: string[]) {
   // npm is npm.cmd on Windows, which only resolves through a shell.
   return spawnSync('npm', args, { cwd: ROOT, stdio: 'inherit', shell: process.platform === 'win32' });
 }
 
 /** Rewrites a package's own version and any @emberx dependency ranges to `version`. */
-async function stampPackage(name, version) {
+async function stampPackage(name: string, version: string) {
   const path = `${ROOT}/packages/@emberx/${name}/package.json`;
   const manifest = await readJSON(path);
 

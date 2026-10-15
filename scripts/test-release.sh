@@ -3,7 +3,7 @@
 # directory, and tests what got installed rather than the checkout.
 #
 # Two checks run against the installed packages:
-#   - scripts/release-consumer-test.js, what an npm user does first: import each
+#   - scripts/release-consumer-test.ts, what an npm user does first: import each
 #     package, render a component, render one to a string (node);
 #   - the node suite (test/node.ts), bundled with @emberx/* and @glimmer/*
 #     resolved from the consumer's node_modules instead of the workspace (node,
@@ -39,17 +39,17 @@ cd "$CONSUMER"
 printf '{"name":"emberx-consumer","private":true,"type":"module"}' > package.json
 JSDOM_VERSION=$(node -p "require('$ROOT/node_modules/jsdom/package.json').version")
 npm install --no-audit --no-fund --loglevel=error ./*.tgz "jsdom@$JSDOM_VERSION"
-cp "$ROOT/scripts/release-consumer-test.js" .
+cp "$ROOT/scripts/release-consumer-test.ts" .
 
 # ── Node ────────────────────────────────────────────────────────────────────
 echo "test-release: node (consumer)"
-node --test release-consumer-test.js
+node --test release-consumer-test.ts
 echo "test-release: node (full suite against the installed packages)"
-node "$ROOT/scripts/test-node.js" --packages-from="$CONSUMER"
+node "$ROOT/scripts/test-node.ts" --packages-from="$CONSUMER"
 
 # ── Deno ────────────────────────────────────────────────────────────────────
 # The suite only: the consumer test cannot import @emberx/component natively in
 # Deno yet. @glimmer/core publishes CommonJS as `main` and has no exports map,
 # and Deno does not see the named exports it re-exports. ROADMAP.md tracks it.
 echo "test-release: deno (full suite against the installed packages)"
-node "$ROOT/scripts/test-deno.js" --packages-from="$CONSUMER"
+deno run -A "$ROOT/scripts/test-deno.ts" --packages-from="$CONSUMER"

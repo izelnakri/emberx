@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env -S deno run -A
 /**
  * Builds every @emberx package to `dist/`.
  *
@@ -7,8 +7,11 @@
  * `@emberx/component` at runtime rather than inlining a copy of it. Relative
  * imports and vendored files (e.g. router's location-bar) are inlined.
  *
- * Type declarations are emitted separately by `tsc --emitDeclarationOnly`,
- * which is the only thing esbuild cannot do.
+ * Type declarations are emitted separately, through the TypeScript compiler
+ * API with tsconfig.build.json, which is the only thing esbuild cannot do.
+ *
+ *   deno run -A scripts/build.ts
+ *   ENVIRONMENT=development deno run -A scripts/build.ts   (inline sourcemaps, no .d.ts)
  *
  * Replaces the previous pipeline (tsc -> babel-over-every-emitted-file, or in
  * development a per-file babel invocation), which needed
@@ -18,13 +21,11 @@
 import { cp, rm, mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, resolve } from 'node:path';
-import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
 import * as esbuild from 'esbuild';
+import ts from 'typescript';
 
 import { glimmerCompilerCryptoPlugin } from './lib/glimmer-compat.js';
 
-const exec = promisify(execFile);
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 /** Build order is irrelevant (packages are external to each other) but kept stable for readable logs. */
@@ -33,7 +34,7 @@ export const PACKAGES = ['string', 'helper', 'component', 'router', 'test-helper
 const isDevelopment = process.env.ENVIRONMENT === 'development';
 
 /** Mark every bare specifier external; only relative/absolute imports get inlined. */
-const externalizeBareImports = {
+const externalizeBareImports: esbuild.Plugin = {
   name: 'emberx:externalize-bare-imports',
   setup(build) {
     build.onResolve({ filter: /^[^./]|^\.[^./]/ }, (args) => {
@@ -43,7 +44,7 @@ const externalizeBareImports = {
   },
 };
 
-async function buildPackage(name) {
+async function buildPackage(name: string) {
   const packageDir = `${ROOT}/packages/@emberx/${name}`;
 
   await rm(`${packageDir}/dist`, { recursive: true, force: true });
@@ -66,11 +67,12 @@ async function buildPackage(name) {
 }
 
 /**
- * Emits .d.ts files for every package in one tsc pass, then moves each
+ * Emits .d.ts files for every package in one compiler pass, then moves each
  * package's declarations next to its bundle.
  *
- * tsc is run once (not once per package) because six sequential compiler
- * startups dominate the build. It emits into `.tmp/types/@emberx/<pkg>/src/`,
+ * The compiler runs once (not once per package) because six sequential
+ * compiler startups dominate the build. It runs in this process, through the
+ * compiler API, so it is the same on Deno and node and on every platform. It emits into `.tmp/types/@emberx/<pkg>/src/`,
  * mirroring `rootDir: packages`, and we relocate that into
  * `packages/@emberx/<pkg>/dist/` so `types: ./dist/index.d.ts` resolves.
  */
@@ -79,15 +81,24 @@ async function emitTypes() {
 
   await rm(staging, { recursive: true, force: true });
 
-  try {
-    // Through node rather than node_modules/.bin/tsc, which is a .cmd shim on
-    // Windows that execFile cannot start.
-    await exec(process.execPath, ['node_modules/typescript/bin/tsc', '--project', 'tsconfig.build.json'], {
-      cwd: ROOT,
-    });
-  } catch (error) {
-    // tsc writes diagnostics to stdout, not stderr.
-    process.stderr.write(error.stdout || error.message);
+  const { config, error } = ts.readConfigFile(`${ROOT}/tsconfig.build.json`, ts.sys.readFile);
+  const { options, fileNames, errors } = ts.parseJsonConfigFileContent(config, ts.sys, ROOT);
+  const program = ts.createProgram(fileNames, options);
+  const diagnostics = [
+    ...(error ? [error] : []),
+    ...errors,
+    ...ts.getPreEmitDiagnostics(program),
+    ...program.emit().diagnostics,
+  ];
+
+  if (diagnostics.length > 0) {
+    process.stderr.write(
+      ts.formatDiagnosticsWithColorAndContext(diagnostics, {
+        getCanonicalFileName: (fileName) => fileName,
+        getCurrentDirectory: () => ROOT,
+        getNewLine: () => '\n',
+      }),
+    );
     throw new Error('Type declaration emit failed');
   }
 
@@ -109,7 +120,7 @@ async function emitTypes() {
  * as they are (`rewriteRelativeImportExtensions` only covers JavaScript), but a
  * consumer has `./module.d.ts` and `./module.js`, never `./module.ts`.
  */
-async function pointDeclarationsAtJavaScript(directory) {
+async function pointDeclarationsAtJavaScript(directory: string) {
   const declarations = (await readdir(directory, { recursive: true })).filter((path) => path.endsWith('.d.ts'));
 
   await Promise.all(

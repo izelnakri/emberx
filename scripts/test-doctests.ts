@@ -1,15 +1,18 @@
-#!/usr/bin/env node
+#!/usr/bin/env -S deno test -A --no-check
 /**
  * Runs the code examples in the docs, so they cannot drift from the code.
  *
  *   - ```ts and ```js blocks in README.md and every package README;
  *   - the same blocks inside JSDoc comments in packages/@emberx/{pkg}/src.
  *
- * This is qunitx's `deno test --doc`, with one difference: the examples are
- * bundled by esbuild and run under node + jsdom. Deno compiles decorators with
- * standard class-field semantics, under which a legacy `@tracked` field is
- * replaced by its own initializer and stops tracking, and nearly every emberx
- * example uses `@tracked`.
+ *   deno test -A --no-check scripts/test-doctests.ts
+ *
+ * This is qunitx's `deno test --doc`, with one difference: esbuild bundles the
+ * examples first, and they run against jsdom. `deno test --doc` would compile
+ * them itself, with standard decorator semantics, under which a legacy
+ * `@tracked` field is replaced by its own initializer and stops tracking, and
+ * nearly every emberx example uses `@tracked`. The node:test cases below run as
+ * Deno tests.
  *
  * Conventions, both visible in the docs themselves:
  *   - ```ts ignore skips a block, for multi-file sketches that import files a
@@ -27,13 +30,13 @@ import { test } from 'node:test';
 import * as esbuild from 'esbuild';
 
 import { glimmerCompilerCryptoPlugin, emberxWorkspacePlugin } from './lib/glimmer-compat.js';
-import { PACKAGES } from './build.js';
+import { PACKAGES } from './build.ts';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const WORK = `${ROOT}/tmp/doctests`;
 const FENCE = /^([ \t]*(?:\*[ \t]?)?)```(ts|js|typescript|javascript)([^\n]*)\n([\s\S]*?)^\1```/gm;
 
-async function sourceFiles(directory) {
+async function sourceFiles(directory: string): Promise<string[]> {
   const entries = await readdir(directory, { withFileTypes: true });
   const files = await Promise.all(
     entries.map((entry) => {
@@ -45,8 +48,8 @@ async function sourceFiles(directory) {
 }
 
 /** Every runnable block in `file`, with the line it starts on. */
-function extractBlocks(file, text) {
-  const blocks = [];
+function extractBlocks(file: string, text: string) {
+  const blocks: Array<{ name: string; code: string }> = [];
   for (const match of text.matchAll(FENCE)) {
     const [, prefix, , info] = match;
     if (/\bignore\b/.test(info)) continue;
@@ -61,7 +64,7 @@ function extractBlocks(file, text) {
 }
 
 /** `expression; // => value` becomes an assertion that String(expression) is value. */
-function addAssertions(code) {
+function addAssertions(code: string) {
   let asserted = false;
   const transformed = code.replace(/^(\s*)(.+?);?[ \t]*\/\/ => (.+)$/gm, (_line, indent, expression, expected) => {
     asserted = true;
@@ -75,7 +78,7 @@ const docs = [`${ROOT}/README.md`, ...PACKAGES.map((name) => `${ROOT}/packages/@
 );
 const sources = (await Promise.all(PACKAGES.map((name) => sourceFiles(`${ROOT}/packages/@emberx/${name}/src`)))).flat();
 
-const blocks = [];
+const blocks: Array<{ name: string; code: string }> = [];
 for (const file of [...docs, ...sources]) {
   blocks.push(...extractBlocks(file, await readFile(file, 'utf8')));
 }

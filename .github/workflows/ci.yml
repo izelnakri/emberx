@@ -29,15 +29,15 @@ jobs:
           node-version-file: package.json
           cache: npm
       # Deno is not an npm dependency; this is the version `npm run lint` uses in
-      # CI, and the test, bench and package jobs pin the same one, as does the
-      # Dockerfile. Bump them together.
+      # CI, and the test, browser-compat, bench and package jobs pin the same one,
+      # as does the Dockerfile. Bump them together.
       - uses: denoland/setup-deno@v2
         with:
           deno-version: 2.9.6
       - run: npm ci
       - run: npm run format
       - run: npm run lint
-      # The docs' code examples, run and checked; see scripts/test-doctests.js.
+      # The docs' code examples, run and checked; see scripts/test-doctests.ts.
       - run: npm run test:doctests
       - run: npm run typecheck
 
@@ -116,6 +116,10 @@ jobs:
         with:
           node-version-file: package.json
           cache: npm
+      # The build runs with Deno (scripts/build.ts). Same pinned Deno as the lint job.
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: 2.9.6
       - run: npm ci
       - name: Get Playwright version
         id: pw-version

@@ -4,7 +4,7 @@ import RouterService, { type GlobalWithQUnit } from './router-service.ts';
 import Router from './index.ts';
 import Owner from './owner.ts';
 import { buildQueryParams, type QueryParamDeclarations } from './query-params.ts';
-import EmberXComponent, { renderComponent, service } from '@emberx/component';
+import EmberXComponent, { action, renderComponent, service } from '@emberx/component';
 import { QUERY_PARAMS_SYMBOL } from 'router_js';
 
 interface FreeObject {
@@ -27,7 +27,6 @@ let renderCount = 0;
 
 // TODO: maybe provide the associated routeInfo for router_js hacking and expose the Route itself on didTransition
 // TODO: serialize() model hook might be needed to make default params and queryParams for the route links
-// TODO: this must have .refresh() // NOTE: this has to be both on static and instance
 export default class Route extends EmberXComponent<FreeObject> {
   static router: RouterService;
 
@@ -47,6 +46,24 @@ export default class Route extends EmberXComponent<FreeObject> {
    * See ./query-params.ts for the shape.
    */
   static queryParams: QueryParamDeclarations = {};
+
+  /**
+   * Runs the model hooks of this route, and of the active routes below it,
+   * again and sets them up with the new models. The URL, the routes above and
+   * the query params stay. For data that changed on the server, after a save
+   * for example. Returns the transition.
+   */
+  static refresh() {
+    // The running router, rather than this.router: that is set when a router
+    // resolves this route, so for a route the running one never entered it is
+    // an earlier router, or nothing.
+    const router = Owner.lookup('service:router') as RouterService;
+    if (!currentRouteInfos(router).some((routeInfo) => routeInfo.route === this)) {
+      throw new Error(`@emberx/router Route: ${this.name} cannot refresh, it is not an active route!`);
+    }
+
+    return router.refresh(this as any);
+  }
 
   /** The model of `routeKey` in the transition under way, whether it resolved it or the route stays active. */
   static modelFor(routeKey: string) {
@@ -160,6 +177,12 @@ export default class Route extends EmberXComponent<FreeObject> {
       },
       owner: Owner,
     });
+  }
+
+  /** Route.refresh() for the route on screen, as an action: `{{on "click" this.refresh}}`. */
+  @action
+  async refresh(): Promise<void> {
+    await (this.constructor as typeof Route).refresh();
   }
 
   get routeName(): string {

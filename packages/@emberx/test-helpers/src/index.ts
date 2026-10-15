@@ -15,7 +15,7 @@ import {
   triggerKeyEvent,
   typeIn,
 } from './input/index.ts';
-import render from './render.ts';
+import render, { rerender, clearRender } from './render.ts';
 import { find, findAll } from './query.ts';
 import { currentRouteName, currentURL, visit } from './url.ts';
 import { wait, waitFor, waitUntil, settled, isSettled, getSettledState } from './wait.ts';
@@ -45,6 +45,8 @@ export {
   triggerKeyEvent,
   typeIn,
   render,
+  rerender,
+  clearRender,
   settled,
   setupTest,
   setupRenderingTest,
@@ -79,6 +81,8 @@ export default {
   triggerKeyEvent,
   typeIn,
   render,
+  rerender,
+  clearRender,
   settled,
   setupTest,
   setupRenderingTest,

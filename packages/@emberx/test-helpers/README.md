@@ -27,8 +27,10 @@ import {
 // Setup & URL helpers:
 import {
   setupTest, setupRenderingTest, setupApplicationTest,
-  render, visit, currentURL, currentRouteName, hbs
+  render, rerender, clearRender, visit, currentURL, currentRouteName, hbs
 } from '@emberx/test-helpers';
+// async rerender();     waits for the render a tracked change scheduled
+// async clearRender();  empties what render() rendered
 import { module, test } from 'qunitx';
 import Router, { Route } from '@emberx/router';
 

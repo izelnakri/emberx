@@ -55,6 +55,7 @@ export default class Router {
   }
 
   static start(arrayOfRouteDefinitions: Array<RouteDefinition> = [], routeMap: any = undefined): Router {
+    stopPreviousRouter();
     Owner.clear('routes');
 
     const routeMapRegistry = routeMap ? this.map(routeMap) : Owner.routes; // NOTE: move this to super.map since it just mutates the module
@@ -75,6 +76,7 @@ export default class Router {
   }
 
   static reset() {
+    stopPreviousRouter();
     Owner.clear('routes');
     Owner.clear('services');
     Owner.clear('components');
@@ -180,6 +182,14 @@ export default class Router {
 
   // NOTE: add to registry by demand
   // NOTE: add to actual router by demand
+}
+
+/**
+ * A router that is replaced, by starting another or resetting, must stop
+ * following the browser's history, or back and forward would drive both.
+ */
+function stopPreviousRouter() {
+  (Owner.lookup('service:router') as RouterService | undefined)?.stopListening();
 }
 
 function checkInRouteRegistryOrCreateRoute(registry: RouteRegistry, targetRoute: routerJSRouteDefinition) {

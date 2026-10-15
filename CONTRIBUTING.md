@@ -5,7 +5,7 @@
 ```sh
 npm ci
 make build
-make check     # format + lint + typecheck + node suite + browser suite
+make check     # format + lint + typecheck + node, Deno and browser suites + doctests
 ```
 
 Node 24 or newer is required (`engines.node`, and `volta.node` pins the exact version
@@ -31,12 +31,13 @@ packages/@emberx/       the six published packages
   router/               routing on top of router_js
   test-helpers/         render/visit/click/settled, no runloop
   ssr/                  server-side rendering
-examples/basic          minimal component demo
+examples/basic          minimal component demo, with its tests in tests/
 examples/blog           the integration testbed and de-facto documentation
-benches/                benchmark suite + committed baseline
+benches/                Deno.bench and Chrome.bench files; results stay on your machine
 scripts/                build, dev server, release, package verification
-test/                   entry points only (index.html, index.ts, node.ts, setup-dom.js); the suites
-                        themselves live in packages/@emberx/*/test/
+test/                   entry points (index.html, index.ts, node.ts, setup-dom.js), the blog's
+                        E2E tests in e2e/ and their setup in helpers.ts; the package suites
+                        live in packages/@emberx/*/test/
 ```
 
 ## How the build works
@@ -46,9 +47,11 @@ bare specifier external — so `@emberx/router` still _imports_ `@emberx/compone
 runtime instead of inlining a copy. `tsc --emitDeclarationOnly` then emits the `.d.ts`
 files, which is the only thing esbuild cannot do.
 
-There is no Babel and no webpack. Relative imports do not need `.js` extensions because
-bundling resolves them, which is what `babel-plugin-module-extension-resolver` used to be
-for.
+There is no Babel and no webpack. Relative imports name the file they import, `.ts`
+included (`import Route from './route.ts'`), as in qunitx and qunitx-cli, so node and
+Deno can load a module without a bundler. `deno lint`'s `no-sloppy-imports` rule enforces
+it. The build rewrites those specifiers to `.js` in the emitted declarations, the files a
+consumer has.
 
 `scripts/lib/glimmer-compat.js` holds the one upstream workaround that survives:
 `@glimmer/compiler` evaluates a bare `require` at import time to build a sha1 template id,
@@ -108,7 +111,7 @@ owner, because `@emberx/router`'s `Owner` is a static class.
 | ------- | -------------------- | ----------------------------------------------- |
 | node    | `make test-node`     | string, helper and component under node + jsdom |
 | deno    | `make test-deno`     | the same suite under Deno                       |
-| browser | `make test-browser`  | everything, including routing and rendering     |
+| browser | `make test-browser`  | everything: routing, rendering, the examples    |
 | docs    | `make test-doctests` | the code examples in the READMEs and JSDoc      |
 
 The browser suite is the real one — the router, the renderer and `@emberx/test-helpers`
@@ -118,9 +121,13 @@ Tests use [qunitx](https://github.com/izelnakri/qunitx) for assertions and
 [qunitx-cli](https://github.com/izelnakri/qunitx-cli) as the runner; qunitx-cli bundles
 each entry point with esbuild, so TypeScript runs directly with no build step.
 
-There is no runloop. `settled()` awaits the promise queue that `@action` populates, so a
-test helper automatically waits for any promise an action returned. If you add an async
-path that tests need to wait on, it must flow through that queue.
+There is no runloop. `settled()` awaits the promise queue that `@action` populates and any
+router transition under way, then the render they caused, so a test helper automatically
+waits for both. If you add an async path that tests need to wait on, it must flow through
+one of them. `getSettledState()` says which one a hanging `await settled()` is waiting on.
+
+To look at a test's page mid-test, `await pauseTest()` in it and run it in a visible
+browser, `qunitx <test file> --open`; `resumeTest()` in the browser console carries on.
 
 ### Documentation examples
 

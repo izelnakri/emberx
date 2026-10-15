@@ -9,16 +9,16 @@ Ordered by what unblocks the most downstream work, not by size.
 
 ## 0. Where things actually stand
 
-| Package                | Tests | State                                                                         |
-| ---------------------- | ----- | ----------------------------------------------------------------------------- |
-| `@emberx/string`       | ✅    | Complete. Zero dependencies.                                                  |
-| `@emberx/helper`       | ✅    | Complete.                                                                     |
-| `@emberx/component`    | ✅    | Complete for the current renderer.                                            |
-| `@emberx/test-helpers` | ✅    | Complete; browser-only (see #3).                                              |
-| `@emberx/router`       | ✅    | Complete apart from history and re-rendering (see #2); browser-only (see #3). |
-| `@emberx/ssr`          | ❌ 0% | Untested, blocked on the router.                                              |
+| Package                | Tests | State                                                             |
+| ---------------------- | ----- | ----------------------------------------------------------------- |
+| `@emberx/string`       | ✅    | Complete. Zero dependencies.                                      |
+| `@emberx/helper`       | ✅    | Complete.                                                         |
+| `@emberx/component`    | ✅    | Complete for the current renderer.                                |
+| `@emberx/test-helpers` | ✅    | Complete; browser-only (see #3).                                  |
+| `@emberx/router`       | ✅    | Complete apart from re-rendering (see #2); browser-only (see #3). |
+| `@emberx/ssr`          | ❌ 0% | Untested, blocked on the router.                                  |
 
-275 tests pass in the browser (the full suite). The 65 of them that need no router
+299 tests pass in the browser (the full suite). The 65 of them that need no router
 also pass under node and under Deno, and the 13 code examples in the docs run as
 doctests. See #3 for what keeps the rest browser-only.
 
@@ -57,17 +57,16 @@ the existing suite) → port the environment delegate and render loop behind the
 
 ## 2. Finish the router
 
-Query params (`static queryParams`), loading and error substates, route events and the
-model hook lifecycle are implemented and covered by `packages/@emberx/router/test/route/`.
-What is left:
+Implemented and covered by `packages/@emberx/router/test/`: the model hook lifecycle,
+query params (`static queryParams`), loading and error substates,
+`Route.refresh()`, `router.urlFor()`, `router.on('routeWillChange' | 'routeDidChange')`,
+and the browser's back and forward buttons. What is left:
 
 - **Substates are not discovered by convention.** Ember creates a loading and an error
   route under every route and enters one when the app has a template or class for it.
   emberx enters a substate only when it is declared, in `Router.start()` or in a
   `Router.map()` definition, and has a class. Finding them by file name is the job of the
   classic and module-unification resolvers, which are still stubs.
-- **History back does not re-resolve routes** (carried over from `TODO`). This is a
-  user-visible bug in any real app.
 - **`Route.setup` wipes `innerHTML`** on every transition and is marked "temporary
   solution" in the source. It defeats Glimmer's diffing — every navigation is a full
   re-render. Fixing this is both a correctness and a performance item.
@@ -85,8 +84,8 @@ under Deno. The router and test-helpers suites do not yet. Getting them there wo
 run headless, and it is a prerequisite for real SSR.
 
 - **Router state outlives each test.** Every test that starts a router builds a new
-  `RouterService`, which starts a new `LocationBar` against `window` and never stops the
-  previous one; nothing tears the router down in `afterEach`. Transitions from a finished
+  `RouterService` with a new `LocationBar` against `window`. Starting one now stops the
+  previous one following the browser, but nothing tears the router down in `afterEach`. Transitions from a finished
   test then render into a container the next test has already removed ("#app or
   #ember-testing not found"). The browser tolerates this, but `node:test` reports it as a
   failure. Fixes: a router teardown in `setupTest` (stop the `LocationBar`, reset the URL),
@@ -115,7 +114,7 @@ bet and what makes "no build system" true, but the benchmarks put a typical comp
 The bet is worth keeping as the _default_. But a production build that precompiles `hbs`
 templates to wire format ahead of time — while leaving the runtime path intact for
 development and for consumers with no build step — would remove that cost without
-compromising the premise. `benches/template-compilation.bench.js` already measures exactly
+compromising the premise. `benches/template-compilation.bench.ts` already measures exactly
 what such a change would eliminate.
 
 ---
@@ -148,13 +147,16 @@ what such a change would eliminate.
   result onto a module-level array that nothing prunes, and every scheduled re-render
   revalidates all of them. In an app, each route transition adds a root, so re-render
   work and memory grow with navigation history. It also makes the Chrome render
-  benchmarks too noisy to gate. `ember-source`'s `renderComponent` replaces what it
-  rendered into an element before, which removes it.
+  benchmarks too noisy to gate, keeps replaced routes following query-param changes
+  unless the router freezes their args, and leaves `clearRender()` unable to destroy what
+  it clears. `ember-source`'s `renderComponent` replaces what it rendered into an element
+  before, which removes it.
 - **TypeScript 7** is current; this repo is on 5.9 because the codebase leans on legacy
   (`experimentalDecorators`) decorators. Worth evaluating, together with a move to standard
   decorators.
-- **`Router.visit` now propagates errors** instead of silently swallowing them. Any caller
-  that relied on the old behaviour needs a real error path.
+- **`Router.visit` rejects when a transition fails** and no `error` handler or error
+  substate deals with it, where it used to swallow every error. A caller that relied on
+  that needs an error path: a handler, a substate, or a `catch`.
 - **CI's `bench` job is advisory.** It compares against the PR's base on the same runner,
   which is like for like, but shared runners are still noisy on sub-microsecond cases.
   Once a few weeks of runs show which cases stay stable, it can become a real gate.

@@ -107,4 +107,40 @@ module('@emberx/router | RouterService', function (hooks) {
       );
     });
   });
+
+  module('urlFor', function () {
+    test('builds the URL of a route from its models, without transitioning', async function (assert) {
+      const router = this.owner.lookup('service:router');
+
+      await visit('/');
+
+      assert.equal(router.urlFor('posts.post', 1), '/posts/1');
+      assert.equal(router.urlFor('posts.post', { id: 2, title: 'Second' }), '/posts/2', 'a model gives its id');
+      assert.equal(router.urlFor('home'), '/');
+      assert.equal(currentURL(), '/');
+    });
+
+    test('takes the models it is not given from the routes that are active', async function (assert) {
+      const router = this.owner.lookup('service:router');
+
+      await visit('/posts/3');
+
+      assert.equal(router.urlFor('posts.post.comments'), '/posts/3/comments');
+      assert.equal(router.urlFor('posts.post.comments', 4), '/posts/4/comments');
+    });
+
+    test('adds query params, leaving out the missing ones and those at their declared default', async function (assert) {
+      const router = this.owner.lookup('service:router');
+
+      await visit('/');
+
+      assert.equal(router.urlFor('posts', { queryParams: { page: 2, sort: 'title' } }), '/posts?page=2&sort=title');
+      assert.equal(router.urlFor('posts', { queryParams: { page: 1, draft: null, tag: undefined } }), '/posts');
+      assert.equal(
+        router.urlFor('posts.post', 1, { queryParams: { page: '1' } }),
+        '/posts/1',
+        'compared as the value it denotes',
+      );
+    });
+  });
 });

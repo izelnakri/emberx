@@ -153,6 +153,34 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
     return error.error;
   }
 
+  /**
+   * The URL of `routeName`, without transitioning to it, as Ember's router
+   * service builds it:
+   *
+   *   router.urlFor('posts.post', post, { queryParams: { page: 2 } }); // '/posts/1?page=2'
+   *
+   * Models fill the dynamic segments, from the route's own up; those left out
+   * come from the routes already active. Query params that are missing, or at
+   * the default their route declares, are left out, as the router leaves them
+   * out of the URL it shows.
+   */
+  urlFor(routeName: string, ...modelsAndOptions: any[]): string {
+    const last = modelsAndOptions[modelsAndOptions.length - 1];
+    const hasOptions = typeof last === 'object' && last !== null && Object.hasOwn(last, 'queryParams');
+    const models = hasOptions ? modelsAndOptions.slice(0, -1) : modelsAndOptions;
+    const queryParams: FreeObject = (hasOptions && last.queryParams) || {};
+    const { routeInfos } = this.applyIntent(routeName, models);
+    const visibleQueryParams = Object.keys(queryParams).reduce((result: FreeObject, key) => {
+      if (!isHiddenFromURL(formatQueryParamValue(queryParams[key]), getQueryParamConfig(routeInfos, key))) {
+        result[key] = queryParams[key];
+      }
+
+      return result;
+    }, {});
+
+    return this.generate(routeName, ...models, { queryParams: visibleQueryParams });
+  }
+
   /** Whether an `error` handler or substate dealt with `error`. Each error is reported once. */
   isErrorHandled(error: unknown): boolean {
     return this.#handledErrors.delete(error);

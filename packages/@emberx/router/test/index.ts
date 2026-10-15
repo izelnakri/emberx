@@ -6,3 +6,4 @@ import './route/nested-routes-and-lifecycle-test.ts';
 import './route/query-params-test.ts';
 import './route/loading-and-error-substate-test.ts';
 import './history-test.ts';
+import './router-service-test.ts';

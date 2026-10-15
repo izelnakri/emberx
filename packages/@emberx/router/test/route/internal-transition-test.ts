@@ -51,10 +51,9 @@ module('@emberx/router | Route Internal Transitions', function (hooks) {
 
     session.currentUser = { id: 1, firstName: 'Izel', lastName: 'Nakri' };
 
-    router.routeDidChange = function (transition) {
-      console.log('transition', transition);
+    router.on('routeDidChange', function () {
       assert.step(this.currentRouteName);
-    };
+    });
 
     await visit('/');
 
@@ -81,10 +80,9 @@ module('@emberx/router | Route Internal Transitions', function (hooks) {
   test('user can land on parent route then go to children then to unrelated route then another children', async function (assert) {
     const router = this.owner.lookup('service:router');
 
-    router.routeDidChange = function (transition) {
-      console.log('transition', transition);
+    router.on('routeDidChange', function () {
       assert.step(this.currentRouteName);
-    };
+    });
 
     await visit('/login');
 
@@ -111,10 +109,9 @@ module('@emberx/router | Route Internal Transitions', function (hooks) {
   test('user can land on children and then another children then parent route, then another children', async function (assert) {
     const router = this.owner.lookup('service:router');
 
-    router.routeDidChange = function (transition) {
-      console.log('transition', transition);
+    router.on('routeDidChange', function () {
       assert.step(this.currentRouteName);
-    };
+    });
 
     const session = this.owner.lookup('service:session');
 

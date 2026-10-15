@@ -38,6 +38,12 @@ interface FreeObject {
  */
 export type GlobalWithQUnit = typeof globalThis & { QUnit?: unknown };
 
+/** The events the router service emits through on() and off(). */
+export type RouterEventName = 'routeWillChange' | 'routeDidChange';
+
+/** A listener for router events. `this` is the router service. */
+export type RouterEventListener = (this: RouterJSRouter, transition: any) => void;
+
 // handleURL accepts slash-less URLs
 // route recognize and recognizeAndLoad
 export default class RouterJSRouter extends Router<RouterJSRoute> {
@@ -61,6 +67,10 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
   /** Errors an error substate dealt with; visit() resolves for these instead of rejecting. */
   #handledErrors = new Set<unknown>();
   #loadingTimer: ReturnType<typeof setTimeout> | undefined;
+  #listeners: Record<RouterEventName, Set<RouterEventListener>> = {
+    routeWillChange: new Set(),
+    routeDidChange: new Set(),
+  };
 
   constructor(options: FreeObject | undefined) {
     super();
@@ -159,12 +169,36 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
     return transition;
   }
 
-  routeWillChange(): void {
-    return;
+  /**
+   * Calls `listener` with the transition, as Ember's router service does, on:
+   *
+   * - `routeWillChange`: a transition starts, is redirected, or enters a
+   *   loading or error substate;
+   * - `routeDidChange`: a transition has finished and the URL is updated.
+   *
+   * For analytics, page titles or scroll positions:
+   *
+   *   router.on('routeDidChange', (transition) => analytics.trackPage(transition.to.name));
+   */
+  on(eventName: RouterEventName, listener: RouterEventListener): this {
+    this.#listenersOf(eventName).add(listener);
+
+    return this;
   }
 
-  routeDidChange(): void {
-    return;
+  /** Stops calling `listener` on `eventName`. */
+  off(eventName: RouterEventName, listener: RouterEventListener): this {
+    this.#listenersOf(eventName).delete(listener);
+
+    return this;
+  }
+
+  routeWillChange(transition: any): void {
+    this.#emit('routeWillChange', transition);
+  }
+
+  routeDidChange(transition: any): void {
+    this.#emit('routeDidChange', transition);
   }
 
   getSerializer(): any {
@@ -226,6 +260,20 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
           throw error;
         }
       });
+  }
+
+  #listenersOf(eventName: RouterEventName): Set<RouterEventListener> {
+    const listeners = this.#listeners[eventName];
+    if (!listeners) {
+      throw new Error(`The router has no "${eventName}" event, only routeWillChange and routeDidChange.`);
+    }
+
+    return listeners;
+  }
+
+  // A copy, so a listener that adds or removes listeners does not change this round.
+  #emit(eventName: RouterEventName, transition: any) {
+    [...this.#listeners[eventName]].forEach((listener) => listener.call(this, transition));
   }
 
   #endTransition() {

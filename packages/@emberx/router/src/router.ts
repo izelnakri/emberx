@@ -15,7 +15,18 @@ export interface RouteDefinition {
   route: Route | undefined;
   name: string;
   options?: FreeObject;
+  /** What the route's own URL shows, when it has routes under it and should not show `route`. */
   indexRoute?: Route;
+  /**
+   * Shown while this route, or a route under it without a loadingRoute of its
+   * own, is loading. Ember's `<name>_loading` substate.
+   */
+  loadingRoute?: Route;
+  /**
+   * Shown when this route, or a route under it without an errorRoute of its
+   * own, fails, with the error as its model. Ember's `<name>_error` substate.
+   */
+  errorRoute?: Route;
 }
 
 export interface routerJSRouteDefinition {
@@ -141,6 +152,13 @@ export default class Router {
           route: routeDefinition.indexRoute,
         };
       }
+
+      if (routeDefinition.loadingRoute) {
+        substateDefinitions.push({ name: `${routeName}_loading`, route: routeDefinition.loadingRoute });
+      }
+      if (routeDefinition.errorRoute) {
+        substateDefinitions.push({ name: `${routeName}_error`, route: routeDefinition.errorRoute });
+      }
     });
 
     substateDefinitions.forEach(registerSubstate);
@@ -224,6 +242,11 @@ function registerSubstate({ name, route }: RouteDefinition) {
   const parentName = name.split('.').slice(0, -1).join('.');
   if (parentName && !Owner.routes[parentName]) {
     throw new Error(`The "${name}" substate needs its parent route "${parentName}" to be defined too.`);
+  }
+
+  // A Router.map() definition declares substates without a class, for Router.start() to give one.
+  if (Owner.routes[name]?.options?.substate && Owner.routes[name].route) {
+    throw new Error(`The "${name}" substate is declared twice. A loadingRoute or errorRoute declares it too.`);
   }
 
   Owner.routes[name] = { name, options: { path: getSubstatePath(name), substate: true }, route };

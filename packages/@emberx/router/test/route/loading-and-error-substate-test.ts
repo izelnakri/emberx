@@ -377,6 +377,98 @@ module('@emberx/router | Loading and error substates', function () {
     });
   });
 
+  module('loadingRoute and errorRoute on a route definition', function (hooks) {
+    setupTest(hooks, () => {
+      api = new API();
+      Router.addServices({ api });
+
+      return Router.start([
+        { path: '/', name: 'home', route: HomeRoute },
+        {
+          path: '/posts',
+          name: 'posts',
+          route: PostsRoute,
+          loadingRoute: ParentLoadingRoute,
+          errorRoute: ParentErrorRoute,
+        },
+        { path: '/posts/:post_id', name: 'posts.post', route: PostRoute, errorRoute: ChildErrorRoute },
+        { path: '/posts/:post_id/comments', name: 'posts.post.comments', route: CommentsRoute },
+      ]);
+    });
+    hooks.beforeEach(function (assert) {
+      recordSubstates(assert, this.owner.lookup('service:router'));
+    });
+
+    test('loadingRoute shows while the route loads', async function (assert) {
+      const visiting = visit('/posts');
+
+      await waitFor('[data-test-loading]');
+
+      assert.dom('[data-test-loading]').hasText('Loading posts...');
+      assert.equal(currentRouteName(), 'posts_loading');
+
+      api.resolve('/posts', POSTS);
+      await visiting;
+
+      assert.dom('[data-test-post]').exists({ count: 2 });
+      assert.verifySteps(['substate posts_loading']);
+    });
+
+    test('loadingRoute also shows while a route under it loads, if that route has none of its own', async function (assert) {
+      api.respondWith('/posts', POSTS);
+      await visit('/posts');
+
+      const visiting = visit('/posts/1');
+
+      await waitFor('[data-test-loading]');
+
+      assert.dom('[data-test-loading]').hasText('Loading posts...');
+
+      api.resolve('/posts/1', POSTS[0]);
+      await visiting;
+
+      assert.dom('[data-test-title]').hasText('Compilers are the New Frameworks');
+      assert.verifySteps(['substate posts_loading']);
+    });
+
+    test('errorRoute shows when the route fails, with the error as its model', async function (assert) {
+      api.respondWith('/posts', new Error('Server is down'));
+
+      await visit('/posts');
+
+      assert.dom('[data-test-error]').hasText('Posts could not load: Server is down');
+      assert.equal(currentRouteName(), 'posts_error');
+      assert.verifySteps(['substate posts_error']);
+    });
+
+    test("a route's own errorRoute wins over its parent's, for it and the routes under it", async function (assert) {
+      api.respondWith('/posts', POSTS);
+      api.respondWith('/posts/1', new Error('Post not found'));
+
+      await visit('/posts/1');
+
+      assert.dom('[data-test-error]').hasText('The post could not load: Post not found');
+      assert.equal(currentRouteName(), 'posts.post_error');
+
+      api.respondWith('/posts/2', POSTS[0]);
+      await visit('/posts/2/comments');
+
+      assert.dom('[data-test-error]').hasText('The post could not load: Comments are closed');
+      assert.verifySteps(['substate posts.post_error', 'substate posts.post_error']);
+    });
+
+    test('declaring the same substate twice is a mistake caught at startup', function (assert) {
+      assert.throws(
+        () =>
+          Router.start([
+            { path: '/posts', name: 'posts', route: PostsRoute, loadingRoute: ParentLoadingRoute },
+            { name: 'posts_loading', route: LoadingRoute },
+          ]),
+        /The "posts_loading" substate is declared twice/,
+      );
+    });
+  });
+
   module('without substates', function (hooks) {
     setupTest(hooks, startRouter());
 

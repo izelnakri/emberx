@@ -233,7 +233,55 @@ export default class IndexRoute extends Route {
 }
 ```
 
-#### Route hooks, query params and substates:
+#### Index, loading and error routes:
+
+A route definition can name up to three more routes besides its own `route`. None of them
+has a URL of its own:
+
+| Key            | What it shows                                                                                                                                      |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `indexRoute`   | The route's own URL, when it has routes under it. Without one, `/posts` shows `route`; with one, `route` only loads data its children share.       |
+| `loadingRoute` | The page while this route's model hooks are pending, or those of a route under it that has no `loadingRoute` of its own.                           |
+| `errorRoute`   | The page when this route's hooks throw or reject, or those of a route under it that has no `errorRoute` of its own. It gets the error as `@model`. |
+
+Two routes named `loading` and `error` catch whatever no route above handles.
+
+```ts ignore
+Router.start([
+  { path: '/', name: 'home', route: HomeRoute },
+  {
+    path: '/posts',
+    name: 'posts',
+    route: PostsRoute, // loads the posts, which routes under it read with this.modelFor('posts')
+    indexRoute: PostsIndexRoute, // what /posts shows: the list
+    loadingRoute: PostsLoadingRoute, // while /posts, or /posts/:post_id, loads
+    errorRoute: PostsErrorRoute, // when loading the posts fails
+  },
+  {
+    path: '/posts/:post_id',
+    name: 'posts.post',
+    route: PostRoute,
+    errorRoute: PostErrorRoute, // when loading one post fails; it loads with PostsLoadingRoute
+  },
+  { name: 'loading', route: LoadingRoute }, // the fallbacks, here for /
+  { name: 'error', route: ErrorRoute },
+]);
+```
+
+| URL        | While it loads      | When it fails                                                      |
+| ---------- | ------------------- | ------------------------------------------------------------------ |
+| `/`        | `LoadingRoute`      | `ErrorRoute`                                                       |
+| `/posts`   | `PostsLoadingRoute` | `PostsErrorRoute`                                                  |
+| `/posts/1` | `PostsLoadingRoute` | `PostErrorRoute`, or `PostsErrorRoute` if loading the posts failed |
+
+A loading or error route is an ordinary route with a template, entered without changing the
+URL. A model that resolves right away never shows its loading route.
+
+For Ember users: `loadingRoute` and `errorRoute` declare the `posts_loading` and `posts_error`
+substates. The Ember names work too, as definitions without a path (`{ name: 'posts.loading',
+route }`) or as `this.route('loading')` in a `Router.map()` definition.
+
+#### Route hooks and query params:
 
 ```ts ignore
 import Router, { Route, hbs } from '@emberx/router';
@@ -263,15 +311,8 @@ class PostsRoute extends Route {
 }
 
 Router.start([
-  { path: '/posts', name: 'posts', route: PostsRoute },
+  { path: '/posts', name: 'posts', route: PostsRoute, errorRoute: PostsErrorRoute },
   { path: '/posts/:post_id', name: 'posts.post', route: PostRoute },
-  // Substates take no path, here or as this.route('loading') in a Router.map() definition.
-  // The router enters them, without changing the URL, while a model hook is pending or
-  // once one has failed; an error route gets the error as @model.
-  { name: 'posts_loading', route: PostsLoadingRoute }, // while posts loads
-  { name: 'posts.loading', route: PostLoadingRoute }, // while a route under posts loads
-  { name: 'posts_error', route: PostsErrorRoute },
-  { name: 'error', route: ErrorRoute }, // for any route without an error substate of its own
 ]);
 
 // The router service, `this.router` in routes and components, as in Ember:

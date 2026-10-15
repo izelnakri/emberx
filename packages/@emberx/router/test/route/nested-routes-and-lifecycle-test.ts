@@ -1,6 +1,6 @@
 import { module, test } from 'qunitx';
 import Router, { hbs } from '@emberx/router';
-import { visit, currentURL, settled } from '@emberx/test-helpers';
+import { visit, click, currentURL, settled } from '@emberx/test-helpers';
 import setupTest from '../helpers/index.ts';
 import LoggedRoute, { setupHookSteps } from '../helpers/routes/logged-route.ts';
 
@@ -94,6 +94,7 @@ class UserPostsRoute extends LoggedRoute('users.user.posts') {
     {{#each this.model.posts as |post|}}
       <p data-test-post={{post.id}}>{{post.title}}</p>
     {{/each}}
+    <button type="button" data-test-refresh {{on "click" this.refresh}}>Refresh</button>
   `;
 }
 
@@ -487,6 +488,83 @@ module('@emberx/router | Nested routes and lifecycle hooks', function (hooks) {
         'users.user: enter',
         'users.user: setup',
       ]);
+    });
+  });
+
+  module('refresh', function (hooks) {
+    setupHookSteps(hooks);
+
+    const RESOLVE_POSTS = [
+      'users.user.posts: beforeModel',
+      'users.user.posts: model',
+      'users.user.posts: afterModel',
+      'users.user.posts: redirect',
+    ];
+    const ENTER_POSTS_PAGE = [
+      'users: enter',
+      'users: setup',
+      'users.user: enter',
+      'users.user: setup',
+      'users.user.posts: enter',
+      'users.user.posts: setup',
+    ];
+
+    test('Route.refresh runs the hooks of the route and the routes below it again, and sets them up', async function (assert) {
+      await visit('/users/1/posts');
+      assert.verifySteps([...RESOLVE_USERS, ...RESOLVE_USER, ...RESOLVE_POSTS, ...ENTER_POSTS_PAGE]);
+
+      await UserRoute.refresh();
+      await settled();
+
+      assert.equal(currentURL(), '/users/1/posts');
+      assert.dom('[data-test-title]').hasText('Posts by Izel Nakri');
+      assert.verifySteps(
+        [...RESOLVE_USER, ...RESOLVE_POSTS, 'users.user.posts: setup'],
+        'users keeps its model and nothing is entered or exited. users.user resolved to the same user, so only the posts route, whose model is new, is set up again',
+      );
+    });
+
+    test('Route.refresh keeps the query params', async function (assert) {
+      await visit('/users/1/posts?limit=1');
+      assert.verifySteps([...RESOLVE_USERS, ...RESOLVE_USER, ...RESOLVE_POSTS, ...ENTER_POSTS_PAGE]);
+      receivedQueryParams = null;
+
+      await UserPostsRoute.refresh();
+      await settled();
+
+      assert.equal(currentURL(), '/users/1/posts?limit=1');
+      assert.deepEqual(receivedQueryParams, { limit: 1 });
+      assert.dom('[data-test-post]').exists({ count: 1 });
+      assert.verifySteps([...RESOLVE_POSTS, 'users.user.posts: setup']);
+    });
+
+    test('a route template refreshes the route on screen with this.refresh', async function (assert) {
+      users = USERS.map((user) => ({ ...user, posts: [...user.posts] }));
+
+      await visit('/users/2/posts');
+      assert.dom('[data-test-post]').exists({ count: 1 });
+      assert.verifySteps([...RESOLVE_USERS, ...RESOLVE_USER, ...RESOLVE_POSTS, ...ENTER_POSTS_PAGE]);
+
+      users[1].posts.push({ id: 4, title: 'Just published' });
+      await click('[data-test-refresh]');
+
+      assert.dom('[data-test-post]').exists({ count: 2 });
+      assert.dom('[data-test-post="4"]').hasText('Just published');
+      assert.verifySteps([...RESOLVE_POSTS, 'users.user.posts: setup'], 'click waited for the refresh');
+    });
+
+    test('refreshing a route that is not active throws', async function (assert) {
+      await visit('/about');
+      assert.verifySteps([
+        'about: beforeModel',
+        'about: model',
+        'about: afterModel',
+        'about: redirect',
+        'about: enter',
+        'about: setup',
+      ]);
+
+      assert.throws(() => UserRoute.refresh(), /UserRoute cannot refresh, it is not an active route/);
     });
   });
 });

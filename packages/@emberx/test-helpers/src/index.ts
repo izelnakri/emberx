@@ -18,7 +18,7 @@ import {
 import render from './render.ts';
 import { find, findAll } from './query.ts';
 import { currentRouteName, currentURL, visit } from './url.ts';
-import { wait, waitFor, waitUntil, settled } from './wait.ts';
+import { wait, waitFor, waitUntil, settled, isSettled, getSettledState } from './wait.ts';
 import { pauseTest, resumeTest } from './pause.ts';
 
 export {
@@ -33,7 +33,9 @@ export {
   fireEvent,
   focus,
   getContext,
+  getSettledState,
   hbs,
+  isSettled,
   pauseTest,
   resumeTest,
   scrollTo,
@@ -65,7 +67,9 @@ export default {
   fireEvent,
   focus,
   getContext,
+  getSettledState,
   hbs,
+  isSettled,
   pauseTest,
   resumeTest,
   scrollTo,
@@ -107,3 +111,5 @@ export default {
 //     -   [settled][25]
 //     -   [isSettled][26]
 //     -   [getSettledState][27]
+
+export type { SettledState } from './wait.ts';

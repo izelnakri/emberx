@@ -73,6 +73,13 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
 
     this.locationBar = new LocationBar();
     this.locationBar.start({ pushState: true });
+    // Back and forward change the URL first, then fire popstate: go where they went.
+    this.locationBar.onChange((path: string) => this.#followBrowserURL(path));
+  }
+
+  /** Stops following the browser's back and forward buttons, for a router that is being replaced. */
+  stopListening(): void {
+    this.locationBar.stop();
   }
 
   /**
@@ -204,6 +211,21 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
         throw error;
       }
     }
+  }
+
+  /**
+   * Routes to a URL the browser already shows, so the URL is left as it is.
+   * Like visit(), a failure an error handler or substate dealt with is not one.
+   */
+  #followBrowserURL(path: string) {
+    this.handleURL(path)
+      .followRedirects()
+      .catch((error: any) => {
+        // An aborted transition is one the app stopped on purpose, in willTransition for example.
+        if (error?.name !== 'TransitionAborted' && !this.isErrorHandled(error)) {
+          throw error;
+        }
+      });
   }
 
   #endTransition() {

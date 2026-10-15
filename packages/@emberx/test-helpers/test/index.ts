@@ -15,3 +15,4 @@ import './query/find-test.ts';
 import './wait/wait-for-test.ts';
 import './wait/wait-until-test.ts';
 import './url-test.ts';
+import './pause-test.ts';

@@ -1,12 +1,6 @@
 import { Owner } from '@emberx/router';
 import { setContext } from './context.ts';
-
-declare global {
-  interface Window {
-    resume: any;
-    resumeTest: any;
-  }
-}
+import { pauseTest, resumeTest } from './pause.ts';
 
 /**
  * The per-test object QUnit constructs and applies every hook against. emberx
@@ -37,29 +31,11 @@ interface QUnitHooks {
 }
 
 export function setupTest(hooks: QUnitHooks, _startRouter?: () => unknown): void {
-  hooks.before(function (assert) {
-    this.resumeTest = function resumeTest() {
-      if (!window.resume) {
-        console.info('Testing has not been paused. There is nothing to resume.');
-      }
+  hooks.beforeEach(async function (assert) {
+    setContext(this, assert);
 
-      window.resume();
-      window.resumeTest = window.resume = undefined;
-    };
-
-    this.pauseTest = function pauseTest() {
-      assert.timeout(-1); // prevent the test from timing out
-      console.info('Testing paused. Use `resumeTest()` to continue.');
-
-      return new Promise((resolve) => {
-        window.resume = resolve;
-        window.resumeTest = this.resumeTest;
-      });
-    };
-  });
-
-  hooks.beforeEach(async function () {
-    setContext(this);
+    this.pauseTest = pauseTest;
+    this.resumeTest = resumeTest;
 
     const container = document.createElement('div');
     const containerPage = document.createElement('div');

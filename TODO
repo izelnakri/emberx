@@ -1,4 +1,19 @@
-- history back doesnt resolve the routes currently
+Deferred from the 2026 modernization PR (#72), each worth a PR of its own:
+
+- @emberx/test-helpers: setupOnerror(fn) and resetOnerror(), as in Ember, so a test can assert that a render
+  or an action throws, instead of the error failing the test.
+- @emberx/test-helpers: a test-waiter API (waitForPromise, buildWaiter, as @ember/test-waiters has), so
+  settled() also waits for async work that is neither an @action nor a transition: a service's fetch, a timer.
+  Then tests stop needing wait(500) or waitFor() to get past it.
+- @emberx/component: @cached, which memoizes a getter until the tracked state it reads changes, and
+  registerDestructor, for cleanup when a component goes away (the blog index route's setInterval, for one).
+  Destructors only run on a renderer that destroys components: ember-source, PR #73, not @glimmer/core.
+
+Can we currently pass environment variables to build? process.env.ENVIRONMENT (by default staging otherwise)
+
+Historically:
+
+- history back doesnt resolve the routes currently (fixed: the router follows back and forward now)
 - @emberx/test-helper tests not runnable on node.js!: routerjs/vendor location-bar prevents the app to be runable on node.js.
 
 // NOTE: @emberx/rsvp: RSVP.defer(); NOTE: probably should just use rsvp npm package.

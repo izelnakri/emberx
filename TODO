@@ -181,8 +181,10 @@ replaces it wherever one can:
 - test-doctests.ts: after step 4, `deno test --doc README.md packages/@emberx/*/README.md packages/@emberx/*/src`,
   as qunitx's test:doctests. The `// => value` comments become explicit assertions, which `deno test --doc`
   does not add for us.
-- dev.ts: no qunitx counterpart (qunitx has no app to serve). Keep it, but let esbuild serve it (its serve API
-  with `fallback` for the blog's URLs) instead of the hand-written node:http server.
+- dev.ts: done, esbuild's serve API now, with no hand-written node:http server. No qunitx counterpart (qunitx
+  has no app to serve). On this branch `esbuild ... --serve --serve-fallback=public/index.html
+  --alias:@emberx/string=./packages/@emberx/string/src/index.ts` would do in one line, but #73's ember-source
+  names need emberSourcePlugin, which the esbuild command line cannot load.
 - release.ts: kept. `npm version --workspaces --include-workspace-root` bumps all seven package.json files but
   leaves the exact @emberx/* dependency pins at the old version (checked with npm 11.19), and the packages must
   be published leaf-first.

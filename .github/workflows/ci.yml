@@ -33,7 +33,7 @@ jobs:
       # as does the Dockerfile. Bump them together.
       - uses: denoland/setup-deno@v2
         with:
-          deno-version: 2.9.6
+          deno-version: 2.9.7
       - run: npm ci
       - run: npm run format
       - run: npm run lint
@@ -61,7 +61,7 @@ jobs:
       # Same pinned Deno as the lint job, for the Deno suite.
       - uses: denoland/setup-deno@v2
         with:
-          deno-version: 2.9.6
+          deno-version: 2.9.7
       - run: npm ci
       # On macOS qunitx-cli ignores CHROME_BIN and drives playwright's
       # chromium-headless-shell, which npm ci does not download. qunitx-cli's own
@@ -119,7 +119,7 @@ jobs:
       # The build runs with Deno (build.ts). Same pinned Deno as the lint job.
       - uses: denoland/setup-deno@v2
         with:
-          deno-version: 2.9.6
+          deno-version: 2.9.7
       - run: npm ci
       - name: Get Playwright version
         id: pw-version
@@ -163,7 +163,7 @@ jobs:
           cache: npm
       - uses: denoland/setup-deno@v2
         with:
-          deno-version: 2.9.6
+          deno-version: 2.9.7
       # For the Chrome.bench files (benches/*.chrome.bench.ts).
       - uses: browser-actions/setup-chrome@v2
         id: setup-chrome
@@ -190,7 +190,7 @@ jobs:
       # test:release runs the suite under Deno as well, against the tarballs.
       - uses: denoland/setup-deno@v2
         with:
-          deno-version: 2.9.6
+          deno-version: 2.9.7
       - run: npm ci
       - run: npm run test:release
         env:

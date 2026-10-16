@@ -13,7 +13,7 @@ used in CI). [Deno](https://docs.deno.com/runtime/getting_started/installation/)
 is required for linting, the Deno suite, the doctests, the dev server and the benchmarks
 (`engines.deno`). It is not an npm dependency: installed once, it
 is shared across projects instead of adding ~90 MB to every clone's `node_modules`. CI and
-the Dockerfile pin the exact version (2.9.6); bump the two together. The browser suite needs a Chrome/Chromium binary, discovered from
+the Dockerfile pin the exact version (2.9.7); bump the two together. The browser suite needs a Chrome/Chromium binary, discovered from
 `CHROME_BIN` or your `PATH`:
 
 ```sh

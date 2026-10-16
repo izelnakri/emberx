@@ -2,7 +2,7 @@
 # Used by `make docker-test` to reproduce the Linux CI leg on any machine.
 # Same Node as package.json's volta pin, which CI uses; a floating tag lets this
 # environment drift from the one it exists to reproduce. Bump them together.
-FROM node:24.21.0-bookworm-slim
+FROM node:24.22.0-bookworm-slim
 
 # Chromium for the browser suite. qunitx-cli drives whatever CHROME_BIN points
 # at, so we install the distro package rather than letting playwright download
@@ -20,7 +20,7 @@ ENV CHROME_BIN=/usr/bin/chromium \
     NODE_ENV=development
 
 # Deno runs the build, the lint and most scripts. Same version as CI; bump them together.
-COPY --from=docker.io/denoland/deno:bin-2.9.6 /deno /usr/local/bin/deno
+COPY --from=docker.io/denoland/deno:bin-2.9.7 /deno /usr/local/bin/deno
 
 WORKDIR /code
 

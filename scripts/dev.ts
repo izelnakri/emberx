@@ -19,7 +19,7 @@ import { dirname, extname, join, normalize, resolve } from 'node:path';
 import * as esbuild from 'esbuild';
 
 import { glimmerCompilerCryptoPlugin, emberxWorkspacePlugin } from './lib/glimmer-compat.js';
-import { PACKAGES } from './build.ts';
+import { PACKAGES } from '../build.ts';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = Number(process.env.PORT || 1234);

@@ -35,23 +35,24 @@ packages/@emberx/       the six published packages
 examples/basic          minimal component demo, with its tests in tests/
 examples/blog           the integration testbed and de-facto documentation
 benches/                Deno.bench and Chrome.bench files; results stay on your machine
-scripts/                build, dev server, release, package verification
+build.ts                the package build: dist/ and the .d.ts files, as in qunitx
+scripts/                dev server, release, clean, test runners, package verification
 test/                   entry points (index.html, index.ts, node.ts, setup-dom.js), the blog's
                         E2E tests in e2e/ and their setup in helpers.ts; the package suites
                         live in packages/@emberx/*/test/
 ```
 
-Every script in `scripts/` is TypeScript run by Deno, as in qunitx and qunitx-cli: the build,
-the release, the dev server, `clean`, the benchmarks and the test runners. Two exceptions:
-`scripts/test-node.ts` runs in node, since node is what it tests (Node 24 runs `.ts` files as
-they are), and `scripts/test-release.sh` stays bash, since it drives `npm pack` and
+`build.ts` and every script in `scripts/` are TypeScript run by Deno, as in qunitx and
+qunitx-cli: the build, the release, the dev server, `clean`, the benchmarks and the test
+runners. Two exceptions: `scripts/test-node.ts` runs in node, since node is what it tests
+(Node 24 runs `.ts` files as they are), and `scripts/test-release.sh` stays bash, since it drives `npm pack` and
 `npm install`, then runs `scripts/release-consumer-test.ts` in the throwaway project it
 installs the tarballs into. The helpers in `scripts/lib/` are plain JavaScript modules that
 both runtimes import.
 
 ## How the build works
 
-`scripts/build.ts` bundles each package to a single ESM file with esbuild, leaving every
+`build.ts` bundles each package to a single ESM file with esbuild, leaving every
 bare specifier external — so `@emberx/router` still _imports_ `@emberx/component` at
 runtime instead of inlining a copy. The TypeScript compiler API then emits the `.d.ts`
 files, in the same process, which is the only thing esbuild cannot do.

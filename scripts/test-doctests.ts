@@ -30,7 +30,7 @@ import { test } from 'node:test';
 import * as esbuild from 'esbuild';
 
 import { glimmerCompilerCryptoPlugin, emberxWorkspacePlugin } from './lib/glimmer-compat.js';
-import { PACKAGES } from './build.ts';
+import { PACKAGES } from '../build.ts';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const WORK = `${ROOT}/tmp/doctests`;

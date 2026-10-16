@@ -10,8 +10,8 @@
  * Type declarations are emitted separately, through the TypeScript compiler
  * API with tsconfig.build.json, which is the only thing esbuild cannot do.
  *
- *   deno run -A scripts/build.ts
- *   ENVIRONMENT=development deno run -A scripts/build.ts   (inline sourcemaps, no .d.ts)
+ *   deno run -A build.ts
+ *   ENVIRONMENT=development deno run -A build.ts   (inline sourcemaps, no .d.ts)
  *
  * Replaces the previous pipeline (tsc -> babel-over-every-emitted-file, or in
  * development a per-file babel invocation), which needed
@@ -20,13 +20,13 @@
  */
 import { cp, rm, mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { dirname, resolve } from 'node:path';
+import { dirname } from 'node:path';
 import * as esbuild from 'esbuild';
 import ts from 'typescript';
 
-import { glimmerCompilerCryptoPlugin } from './lib/glimmer-compat.js';
+import { glimmerCompilerCryptoPlugin } from './scripts/lib/glimmer-compat.js';
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const ROOT = dirname(fileURLToPath(import.meta.url));
 
 /** Build order is irrelevant (packages are external to each other) but kept stable for readable logs. */
 export const PACKAGES = ['string', 'helper', 'component', 'router', 'test-helpers', 'ssr'];

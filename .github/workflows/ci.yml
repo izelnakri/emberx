@@ -116,7 +116,7 @@ jobs:
         with:
           node-version-file: package.json
           cache: npm
-      # The build runs with Deno (scripts/build.ts). Same pinned Deno as the lint job.
+      # The build runs with Deno (build.ts). Same pinned Deno as the lint job.
       - uses: denoland/setup-deno@v2
         with:
           deno-version: 2.9.6

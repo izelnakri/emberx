@@ -54,6 +54,7 @@ module('@emberx/router | Public API', function (hooks) {
       'activeTransition',
       'currentRouteInfos',
       'currentSequence',
+      'location',
       'locationBar',
       'log',
       'oldState',

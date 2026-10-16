@@ -179,6 +179,24 @@ and `make release` compares against the previous release tag. For a quick manual
 before/after, `make bench-update` saves this machine's numbers to `benches/results.json`,
 which is gitignored, and `npm run bench:check` compares against it.
 
+When a change is slower on purpose, say so in its commit, with a trailer for each benchmark
+name or `group/` it slows down:
+
+```text
+refactor!: render with ember-source 7 instead of glimmer.js
+
+…
+
+Benchmark-Regression: render/
+Benchmark-Regression: template-compilation/createTemplate
+```
+
+The check reports those as `ACCEPTED` instead of failing. It reads only the commits after
+the base it measured, so the trailer covers the PR and the release that ship the change,
+and later comparisons gate those benchmarks again from the new numbers. A `BREAKING CHANGE`
+footer goes in the same last paragraph, spelled `BREAKING-CHANGE:` (a form conventional
+commits also accepts), so git reads the paragraph as trailers.
+
 Files named `*.chrome.bench.ts` run in Chrome instead, through `Chrome.bench`
 (`scripts/lib/chrome-bench.js`): the same signature as `Deno.bench` and the same JSON out, so
 they are checked and compared the same way. Neither Chrome nor the DevTools Protocol has a

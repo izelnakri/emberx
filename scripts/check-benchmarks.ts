@@ -21,6 +21,15 @@
  *   machine in the same run, so the comparison is like for like and nothing is
  *   committed. Without a ref: where HEAD left origin/main, or HEAD~1 on main.
  *
+ *   A regression that is the point of a change is accepted by a trailer in the
+ *   commit that makes it, one per benchmark name or `group/` prefix:
+ *
+ *     Benchmark-Regression: template-compilation/createTemplate
+ *     Benchmark-Regression: render/
+ *
+ *   Only the commits between the base and HEAD count, so the trailer accepts the
+ *   regression on its own PR and in the release that ships it, and nowhere after.
+ *
  * --save    Saves the measured values to benches/results.json (gitignored).
  * --print   Prints the measured values without checking or saving.
  * --files <file> [file…]   Bench files to run (default: benches/*.bench.ts).
@@ -313,7 +322,13 @@ function fmtChange(change: number, threshold: number): string {
   return dim(pct);
 }
 
-function printTable(results: BenchResult[], baseline: Baseline | null, threshold: number, minAbsDeltaNs: number): void {
+function printTable(
+  results: BenchResult[],
+  baseline: Baseline | null,
+  threshold: number,
+  minAbsDeltaNs: number,
+  isAccepted: (name: string) => boolean = () => false,
+): void {
   const hasBaseline = baseline !== null;
   const header =
     '  ' +
@@ -333,7 +348,8 @@ function printTable(results: BenchResult[], baseline: Baseline | null, threshold
     const t = effectiveThreshold(saved, threshold);
     const fail = isRegression(name, avg, saved, threshold, minAbsDeltaNs);
     const drift = !fail && !isGated(saved, name) && change > t;
-    const flag = fail ? bold(red(' FAIL')) : drift ? dim(' INFO') : '     ';
+    // ACPT: a regression its commit accepts with a Benchmark-Regression trailer.
+    const flag = fail ? (isAccepted(name) ? yellow(' ACPT') : bold(red(' FAIL'))) : drift ? dim(' INFO') : '     ';
     console.log(
       `${flag} ${name.padEnd(66)}${fmtNs(avg).padStart(12)}${dim(fmtNs(saved).padStart(12))}${fmtChange(change, t).padStart(10)}`,
     );
@@ -357,6 +373,34 @@ async function removeBaseWorktree(): Promise<void> {
   await run('git', ['worktree', 'prune'], ROOT, true).catch(() => {});
 }
 
+/** The commit --base measured, whose descendants' Benchmark-Regression trailers count. */
+let comparedBase: string | null = null;
+
+/**
+ * Benchmark-Regression trailers of the commits after `base`: each a benchmark
+ * name or a `group/` prefix that the commit says it slows down on purpose.
+ */
+async function acceptedRegressions(base: string): Promise<Array<{ prefix: string; commit: string }>> {
+  const log = await run('git', [
+    'log',
+    '--format=%h %s%x00%(trailers:key=Benchmark-Regression,valueonly,separator=%x01)%x1e',
+    `${base}..HEAD`,
+  ]);
+
+  return log
+    .split('\x1e')
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+    .flatMap((entry) => {
+      const [commit, trailers = ''] = entry.split('\x00');
+      return trailers
+        .split('\x01')
+        .map((prefix) => prefix.trim())
+        .filter(Boolean)
+        .map((prefix) => ({ prefix, commit }));
+    });
+}
+
 /**
  * emberx: --base. Measures `ref`'s own suite in a temporary worktree and returns
  * its numbers as the baseline, or null when `ref` predates the Deno bench suite.
@@ -370,6 +414,7 @@ async function measureBase(ref: string | undefined): Promise<Baseline | null> {
     const mergeBase = await run('git', ['merge-base', 'HEAD', 'origin/main']);
     base = mergeBase === head ? await run('git', ['rev-parse', 'HEAD~1']) : mergeBase;
   }
+  comparedBase = base;
   const label = `${base.slice(0, 7)} (${await run('git', ['log', '-1', '--format=%s', base])})`;
 
   const hasSuite = await run('git', ['cat-file', '-e', `${base}:scripts/check-benchmarks.ts`], ROOT, true).then(
@@ -406,12 +451,12 @@ async function save(results: BenchResult[], existing: Baseline | null, minAbsDel
   console.log(green(`Baseline saved: ${results.length} benchmark(s) → benches/results.json`));
 }
 
-function check(
+async function check(
   results: BenchResult[],
   baseline: Baseline | null,
   thresholdPct: number,
   minAbsDeltaNs: number,
-): boolean {
+): Promise<boolean> {
   const threshold = thresholdPct / 100;
   if (!baseline) {
     console.log(yellow('No baseline to compare against.'));
@@ -423,12 +468,21 @@ function check(
   console.log(
     `\nBenchmark regression check (threshold: ${yellow(`${thresholdPct}%`)}, abs floor: ${yellow(fmtNs(minAbsDeltaNs))})`,
   );
-  printTable(results, baseline, threshold, minAbsDeltaNs);
+  const accepted = comparedBase ? await acceptedRegressions(comparedBase) : [];
+  const acceptedBy = (name: string) => accepted.find(({ prefix }) => name.startsWith(prefix));
+  printTable(results, baseline, threshold, minAbsDeltaNs, (name) => Boolean(acceptedBy(name)));
 
-  const failures = results.filter(({ name, avg }) => {
+  const regressions = results.filter(({ name, avg }) => {
     const saved = baseline.results[name];
     return saved !== undefined && isRegression(name, avg, saved, threshold, minAbsDeltaNs);
   });
+  const failures = regressions.filter(({ name }) => !acceptedBy(name));
+
+  for (const { name, avg } of regressions.filter(({ name }) => acceptedBy(name))) {
+    console.log(
+      yellow(`  ACCEPTED  ${name}: ${fmtNs(baseline.results[name])} → ${fmtNs(avg)}, by ${acceptedBy(name)!.commit}`),
+    );
+  }
 
   if (failures.length > 0) {
     console.error(bold(red(`Regressions exceeding ${thresholdPct}% threshold:`)));
@@ -438,15 +492,21 @@ function check(
     console.error(
       dim(
         `\nThese values are the min across up to 3 runs — the regression survived every attempt to\n` +
-          `resample, so it is unlikely to be transient noise. If it is an intentional trade-off, say so\n` +
-          `in the commit message; otherwise retry on an idle machine, raise REGRESSION_THRESHOLD for\n` +
-          `this run, or set SKIP_BENCHMARK=true|<file> to bypass.`,
+          `resample, so it is unlikely to be transient noise. If it is an intentional trade-off, add a\n` +
+          `"Benchmark-Regression: <name or group/>" trailer to the commit that makes it; otherwise retry\n` +
+          `on an idle machine, raise REGRESSION_THRESHOLD for this run, or set SKIP_BENCHMARK=true|<file>.`,
       ),
     );
     return false;
   }
 
-  console.log(green(`All ${results.length} benchmark(s) within threshold.`));
+  console.log(
+    green(
+      regressions.length > 0
+        ? `All ${results.length} benchmark(s) within threshold, or accepted by their commit.`
+        : `All ${results.length} benchmark(s) within threshold.`,
+    ),
+  );
   return true;
 }
 
@@ -490,6 +550,6 @@ if (isPrint) {
   printTable(results, null, thresholdPct / 100, minAbsDeltaNs);
 } else if (isSave) {
   await save(results, await loadBaseline(), minAbsDeltaNs);
-} else if (!check(results, baseline, thresholdPct, minAbsDeltaNs)) {
+} else if (!(await check(results, baseline, thresholdPct, minAbsDeltaNs))) {
   Deno.exit(1);
 }

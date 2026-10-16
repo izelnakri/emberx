@@ -8,17 +8,6 @@
        node and Deno need to run a module without a bundler. */
     "allowImportingTsExtensions": true,
 
-    /* Resolve sibling packages to their sources rather than their built dist/.
-       Without this, type-checking a clean checkout is a chicken-and-egg problem:
-       @emberx/router's types cannot resolve @emberx/component until
-       @emberx/component has been built, but building emits types. Import
-       specifiers are preserved verbatim in the emitted .d.ts, so published
-       packages still refer to each other by package name. */
-    "baseUrl": ".",
-    "paths": {
-      "@emberx/*": ["packages/@emberx/*/src/index.ts"]
-    },
-
     /* emberx compiles templates at runtime and ships plain ESM; esbuild does the
        emitting, so tsc is only ever used for checking and for .d.ts output. */
     "noEmit": true,

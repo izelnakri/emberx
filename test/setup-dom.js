@@ -1,9 +1,9 @@
 /**
  * Gives the node test run a DOM.
  *
- * Imported by scripts/test-node.ts before the test bundle, so that @emberx
- * packages see `window`/`document` at module-eval time. In the browser suite
- * this file is not used at all.
+ * Loaded before the suite (node's `--import`, Deno's `--preload`), so that the
+ * @emberx packages see `window`/`document` when they are evaluated. In the
+ * browser suite this file is not used at all.
  */
 if (!globalThis.window) {
   const setupDom = await import('@memserver/server/dist/setup-dom.js');

@@ -4,13 +4,15 @@
 
 ```sh
 npm ci
-make build
 make check     # format + lint + typecheck + node, Deno and browser suites + doctests
 ```
 
+Nothing needs building first: every suite, the dev server and the benchmarks run from the
+package sources (see "Running from the sources" below).
+
 Node 24 or newer is required (`engines.node`, and `volta.node` pins the exact version
 used in CI). [Deno](https://docs.deno.com/runtime/getting_started/installation/) 2.9 or newer
-is required for linting, the Deno suite, the doctests, the dev server and the benchmarks
+is required for linting, the Deno suite, the doctests and the benchmarks
 (`engines.deno`). It is not an npm dependency: installed once, it
 is shared across projects instead of adding ~90 MB to every clone's `node_modules`. CI and
 the Dockerfile pin the exact version (2.9.7); bump the two together. The browser suite needs a Chrome/Chromium binary, discovered from
@@ -38,19 +40,17 @@ examples/basic          minimal component demo, with its tests in tests/
 examples/blog           the integration testbed and de-facto documentation
 benches/                Deno.bench and Chrome.bench files; results stay on your machine
 build.ts                the package build: dist/ and the .d.ts files, as in qunitx
-scripts/                dev server, release, clean, test runners, package verification
+scripts/                release, vendoring, test runners, package verification
 test/                   entry points (index.html, index.ts, node.ts, setup-dom.js), the blog's
                         E2E tests in e2e/ and their setup in helpers.ts; the package suites
                         live in packages/@emberx/*/test/
 ```
 
 `build.ts` and every script in `scripts/` are TypeScript run by Deno, as in qunitx and
-qunitx-cli: the build, the release, the dev server, the benchmarks and the test runners.
-Two exceptions: `scripts/test-node.ts` runs in node, since node is what it tests (Node 24
-runs `.ts` files as they are), and `scripts/test-release.sh` stays bash, since it drives
-`npm pack` and `npm install`, then runs `scripts/release-consumer-test.ts` in the throwaway project it
-installs the tarballs into. The helpers in `scripts/lib/` are plain JavaScript modules that
-both runtimes import.
+qunitx-cli: the build, the release, the vendoring, the benchmarks and the Deno suite. Two exceptions: `scripts/register.ts` is node's own loader for the sources (below),
+and `scripts/test-release.sh` stays bash, since it drives `npm pack` and `npm install`, then
+runs `scripts/release-consumer-test.ts` in the throwaway project it installs the tarballs
+into. The helpers in `scripts/lib/` are plain JavaScript modules that both runtimes import.
 
 ## How the build works
 
@@ -134,6 +134,31 @@ that PR, and never auto-merges) and run `npm run vendor`. `make check-static` ru
 the script would write, so a hand edit or a forgotten re-vendor cannot merge. Format and
 lint skip it.
 
+## Running from the sources
+
+In the repo, each package's `exports` point at its source:
+
+```json
+"exports": { ".": "./src/index.ts" }
+```
+
+So every tool resolves `@emberx/router` to `packages/@emberx/router/src/` as it is: esbuild
+(the browser suite, `npm run dev`, the benchmarks, the Deno suite, the doctests),
+TypeScript, and node, where `scripts/register.ts` compiles the legacy decorators that node's
+type stripping rejects. That holds for imports from inside `node_modules` too:
+`@memserver/model` imports `@emberx/string`, and gets its source. Nothing is built but a
+release, and CI's test jobs run with no `dist/`, so a change that needs one fails there.
+
+`make build` makes each package's `dist/` a package of its own: the bundle, its
+declarations, the README and LICENSE, and a `package.json` whose `exports` point at them.
+`npm publish` and `npm pack` are given that directory (`make release`, `make test-release`),
+and `@emberx/vendor` as it is, so a consumer installs `dist/` and never `src/`.
+
+Deno still runs a bundle (`scripts/test-deno.ts`): it compiles a decorated field such as
+`@tracked count = 0` with standard class-field semantics whatever `deno.json` says, so the
+field's initializer overwrites the tracked accessor. That ends with standard decorators
+(TODO).
+
 ## Tests
 
 | Suite   | Command              | Covers                                          |
@@ -187,8 +212,8 @@ load.
 The benchmarks are `Deno.bench` files in `benches/`, run and checked by
 `scripts/check-benchmarks.ts`, the same setup as qunitx-cli: each file runs in its own
 `deno bench` process, and a case that looks regressed is re-run up to three times, keeping
-the minimum, before it fails. The packages are built first and each file is bundled by
-esbuild, so the numbers are for the `dist/` users get.
+the minimum, before it fails. Each file is bundled by esbuild from the
+package sources, as the build bundles `dist/`.
 
 Timings only compare on one machine, so no baseline is committed. `make bench-check` checks
 the base commit out into a temporary worktree, installs and measures it, then measures your

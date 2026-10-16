@@ -1,6 +1,6 @@
 {
   "name": "@emberx/test-helpers",
-  "version": "0.0.14",
+  "version": "0.1.0",
   "description": "Test helpers for emberx: render, visit, DOM interaction and auto-settling without a runloop",
   "type": "module",
   "author": "Izel Nakri",
@@ -25,8 +25,8 @@
     }
   },
   "dependencies": {
-    "@emberx/component": "0.0.14",
-    "@emberx/router": "0.0.14",
+    "@emberx/component": "0.1.0",
+    "@emberx/router": "0.1.0",
     "browser-inputs": "1.1.0"
   }
 }

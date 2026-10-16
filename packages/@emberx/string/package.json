@@ -1,6 +1,6 @@
 {
   "name": "@emberx/string",
-  "version": "0.0.14",
+  "version": "0.1.0",
   "description": "Ember's string utilities (camelize, dasherize, classify, ...) as a standalone, dependency-free package",
   "type": "module",
   "author": "Izel Nakri",

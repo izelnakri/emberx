@@ -1,3 +1,38 @@
+## [0.1.0] - 2026-10-16
+[`0.0.14...v0.1.0`](https://github.com/izelnakri/emberx/compare/0.0.14...v0.1.0)
+
+### Bug Fixes
+- Resolve 42 type errors and the latent bugs they exposed — 2026-08-01 by [@izelnakri](https://github.com/izelnakri) ([`6c06be6`](https://github.com/izelnakri/emberx/commit/6c06be6f578ddfeb7f1d1a9203c2aa2f938e05c7))
+- LinkTo's transition classes — 2026-10-14 by [@izelnakri](https://github.com/izelnakri) ([`e459ba5`](https://github.com/izelnakri/emberx/commit/e459ba55d165cdd2eb5bf90bb4288d70c9846d2a))
+- Follow the browser's back and forward buttons — 2026-10-15 by [@izelnakri](https://github.com/izelnakri) ([`217042d`](https://github.com/izelnakri/emberx/commit/217042d75ade9a6039b5ad4f1601bc61bb300a13))
+- Find Chrome on the PATH, as the browser suite does — 2026-10-16 by [@izelnakri](https://github.com/izelnakri) ([`be24c6f`](https://github.com/izelnakri/emberx/commit/be24c6f5a68bc2f309d836c71b0dc1221ced3914))
+
+### Dependencies
+- [**breaking**] Align Glimmer on one version set and drop redundant dependencies — 2026-08-01 by [@izelnakri](https://github.com/izelnakri) ([`ea2a6ec`](https://github.com/izelnakri/emberx/commit/ea2a6ec22978fa76dd668b362c8e6581f30e2929))
+
+### Documentation
+- Refresh README, add CONTRIBUTING and ROADMAP — 2026-08-01 by [@izelnakri](https://github.com/izelnakri) ([`d4ddbb5`](https://github.com/izelnakri/emberx/commit/d4ddbb51bf4739489cee6d991dba196400a96c12))
+- Bring README, CONTRIBUTING and ROADMAP up to date with this PR — 2026-10-15 by [@izelnakri](https://github.com/izelnakri) ([`6c9fe21`](https://github.com/izelnakri/emberx/commit/6c9fe2191d2babc42b96199be65dfc724dd7e24e))
+
+### Features
+- Declare query params per route — 2026-10-14 by [@izelnakri](https://github.com/izelnakri) ([`d022dfb`](https://github.com/izelnakri/emberx/commit/d022dfbfd09840c3b5ecb4c875db953bde6878a2))
+- Loading and error substates — 2026-10-14 by [@izelnakri](https://github.com/izelnakri) ([`34cada9`](https://github.com/izelnakri/emberx/commit/34cada90d9ca4e1bafa373fa14cb37ad21737794))
+- PauseTest and resumeTest — 2026-10-15 by [@izelnakri](https://github.com/izelnakri) ([`452d360`](https://github.com/izelnakri/emberx/commit/452d3601f86c5ee6d14a88a5b62c47b7066dd36c))
+- Router.on('routeWillChange' | 'routeDidChange') — 2026-10-15 by [@izelnakri](https://github.com/izelnakri) ([`528ee23`](https://github.com/izelnakri/emberx/commit/528ee23b1c9ec793ea0b0e0ada3da0252c0c8942))
+- Router.urlFor — 2026-10-15 by [@izelnakri](https://github.com/izelnakri) ([`35a779e`](https://github.com/izelnakri/emberx/commit/35a779ec8ba37e5812fca9107771d721169df355))
+- Route.refresh — 2026-10-15 by [@izelnakri](https://github.com/izelnakri) ([`b39ea0c`](https://github.com/izelnakri/emberx/commit/b39ea0c28f38658c97220e99f261aebb4a052256))
+- IsSettled and getSettledState, and settled() waits for transitions — 2026-10-15 by [@izelnakri](https://github.com/izelnakri) ([`03e42c4`](https://github.com/izelnakri/emberx/commit/03e42c4694c828fd0b832ec4d5630f9066e432ee))
+- Rerender and clearRender — 2026-10-15 by [@izelnakri](https://github.com/izelnakri) ([`5592b30`](https://github.com/izelnakri/emberx/commit/5592b3025bd8afea81567d3fdd02fe1d042bfbe9))
+- LoadingRoute and errorRoute on a route definition — 2026-10-15 by [@izelnakri](https://github.com/izelnakri) ([`5a39304`](https://github.com/izelnakri/emberx/commit/5a39304d35161c58e2fb11981cad886efc0f94b4))
+- Actions on a page, sent up the routes with this.send() — 2026-10-16 by [@izelnakri](https://github.com/izelnakri) ([`dde851d`](https://github.com/izelnakri/emberx/commit/dde851d0db779cfb89c68e0cbb0862d4c53ce373))
+- The application route, above every route — 2026-10-16 by [@izelnakri](https://github.com/izelnakri) ([`8fc9e82`](https://github.com/izelnakri/emberx/commit/8fc9e82c33064fe1b32ed4a4cfae28c7390caad2))
+- Route names from paths, and routes declared twice reported — 2026-10-16 by [@izelnakri](https://github.com/izelnakri) ([`16cc87a`](https://github.com/izelnakri/emberx/commit/16cc87a71513c270a37e112393f1ea8918a04971))
+
+### Performance
+- Add a benchmark suite with a regression gate — 2026-08-01 by [@izelnakri](https://github.com/izelnakri) ([`db333d3`](https://github.com/izelnakri/emberx/commit/db333d38030101d18030c18c341cbd0fd05c56e9))
+- Run the benchmarks with Deno.bench, as qunitx-cli does — 2026-10-12 by [@izelnakri](https://github.com/izelnakri) ([`2786aa6`](https://github.com/izelnakri/emberx/commit/2786aa69e2d3d5925a28ad941d0d4a1b17f28930))
+- Benchmark rendering in Chrome, with Chrome.bench — 2026-10-12 by [@izelnakri](https://github.com/izelnakri) ([`85577d0`](https://github.com/izelnakri/emberx/commit/85577d01a02d353d71801ab5a4e447492d8cef18))
+
 #### [0.0.13](https://github.com/izelnakri/emberx/compare/0.0.13...0.0.13)
 
 - added documentation to libs, removed few todo items [`25dc38c`](https://github.com/izelnakri/emberx/commit/25dc38c5330a9bac0286721b95795fbf1f88dd96)

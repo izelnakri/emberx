@@ -26,28 +26,43 @@ the 13 code examples in the docs run as doctests. See #3 for what keeps the rest
 
 ## 1. Stay on Ember's renderer
 
-emberx renders through `ember-source` 7: `renderComponent` from `@ember/renderer`, runtime
-templates from `@ember/template-compiler/runtime`, and the Glimmer VM that ships inside
-`ember-source`. glimmer.js (`@glimmer/core`) and the standalone glimmer-vm packages are
-archived upstream; this is where the VM is maintained now. What is left:
+emberx renders through `ember-source` 7, vendored as `@emberx/vendor`: `renderComponent`
+from `@ember/renderer`, runtime templates from `@ember/template-compiler/runtime`, and the
+Glimmer VM that ships inside `ember-source`. glimmer.js (`@glimmer/core`) and the standalone glimmer-vm packages are
+archived upstream; this is where the VM is maintained now. Checked against 7.3.1, what is
+left is upstream's to change:
 
-- **Report two `renderComponent` issues upstream.** A root that throws on its first render
-  stays in its renderer and re-throws on every later render through the same owner
-  (emberx works around it with a stand-in owner per real owner, plus `resetRendering()`
-  between tests). And `into instanceof Element` throws where there is no DOM, which
-  `@emberx/ssr` works around with a temporary stand-in class.
-- **Stop importing `_resetRenderers`**, from `@ember/-internals/glimmer`, once Ember has a
-  public way to tear renderers down, or once the first issue above is fixed.
-- **Runtime templates need `'unsafe-eval'`.** `template()` compiles to JavaScript and
-  evaluates it; the JSON wire format emberx used before needed no eval, but Ember no longer
-  exports that entry point. Worth an upstream conversation if a CSP-strict deployment
-  matters.
-- **Overlap with `@ember/helper`.** Ember now ships `and`, `or`, `not`, `eq`, `neq`, `gt`,
-  `gte`, `lt` and `lte`. `@emberx/helper` could re-export them once their semantics are
-  checked against emberx's (`and`/`or` return values in particular).
-- **Install weight**, settled: `ember-source` depends on Babel, broccoli and ember-cli
-  packages for its blueprints, none of which emberx loads. `@emberx/vendor` holds only the
-  ember-source modules emberx imports, and consumers no longer install ember-source.
+- **Two `renderComponent` issues to report.** A root that throws on its first render stays
+  in its renderer: in the production build every later render through the same owner runs
+  it again and throws again (the development build only warns), and neither
+  `destroy(owner)` nor `_resetRenderers()` clears it, since Ember keeps one renderer per
+  owner. emberx renders each owner through a stand-in that inherits from it, and drops the
+  stand-ins between tests. And `into instanceof Element` throws where there is no DOM,
+  which `@emberx/ssr` gets past with a temporary stand-in class.
+- **The `_resetRenderers` import**, Ember's `@ember/-internals/glimmer` through
+  `@emberx/vendor`, stays until the first
+  issue is fixed. `renderComponent` returns a public `{ destroy() }`, but a root that failed
+  its first render gets no handle and stays in Ember's renderer list, which only
+  `_resetRenderers()` empties.
+- **Runtime templates need `'unsafe-eval'`.** `template()` always evaluates the JavaScript it
+  compiles to. An eval-free path exists in parts: `createTemplateFactory`
+  (`@ember/template-factory`, public) takes a wire-format block, but only the private
+  `precompile` of `ember-source/ember-template-compiler` produces one, in a format that is
+  not a public contract. Build-time compilation (#5) is the robust way out.
+
+Settled: install weight. `ember-source` lists 17 dependencies (Babel, broccoli, ember-cli
+packages) for its ember-cli hooks and blueprints, which its `dist/` never imports. emberx
+does not depend on it: `@emberx/vendor` holds the ember-source modules emberx imports and
+the files they reach, about half of its `dist/`.
+
+Settled too: emberx keeps its own `and`, `or`, `not`, `eq`, `neq`, `gt`, `gte`, `lt` and `lte`
+rather than re-exporting `@ember/helper`'s. Only `eq` and `neq` agree in templates, and even
+they take `(a, b)` from JavaScript where emberx's take `([a, b])`. The rest differ: Ember's
+treat `[]` and an empty `htmlSafe` string as false and follow proxies' `isTruthy`, throw on
+any argument count but their own, and Ember's `not` takes one argument where emberx's is
+true when every argument is falsy; Ember's comparisons have no `forceNumber`. They are also
+keywords in Ember's runtime templates, which the helpers emberx puts in a template's scope
+override.
 
 ---
 

@@ -26,6 +26,6 @@
   },
   "dependencies": {
     "@emberx/helper": "0.2.0",
-    "ember-source": "^7.3.0"
+    "ember-source": "^7.3.1"
   }
 }

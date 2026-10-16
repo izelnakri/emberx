@@ -23,15 +23,46 @@
  * least SAMPLE_MS, which puts timer granularity well under 0.1% of a sample.
  *
  * Environment:
- *   CHROME_BIN                  the Chrome to drive (default: Playwright's)
+ *   CHROME_BIN                  the Chrome to drive. Without it, the first of
+ *                               google-chrome-stable, google-chrome, chromium and
+ *                               chromium-browser on the PATH, as the browser
+ *                               suite (qunitx-cli) finds it, then Playwright's.
  *   CHROME_BENCH_CPU_THROTTLE   slow the CPU down N× through CDP, e.g. 4 for a
  *                               mid-range phone
  */
 import { createServer } from 'node:http';
+import { accessSync, constants } from 'node:fs';
 import { readFile } from 'node:fs/promises';
-import { basename } from 'node:path';
+import { basename, delimiter, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { chromium } from 'playwright-core';
+
+/**
+ * The Chrome the browser suite runs in: CHROME_BIN, else the first Chrome on the
+ * PATH. undefined leaves Playwright to launch its own, which `npx playwright
+ * install` downloads and which cannot start on some systems, NixOS among them.
+ */
+function findChrome() {
+  if (process.env.CHROME_BIN) return process.env.CHROME_BIN;
+
+  const names =
+    process.platform === 'win32'
+      ? ['chrome.exe', 'chromium.exe', 'google-chrome.exe']
+      : ['google-chrome-stable', 'google-chrome', 'chromium', 'chromium-browser'];
+
+  for (const directory of (process.env.PATH ?? '').split(delimiter).filter(Boolean)) {
+    for (const name of names) {
+      try {
+        accessSync(join(directory, name), constants.X_OK);
+        return join(directory, name);
+      } catch {
+        // Not here; keep looking.
+      }
+    }
+  }
+
+  return undefined;
+}
 
 const WARMUP_MS = 100;
 const SAMPLE_MS = 10;
@@ -180,7 +211,7 @@ export async function chromeBench(bundlePath) {
     cpu: throttle > 1 ? `throttled ${throttle}×` : 'unthrottled',
   };
   const { server, url } = await serve(bundlePath, settings);
-  const browser = await chromium.launch({ executablePath: process.env.CHROME_BIN || undefined });
+  const browser = await chromium.launch({ executablePath: findChrome() });
 
   try {
     const page = await browser.newPage();

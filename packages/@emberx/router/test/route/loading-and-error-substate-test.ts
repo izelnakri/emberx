@@ -457,15 +457,23 @@ module('@emberx/router | Loading and error substates', function () {
       assert.verifySteps(['substate posts.post_error', 'substate posts.post_error']);
     });
 
-    test('declaring the same substate twice is a mistake caught at startup', function (assert) {
-      assert.throws(
-        () =>
-          Router.start([
-            { path: '/posts', name: 'posts', route: PostsRoute, loadingRoute: ParentLoadingRoute },
-            { name: 'posts_loading', route: LoadingRoute },
-          ]),
-        /The "posts_loading" substate is declared twice/,
-      );
+    test('declaring the same substate twice is reported, and the later declaration is the one used', function (assert) {
+      const error = console.error;
+      console.error = (message) => assert.step(message);
+
+      try {
+        Router.start([
+          { path: '/posts', name: 'posts', route: PostsRoute, loadingRoute: ParentLoadingRoute },
+          { name: 'posts_loading', route: LoadingRoute },
+        ]);
+      } finally {
+        console.error = error;
+      }
+
+      assert.strictEqual(Router.owner.routes.posts_loading.route, LoadingRoute);
+      assert.verifySteps([
+        '@emberx/router: The "posts_loading" substate is declared twice, by its name or by a loadingRoute or errorRoute. The later declaration replaces the earlier one.',
+      ]);
     });
   });
 

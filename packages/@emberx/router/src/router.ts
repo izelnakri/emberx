@@ -13,7 +13,8 @@ export interface FreeObject {
 export interface RouteDefinition {
   path?: string;
   route: Route | undefined;
-  name: string;
+  /** What LinkTo, transitionTo and modelFor call the route. Without one, it comes from the path: see routeNameFromPath. */
+  name?: string;
   options?: FreeObject;
   /** What the route's own URL shows, when it has routes under it and should not show `route`. */
   indexRoute?: Route;
@@ -102,8 +103,14 @@ export default class Router {
 
   static convertDefinitionsToRegistry(arrayOfRouteDefinitions: Array<RouteDefinition> = []): RouteRegistry {
     const substateDefinitions: Array<RouteDefinition> = [];
+    // What each declaration so far claimed, to report a route declared twice.
+    const pathsByName = new Map<string, string>();
+    const namesByPath = new Map<string, string>();
 
-    arrayOfRouteDefinitions.forEach((routeDefinition: RouteDefinition) => {
+    arrayOfRouteDefinitions.forEach((definition: RouteDefinition) => {
+      const routeDefinition =
+        definition.name || !definition.path ? definition : { ...definition, name: routeNameFromPath(definition.path) };
+
       if (routeDefinition.name === APPLICATION) {
         substateDefinitions.push(...registerApplication(routeDefinition));
         return;
@@ -115,10 +122,8 @@ export default class Router {
         throw new Error('One of the RouteDefinition on Router.start(RouteDefinition[]) misses "path" key');
       } else if (!routeDefinition.path.startsWith('/')) {
         throw new Error(`RouteDefinition paths must start with "/". Eg: { path: /${routeDefinition.path} }`);
-      } else if (!routeDefinition.name) {
-        throw new Error('One of the RouteDefinition on Router.start(RouteDefinition[]) misses "name" key');
-      } else if (routeDefinition.name.endsWith('.index')) {
-        const routeName = routeDefinition.name;
+      } else if ((routeDefinition.name as string).endsWith('.index')) {
+        const routeName = routeDefinition.name as string;
         const parentRouteName = routeName.slice(0, routeName.length - 6);
 
         throw new Error(
@@ -126,7 +131,8 @@ export default class Router {
         );
       }
 
-      const routeName = routeDefinition.name; // || createRouteNameFromRouteClass(routeDefinition.route); // || createRouteNameFromPath(routeDefinition.path as string); // NOTE: when /create-user type of paths are defined create a better routeName guess, should I replace order?
+      const routeName = routeDefinition.name as string;
+      reportDeclaredTwice(routeName, routeDefinition.path, pathsByName, namesByPath);
       const routeNameSegments = routeName.split('.') as string[]; // eg: 'public.posts.post.index'
       const routePathSegments = routeDefinition.path.slice(1).split('/') as string[]; // eg: ['posts', ':post_id']
 
@@ -229,16 +235,77 @@ function checkInRouteRegistryOrCreateRoute(registry: RouteRegistry, targetRoute:
   }
 
   if (targetRoute.route) {
-    if (foundRoute.route && foundRoute.name !== targetRoute.name) {
-      console.log(
-        `[WARNING]: ${routeName}.route already has ${foundRoute.name}. You tried to overwrite ${routeName}.route with ${targetRoute.name}`,
-      );
-    }
-
     registry[routeName] = Object.assign(foundRoute, { route: targetRoute.route });
   }
 
   return registry[routeName];
+}
+
+/**
+ * The name a route gets from its path when its definition has none: each path
+ * segment is a name segment, and the routes of the leading segments are its
+ * parents.
+ *
+ *   /                          index
+ *   /posts                     posts
+ *   /posts/:post_id            posts.post       a dynamic segment loses its _id or Id
+ *   /posts/:post_id/comments   posts.post.comments
+ *   /:slug                     slug
+ *   /*path                     not-found        a catch-all
+ */
+export function routeNameFromPath(path: string): string {
+  const segments = path.split('/').filter(Boolean);
+  if (segments.length === 0) {
+    return 'index';
+  }
+
+  return segments
+    .map((segment) => {
+      if (segment.startsWith('*')) {
+        return 'not-found';
+      } else if (segment.startsWith(':')) {
+        return segment.slice(1).replace(/(?<=.)(_id|Id)$/, '');
+      }
+
+      return segment;
+    })
+    .join('.');
+}
+
+/**
+ * Reports a route declared twice: one name twice, or one path under two names.
+ * Not an exception, so the app still starts; the later declaration replaces the
+ * earlier one.
+ */
+function reportDeclaredTwice(
+  name: string,
+  path: string | undefined,
+  pathsByName: Map<string, string>,
+  namesByPath: Map<string, string>,
+) {
+  const fullPath = path && path !== '/' ? path.replace(/\/+$/, '') : path;
+
+  if (pathsByName.has(name)) {
+    const where =
+      pathsByName.get(name) === fullPath ? `at "${fullPath}"` : `at "${pathsByName.get(name)}" and at "${fullPath}"`;
+
+    reportDeclarationError(
+      `The route "${name}" is declared twice, ${where}. The later declaration replaces the earlier one.`,
+    );
+  } else if (fullPath && namesByPath.has(fullPath)) {
+    reportDeclarationError(
+      `"${fullPath}" is the path of both "${namesByPath.get(fullPath)}" and "${name}", so only one of them can be visited. Give each route its own path.`,
+    );
+  }
+
+  pathsByName.set(name, fullPath as string);
+  if (fullPath) {
+    namesByPath.set(fullPath, name);
+  }
+}
+
+function reportDeclarationError(message: string) {
+  console.error(`@emberx/router: ${message}`);
 }
 
 /** The name of the route above every route. */
@@ -255,7 +322,7 @@ function registerApplication({ path, route, indexRoute, loadingRoute, errorRoute
   } else if (indexRoute) {
     throw new Error(`The application route takes no indexRoute; declare the page at "/" as a route of its own.`);
   } else if (Owner.routes[APPLICATION]) {
-    throw new Error('The application route is declared twice.');
+    reportDeclarationError('The application route is declared twice. The later declaration replaces the earlier one.');
   }
 
   Owner.routes[APPLICATION] = { name: APPLICATION, options: { path: '/' }, route };
@@ -271,7 +338,8 @@ function registerApplication({ path, route, indexRoute, loadingRoute, errorRoute
  * it hangs off the route its name puts it under, which therefore gains an index
  * route, and it is marked so that only declared substates are ever entered as one.
  */
-function registerSubstate({ name, route }: RouteDefinition) {
+function registerSubstate({ name: substateName, route }: RouteDefinition) {
+  const name = substateName as string;
   const parentName = name.split('.').slice(0, -1).join('.');
   if (parentName && !Owner.routes[parentName]) {
     throw new Error(`The "${name}" substate needs its parent route "${parentName}" to be defined too.`);
@@ -279,7 +347,9 @@ function registerSubstate({ name, route }: RouteDefinition) {
 
   // A Router.map() definition declares substates without a class, for Router.start() to give one.
   if (Owner.routes[name]?.options?.substate && Owner.routes[name].route) {
-    throw new Error(`The "${name}" substate is declared twice. A loadingRoute or errorRoute declares it too.`);
+    reportDeclarationError(
+      `The "${name}" substate is declared twice, by its name or by a loadingRoute or errorRoute. The later declaration replaces the earlier one.`,
+    );
   }
 
   Owner.routes[name] = { name, options: { path: getSubstatePath(name), substate: true }, route };

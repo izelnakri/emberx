@@ -1,4 +1,5 @@
 import './router-test.ts';
+import './route-definitions-test.ts';
 import './route-test.ts';
 import './link-to-test.ts';
 import './route/internal-transition-test.ts';

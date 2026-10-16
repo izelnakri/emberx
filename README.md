@@ -93,35 +93,48 @@ Router.addServices({
 });
 
 let router = Router.start([
-  {
-    path: '/',
-    name: 'index',
-    route: IndexRoute,
-  },
-  {
-    path: '/posts',
-    name: 'posts',
-    route: PostsRoute,
-    indexRoute: PostsIndexRoute,
-  },
-  {
-    path: '/posts/:slug',
-    name: 'posts.post',
-    route: PostsPostRoute,
-  },
-  {
-    path: '/posts/:blog_post_id/comments',
-    name: 'posts.post.comments',
-    route: PostsPostCommentsRoute,
-  },
+  { path: '/', route: IndexRoute }, // named "index"
+  { path: '/posts', route: PostsRoute, indexRoute: PostsIndexRoute }, // "posts", and "posts.index"
+  { path: '/posts/:post_id', route: PostsPostRoute }, // "posts.post"
+  { path: '/posts/:slug/comments', name: 'posts.post.comments', route: PostsPostCommentsRoute }, // a name of its own
 ]);
 
 export default router;
 ```
 
-Every definition needs a `name`; it is what `<LinkTo @route="...">`, `transitionTo`
-and `modelFor` refer to. Nested routes use dotted names, and a route whose name ends
-in `.index` is created for you — declare it with `indexRoute` instead.
+A route's name is what `<LinkTo @route="...">`, `transitionTo`, `urlFor` and `modelFor`
+refer to. Nested routes have dotted names. A definition can give its route a `name`; one
+without a name is named after its path, one name segment for each path segment:
+
+| `path`                         | The route's name          | Why                                              |
+| ------------------------------ | ------------------------- | ------------------------------------------------ |
+| `/`                            | `index`                   | the root page                                    |
+| `/posts`                       | `posts`                   |                                                  |
+| `/blog-posts`                  | `blog-posts`              | a segment stays as it is                         |
+| `/posts/:post_id`              | `posts.post`              | a dynamic segment loses its `_id`                |
+| `/users/:userId`               | `users.user`              | or its `Id`                                      |
+| `/pages/:slug`                 | `pages.slug`              | any other dynamic segment keeps its name         |
+| `/posts/:post_id/comments/new` | `posts.post.comments.new` |                                                  |
+| `/*path`                       | `not-found`               | a catch-all, for the URLs no other route matches |
+
+Give a route a `name` when the one from its path isn't the one you want, as the comments
+route above does: from its path it would be `posts.slug.comments`.
+
+A route's parents need no definition of their own. With `/admin/reports` declared alone, the
+router creates an `admin` route above `admin.reports`, with no class and nothing to show, the
+way Ember's `this.route('admin', function () { this.route('reports'); })` does. Declare
+`/admin` too when it has a page, a model or actions of its own. A route whose name ends in
+`.index` is created for you as well — declare it with `indexRoute` instead.
+
+Declaring a route twice is a mistake the router reports with a `console.error`, and the later
+declaration replaces the earlier one:
+
+- the same name twice, whether given or from the path: `{ path: '/posts' }` and
+  `{ path: '/articles', name: 'posts' }`;
+- one path under two names: `{ path: '/posts', name: 'posts' }` and
+  `{ path: '/posts', name: 'articles' }`, where only one of them could ever be visited;
+- the application route, or the same loading or error route (by its `loadingRoute`/`errorRoute`
+  or by its name), twice.
 
 This API also will allow custom resolvers that can resolve current ember routers(ie. routes in `Router.map(function() {})`) with a specific resolver definition(classic or MUD) in future:
 

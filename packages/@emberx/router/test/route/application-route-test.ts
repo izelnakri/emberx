@@ -355,7 +355,7 @@ module('@emberx/router | The application route, declared for its loading and err
 });
 
 module('@emberx/router | Declaring the application route', function () {
-  test('it takes no path or indexRoute of its own, and is declared once', function (assert) {
+  test('it takes no path or indexRoute of its own', function (assert) {
     assert.throws(
       () => Router.start([{ name: 'application', path: '/app', route: ApplicationRoute }]),
       /The application route is above every route and has no path of its own; remove path: '\/app'/,
@@ -364,13 +364,25 @@ module('@emberx/router | Declaring the application route', function () {
       () => Router.start([{ name: 'application', route: ApplicationRoute, indexRoute: HomeRoute }]),
       /The application route takes no indexRoute; declare the page at "\/" as a route of its own/,
     );
-    assert.throws(
-      () =>
-        Router.start([
-          { name: 'application', route: ApplicationRoute },
-          { name: 'application', route: ApplicationRoute },
-        ]),
-      /The application route is declared twice/,
-    );
+  });
+
+  test('declaring it twice is reported, and the later declaration is the one used', function (assert) {
+    class OtherApplicationRoute extends Route {}
+    const error = console.error;
+    console.error = (message) => assert.step(message);
+
+    try {
+      Router.start([
+        { name: 'application', route: ApplicationRoute },
+        { name: 'application', route: OtherApplicationRoute },
+      ]);
+    } finally {
+      console.error = error;
+    }
+
+    assert.strictEqual(Router.owner.routes.application.route, OtherApplicationRoute);
+    assert.verifySteps([
+      '@emberx/router: The application route is declared twice. The later declaration replaces the earlier one.',
+    ]);
   });
 });

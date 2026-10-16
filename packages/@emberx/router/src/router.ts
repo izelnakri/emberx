@@ -30,6 +30,20 @@ export interface RouteDefinition {
   errorRoute?: Route;
 }
 
+/** A route class, or a module whose default export is one, as `import.meta.glob` returns them. */
+export type ResolvedRoute = typeof Route | { default: typeof Route } | null | undefined;
+
+export interface StartOptions {
+  /**
+   * Finds a route by name, the way Ember finds `app/routes/posts/loading.js`:
+   * called for every route declared without a class (a Router.map() route, an
+   * index route) and for the loading and error substates of every route, by
+   * Ember's names (`posts_loading`, `posts.loading`, top-level `loading`). An
+   * explicit declaration always wins over what it returns.
+   */
+  resolve?: (name: string) => ResolvedRoute;
+}
+
 export interface routerJSRouteDefinition {
   path?: string;
   route: Route | undefined;
@@ -66,13 +80,23 @@ export default class Router {
     return routerService.visit(url);
   }
 
-  static start(arrayOfRouteDefinitions: Array<RouteDefinition> = [], routeMap: any = undefined): Router {
+  static start(
+    arrayOfRouteDefinitions: Array<RouteDefinition> = [],
+    routeMapOrOptions?: (() => void) | StartOptions,
+    startOptions: StartOptions = {},
+  ): Router {
+    const routeMap = typeof routeMapOrOptions === 'function' ? routeMapOrOptions : undefined;
+    const { resolve } = typeof routeMapOrOptions === 'object' ? routeMapOrOptions : startOptions;
     stopPreviousRouter();
     Owner.clear('routes');
 
     const routeMapRegistry = routeMap ? this.map(routeMap) : Owner.routes; // NOTE: move this to super.map since it just mutates the module
     const ROUTE_REGISTRY = this.convertDefinitionsToRegistry(arrayOfRouteDefinitions);
-    const routerJSRouteArray = this.convertToRouterJSRouteArray(Object.assign(routeMapRegistry, ROUTE_REGISTRY));
+    Object.assign(routeMapRegistry, ROUTE_REGISTRY);
+    if (resolve) {
+      resolveByConvention(resolve);
+    }
+    const routerJSRouteArray = this.convertToRouterJSRouteArray(Owner.routes);
     const routerService = Owner.register('service:router', new RouterService({ Resolver: this.Resolver }));
     // Every route is under the application route, as in Ember: it has no URL of
     // its own, and the names of the routes under it are not prefixed with it.
@@ -356,6 +380,48 @@ function registerSubstate({ name: substateName, route }: RouteDefinition) {
 
   if (parentName && !Owner.routes[`${parentName}.index`]) {
     Owner.routes[`${parentName}.index`] = { name: `${parentName}.index`, options: { path: '/' }, route: undefined };
+  }
+}
+
+/**
+ * Gives every route declared without a class the one `resolve` finds for its
+ * name, then registers each loading and error substate it finds, as Ember does
+ * for the templates and routes it finds by file name. A leaf route only gets
+ * `<name>_loading`: a `<name>.loading` child would give it an index route, and
+ * so change its URLs.
+ */
+function resolveByConvention(resolve: (name: string) => ResolvedRoute) {
+  const find = (name: string) => {
+    const resolved = resolve(name);
+    return (typeof resolved === 'function' ? resolved : resolved?.default) as Route | undefined;
+  };
+  const names = Object.keys(Owner.routes).filter((name) => name !== 'not-found');
+
+  for (const name of names) {
+    if (!Owner.routes[name].route) {
+      Owner.routes[name].route = find(name);
+    }
+  }
+  if (!Owner.routes[APPLICATION]?.route) {
+    const route = find(APPLICATION);
+    if (route) Owner.routes[APPLICATION] = { name: APPLICATION, options: { path: '/' }, route };
+  }
+
+  const routeNames = names.filter((name) => !Owner.routes[name].options?.substate);
+  for (const substate of ['loading', 'error']) {
+    const candidates = [
+      substate,
+      ...routeNames.flatMap((name) => {
+        const hasChildren = routeNames.some((other) => other.startsWith(`${name}.`));
+        return hasChildren ? [`${name}_${substate}`, `${name}.${substate}`] : [`${name}_${substate}`];
+      }),
+    ];
+
+    for (const candidate of candidates) {
+      if (Owner.routes[candidate]?.route) continue;
+      const route = find(candidate);
+      if (route) registerSubstate({ name: candidate, route });
+    }
   }
 }
 

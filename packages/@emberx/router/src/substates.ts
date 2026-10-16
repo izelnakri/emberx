@@ -44,26 +44,28 @@ export function getSubstatePath(routeName: string): string {
  *
  * Walking from that route up, each route offers its `_loading` sibling and, for
  * the routes above the origin, its `.loading` child, which is where Ember looks.
- * A loading substate is not looked for above `pivotRoute`, the deepest route
- * that stays active through the transition, since nothing above it is loading.
- * The top-level `loading` / `error` route is the last resort.
+ * The application route's `.loading` child is the top-level `loading`. A loading
+ * substate is not looked for above `pivotIndex`, the deepest route that stays
+ * active through the transition, since nothing above it is loading. The
+ * top-level `loading` / `error` route is the last resort.
  */
 export function findSubstate(
   routeInfos: RouteInfoLike[],
   substate: Substate,
   isDeclaredPredicate: (routeName: string) => boolean,
-  pivotRoute?: unknown,
+  pivotIndex?: number,
 ): string | undefined {
   const lastIndex = routeInfos.length - 1;
 
   for (let index = lastIndex; index >= 0; index--) {
-    const { name, route } = routeInfos[index];
-    const candidates = index === lastIndex ? [`${name}_${substate}`] : [`${name}.${substate}`, `${name}_${substate}`];
+    const { name } = routeInfos[index];
+    const childName = name === 'application' ? substate : `${name}.${substate}`;
+    const candidates = index === lastIndex ? [`${name}_${substate}`] : [childName, `${name}_${substate}`];
     const found = candidates.find(isDeclaredPredicate);
 
     if (found) {
       return found;
-    } else if (substate === 'loading' && pivotRoute !== undefined && route === pivotRoute) {
+    } else if (substate === 'loading' && index === pivotIndex) {
       return;
     }
   }

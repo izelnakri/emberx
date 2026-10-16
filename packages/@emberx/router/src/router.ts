@@ -73,8 +73,12 @@ export default class Router {
     const ROUTE_REGISTRY = this.convertDefinitionsToRegistry(arrayOfRouteDefinitions);
     const routerJSRouteArray = this.convertToRouterJSRouteArray(Object.assign(routeMapRegistry, ROUTE_REGISTRY));
     const routerService = Owner.register('service:router', new RouterService({ Resolver: this.Resolver }));
+    // Every route is under the application route, as in Ember: it has no URL of
+    // its own, and the names of the routes under it are not prefixed with it.
     routerService.map(function (match: any) {
-      RouteMapContext.map(RouteMapContext.map, match, routerJSRouteArray);
+      match('/').to(APPLICATION, function (match: any) {
+        RouteMapContext.map(RouteMapContext.map, match, routerJSRouteArray);
+      });
     });
 
     return this;
@@ -100,7 +104,10 @@ export default class Router {
     const substateDefinitions: Array<RouteDefinition> = [];
 
     arrayOfRouteDefinitions.forEach((routeDefinition: RouteDefinition) => {
-      if (!routeDefinition.path && routeDefinition.name && isSubstateName(routeDefinition.name)) {
+      if (routeDefinition.name === APPLICATION) {
+        substateDefinitions.push(...registerApplication(routeDefinition));
+        return;
+      } else if (!routeDefinition.path && routeDefinition.name && isSubstateName(routeDefinition.name)) {
         // Registered once every route they could hang off is: see registerSubstate.
         substateDefinitions.push(routeDefinition);
         return;
@@ -177,6 +184,7 @@ export default class Router {
 
   static convertToRouterJSRouteArray(routerRegistry: RouteRegistry): Array<routerJSRouteDefinition> {
     return Object.keys(routerRegistry)
+      .filter((routeName) => routeName !== APPLICATION) // the root the others are mapped under
       .sort()
       .reduce((result: Array<routerJSRouteDefinition>, routeName) => {
         const routeSegments = routeName.split('.');
@@ -231,6 +239,31 @@ function checkInRouteRegistryOrCreateRoute(registry: RouteRegistry, targetRoute:
   }
 
   return registry[routeName];
+}
+
+/** The name of the route above every route. */
+const APPLICATION = 'application';
+
+/**
+ * The application route is declared without a path: it is above every route, at
+ * `/`. Its loadingRoute and errorRoute are the app-wide `loading` and `error`
+ * substates, the ones a route falls back to when nothing closer is declared.
+ */
+function registerApplication({ path, route, indexRoute, loadingRoute, errorRoute }: RouteDefinition) {
+  if (path && path !== '/') {
+    throw new Error(`The application route is above every route and has no path of its own; remove path: '${path}'.`);
+  } else if (indexRoute) {
+    throw new Error(`The application route takes no indexRoute; declare the page at "/" as a route of its own.`);
+  } else if (Owner.routes[APPLICATION]) {
+    throw new Error('The application route is declared twice.');
+  }
+
+  Owner.routes[APPLICATION] = { name: APPLICATION, options: { path: '/' }, route };
+
+  return [
+    ...(loadingRoute ? [{ name: 'loading', route: loadingRoute }] : []),
+    ...(errorRoute ? [{ name: 'error', route: errorRoute }] : []),
+  ] as RouteDefinition[];
 }
 
 /**

@@ -78,6 +78,13 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
    */
   #routesAbovePage = new WeakMap<object, object>();
 
+  /**
+   * For each transition, the index of the deepest route that stays active
+   * through it: the routes it starts with already resolved. A loading substate
+   * is not looked for above it.
+   */
+  #pivotIndexes = new WeakMap<object, number>();
+
   /** Errors an error substate dealt with; visit() resolves for these instead of rejecting. */
   #handledErrors = new Set<unknown>();
   #loadingTimer: ReturnType<typeof setTimeout> | undefined;
@@ -267,6 +274,14 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
   }
 
   routeWillChange(transition: any): void {
+    // Called as a transition starts, before any of its hooks resolve a route.
+    if (!transition.isIntermediate && !this.#pivotIndexes.has(transition)) {
+      const routeInfos: any[] = transition.routeInfos ?? [];
+      const unresolvedIndex = routeInfos.findIndex((routeInfo) => !routeInfo.isResolved);
+
+      this.#pivotIndexes.set(transition, (unresolvedIndex === -1 ? routeInfos.length : unresolvedIndex) - 1);
+    }
+
     this.#emit('routeWillChange', transition);
   }
 
@@ -284,7 +299,8 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
       return;
     }
 
-    const targetRouteInfo = transition.routeInfos[transition.resolveIndex];
+    // The route the transition is going to: the deepest of its routes.
+    const targetRouteInfo = transition.routeInfos[transition.routeInfos.length - 1];
 
     this.isTransitioning = true;
     this.transitionFromURL = this.currentURL;
@@ -491,7 +507,7 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
         // As in Ember, a substate is only entered when there is something to render.
         return !!definition?.options?.substate && !!definition.route && this.hasRoute(routeName);
       },
-      transition?.pivotHandler,
+      transition ? this.#pivotIndexes.get(transition) : undefined,
     );
     if (!name) {
       return;

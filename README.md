@@ -70,7 +70,7 @@ Although the project is not production-ready one can still experiment with it us
 - Explicit and flexible routes declarations with @emberx/router.
 - Ember Route hooks (`beforeModel`, `model`, `afterModel`, `redirect`) are static methods instead of instance methods. Actions are the routes' own `@action` methods, which do the work of Ember's controller and route actions; `this.send()` reaches the routes above a page (see Actions on a page).
 - No sticky queryParams, instead link building is explicit with `<LinkTo @query={{hash param=value}}/>` or with object helpers `<LinkTo @query={{assign (hash active=true) this.router.queryParams}}/>`.
-- No `{{outlet}}`, instead parent routes included in the child route template with `{{yield}}`. This allows compiling individual route files for the browser without a magical build step.
+- No `{{outlet}}`: the router renders the page, the deepest route, and nothing around it. A layout pages share, such as a header, is a component each page's template includes. This keeps every route file compilable for the browser on its own, without a build step.
 - No need for initializers and instance initializers, all code runs in module file import and execution order.
 - Easily sharable/downloadable/distributable emberx components and routes with npm.
 
@@ -233,6 +233,73 @@ export default class IndexRoute extends Route {
 }
 ```
 
+#### The application route:
+
+Every app has one route above all the others, named `application`. It has no URL of its own and
+adds nothing to the names or URLs of the routes under it: `/posts/1` is still the `posts.post`
+route at `/posts/1`, with `application` above `posts`. Its job is what concerns every page.
+Declaring it is optional; without a declaration, a blank one is there.
+
+```ts ignore
+import Router, { Route, action, service } from '@emberx/router';
+
+class ApplicationRoute extends Route {
+  @service session;
+
+  // Query params every page can read as @queryParams: here ?theme=dark.
+  static queryParams = { theme: 'light' };
+
+  // Runs once, on the first visit, whatever page that is.
+  static async beforeModel(transition) {
+    await this.session.restore();
+
+    if (!this.session.isAuthenticated && transition.to.name !== 'login') {
+      return this.router.transitionTo('login');
+    }
+  }
+
+  // Any route reads this with this.modelFor('application').
+  static model() {
+    return { currentUser: this.session.currentUser };
+  }
+
+  // Any page can send it: {{on "click" (fn this.send "logout")}}.
+  @action async logout() {
+    await this.session.invalidate();
+    this.router.transitionTo('login');
+  }
+}
+
+Router.start([
+  { name: 'application', route: ApplicationRoute, loadingRoute: LoadingRoute, errorRoute: ErrorRoute },
+  { path: '/', name: 'home', route: HomeRoute },
+  { path: '/login', name: 'login', route: LoginRoute },
+  { path: '/posts', name: 'posts', route: PostsRoute },
+]);
+```
+
+| To                                                              | On the application route                                                      |
+| --------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| load what every page needs: the current user, settings          | `beforeModel` and `model`; routes read it with `this.modelFor('application')` |
+| send people elsewhere before any page shows: log in, onboarding | `transitionTo()` in `beforeModel`, unless they are already going there        |
+| do something any page can ask for: log out, notify              | an `@action`, which any page reaches with `this.send()`                       |
+| guard leaving any page                                          | `willTransition(transition)`, for pages and routes that have none             |
+| read query params on every page: `?theme=`, `?locale=`          | `static queryParams`                                                          |
+| show the same loading or error page everywhere                  | `loadingRoute` and `errorRoute`                                               |
+
+- **Its hooks run once,** on the first visit. Moving between pages leaves it active, so they do
+  not run again; `ApplicationRoute.refresh()` runs them again, and those of every route under it.
+- **Its `beforeModel` runs for the first visit to any page,** so a redirect there must let the
+  page it redirects to through, as `transition.to.name !== 'login'` does above.
+- **It has no template on screen.** As with any route above the page, its actions run on an
+  instance the router makes of it, which keeps its state until the route is refreshed. A layout every page
+  shares, such as a header or navigation, is a component each page's template includes.
+- **Its `loadingRoute` and `errorRoute` are the app-wide fallbacks,** used for a route that has
+  no closer one, the same as routes named `loading` and `error`.
+
+For Ember users: this is Ember's `ApplicationRoute`, declared in `Router.start()` instead of found
+at `app/routes/application.js`. There is no `application` template and no `{{outlet}}`.
+
 #### Index, loading and error routes:
 
 A route definition can name up to three more routes besides its own `route`. None of them
@@ -244,7 +311,7 @@ has a URL of its own:
 | `loadingRoute` | The page while this route's model hooks are pending, or those of a route under it that has no `loadingRoute` of its own.                           |
 | `errorRoute`   | The page when this route's hooks throw or reject, or those of a route under it that has no `errorRoute` of its own. It gets the error as `@model`. |
 
-Two routes named `loading` and `error` catch whatever no route above handles.
+The application route's own `loadingRoute` and `errorRoute` (see The application route) catch whatever no route below handles.
 
 ```ts ignore
 Router.start([
@@ -263,8 +330,7 @@ Router.start([
     route: PostRoute,
     errorRoute: PostErrorRoute, // when loading one post fails; it loads with PostsLoadingRoute
   },
-  { name: 'loading', route: LoadingRoute }, // the fallbacks, here for /
-  { name: 'error', route: ErrorRoute },
+  { name: 'application', loadingRoute: LoadingRoute, errorRoute: ErrorRoute }, // the fallbacks, here for /
 ]);
 ```
 
@@ -279,7 +345,7 @@ URL. A model that resolves right away never shows its loading route, and a hook 
 its own error shows no error route (see Actions on a page).
 
 For Ember users: `loadingRoute` and `errorRoute` declare the `posts_loading` and `posts_error`
-substates. The Ember names work too, as definitions without a path (`{ name: 'posts.loading',
+substates, and on the application route the top-level `loading` and `error`. The Ember names work too, as definitions without a path (`{ name: 'posts.loading',
 route }`) or as `this.route('loading')` in a `Router.map()` definition.
 
 #### Route hooks and query params:
@@ -469,7 +535,7 @@ The rest of what a page reacts to has one place each:
 | --------------------------------------------------------- | -------------------------------------------------------------------------------------- |
 | change what the page shows                                | an `@action` that sets `@tracked` fields                                               |
 | do what the pages under one route share: archive, share   | an `@action` on that route, sent with `this.send()`                                    |
-| do what pages all over the app share: log out, notify     | a service, called from the pages' `@action` methods                                    |
+| do what pages all over the app share: log out, notify     | an `@action` on the application route, or a service                                    |
 | warn before leaving a page, or keep the user on it        | `willTransition(transition)` on the page or a route above it, and `transition.abort()` |
 | load the page's data again                                | `this.refresh()`                                                                       |
 | show something while a page loads                         | a `loadingRoute`                                                                       |
@@ -501,6 +567,7 @@ splits between controllers and route actions:
 
 | In Ember                                               | In emberx                                                               |
 | ------------------------------------------------------ | ----------------------------------------------------------------------- |
+| `ApplicationRoute`                                     | the `application` route, declared in `Router.start()`                   |
 | a controller's `@action` methods and `@tracked` fields | the route's `@action` methods and `@tracked` fields                     |
 | route actions, and `this.send()` to reach them         | `@action` methods on the routes above the page, and `this.send()`       |
 | `{{action "share"}}`                                   | `{{on "click" (fn this.send "share")}}`, or the page's own `this.share` |

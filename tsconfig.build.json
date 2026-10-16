@@ -1,5 +1,5 @@
 {
-  /* Declaration-only build. esbuild emits the JavaScript (see scripts/build.ts);
+  /* Declaration-only build. esbuild emits the JavaScript (see build.ts);
      tsc exists solely to produce the .d.ts files alongside it, which is the one
      thing esbuild cannot do. */
   "extends": "./tsconfig.json",

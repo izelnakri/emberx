@@ -4,7 +4,7 @@ import { rm } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 
-import { PACKAGES } from './build.ts';
+import { PACKAGES } from '../build.ts';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 

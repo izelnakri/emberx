@@ -1,3 +1,26 @@
+scripts/lib/chrome-bench.js -> review it.
+scripts/lib/glimmer-compat.js -> review where its used.
+scripts/lib/test-bundle.js -> was needed because of @tracked, @service
+
+`scripts/lib/glimmer-compat.js` -> `@glimmer/compiler` has one top level `require` at import time to build a sha1 
+template id, check this. emberx never uses the upstream id — `create-template.ts`
+supplies its own — and the plugin throws loudly if upstream's shape changes rather than
+silently shipping a half-patched compiler.
+
+=============================
+In future(not now). Find a solution for 
+"npm run clean", "npm run dev", "npm run tests:doctests"
+============================
+
+309 tests pass in the browser (the full suite). The 65 of them that need no router
+also pass under node and under Deno, and the 13 code examples in the docs run as
+doctests. See #3 for what keeps the rest browser-only.
+
+## 3. Make the suite runnable in node -> Probably should be done *after* the PR#73 gets merged, along with all ROADMAP.md
+items, which is something to keep in the source-code as after we merge PR#73, and iteratively do the fixes for ROADMAP items
+
+===================================
+
 Deferred from the 2026 modernization PR (#72), each worth a PR of its own:
 
 - @emberx/test-helpers: setupOnerror(fn) and resetOnerror(), as in Ember, so a test can assert that a render
@@ -117,3 +140,31 @@ afterModel and then redirect() gets called
 /* model (params, transition)
 /* - this.send() probably not needed
 /* resetController/ setupController
+
+===================================
+
+Running emberx without a build, after PR #73 (ember-source 7) is merged. Today `npm test` builds first only
+because the browser suite needs dist/: @memserver/model, in node_modules, imports @emberx/string, and that
+resolves through the package's exports to dist/. The node, Deno and doctest suites and the dev server already
+bundle from packages/@emberx/*/src. In order:
+
+1. No build for development (small PR, right after #73):
+   - Until @memoria/* replaces @memserver/*, add emberxWorkspacePlugin to the esbuild plugin qunitx loads
+     (package.json#qunitx.plugins), so the browser suite resolves @emberx/* to sources too.
+   - Then drop the build from `npm test`, point check-benchmarks.ts at sources, and delete `build:dev` and
+     `make build-dev`. The one build left (build.ts) is for publishing: test-release, Docker, CI's package job.
+   - CI runs the test jobs with no build step, so a dependency that needs dist/ again fails CI at once.
+2. @memoria/* replaces @memserver/* (its own PR): if @memoria/* imports no @emberx/* package, delete the
+   step 1 bridge; the CI guard from step 1 confirms it.
+3. TypeScript that node runs by stripping types (small PR, any time): constructor parameter properties
+   (`constructor(private limit)`) become plain fields, type-only imports use `import type`, and tsconfig turns
+   on erasableSyntaxOnly and verbatimModuleSyntax so typecheck rejects what node cannot run. Then
+   `node packages/@emberx/string/src/...` runs as it is.
+4. Any source file under `deno run` (small PR, after #73): a root deno.json with experimentalDecorators and an
+   import map from @emberx/* to packages/@emberx/*/src/index.ts, and from @ember/* and @glimmer/* to their
+   files in ember-source, whose own exports only have ember-source/@ember/... paths.
+5. The same under node (small PR, after 4): scripts/register.ts with module.registerHooks, resolving the same
+   names and compiling decorators with esbuild: `node --import ./scripts/register.ts any-file.ts`.
+6. No compile step at all (long term, not ours alone): once JS engines ship standard decorators and emberx moves
+   @tracked, @action and @service off legacy decorators, step 5 only resolves names. Browsers always need .ts
+   compiled, which qunitx and the dev server already do in memory, with no dist/.

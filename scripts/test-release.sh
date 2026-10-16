@@ -2,12 +2,15 @@
 # Packs every @emberx package, installs the tarballs into a throwaway consumer
 # directory, and tests what got installed rather than the checkout.
 #
-# Two checks run against the installed packages:
+# Three checks run against the installed packages:
+#   - TypeScript, on a consumer file that uses each package's types: the
+#     declarations in dist/ resolve, vendored ones included, and none of them
+#     silently degrades to `any`;
 #   - scripts/release-consumer-test.ts, what an npm user does first: import each
 #     package, render a component, render one to a string;
 #   - the node suite (test/node.ts), bundled with @emberx/* and ember-source
 #     resolved from the consumer's node_modules instead of the workspace.
-# Both run under node, then under Deno.
+# The last two run under node, then under Deno.
 #
 # Source tests cannot see packaging mistakes: a `files` entry that omits dist/,
 # an `exports` path that does not exist, or a dependency used at runtime but only
@@ -38,8 +41,45 @@ done
 cd "$CONSUMER"
 printf '{"name":"emberx-consumer","private":true,"type":"module"}' > package.json
 JSDOM_VERSION=$(node -p "require('$ROOT/node_modules/jsdom/package.json').version")
-npm install --no-audit --no-fund --loglevel=error ./*.tgz "jsdom@$JSDOM_VERSION"
+TYPESCRIPT_VERSION=$(node -p "require('$ROOT/node_modules/typescript/package.json').version")
+npm install --no-audit --no-fund --loglevel=error ./*.tgz "jsdom@$JSDOM_VERSION" "typescript@$TYPESCRIPT_VERSION"
 cp "$ROOT/scripts/release-consumer-test.ts" .
+
+# ── Types ───────────────────────────────────────────────────────────────────
+# skipLibCheck, as consumers have it, turns an unresolved import inside a
+# declaration into `any` rather than an error. So each @ts-expect-error below
+# also fails the check if the type it tests has become `any`.
+echo "test-release: types"
+cat > consumer-types.ts <<'TS'
+import Component, { hbs, tracked } from '@emberx/component';
+import Router, { Route } from '@emberx/router';
+import { camelize } from '@emberx/string';
+import { eq } from '@emberx/helper';
+import { renderToString } from '@emberx/ssr';
+import { render, settled } from '@emberx/test-helpers';
+
+class Greeting extends Component<{ name: string }> {
+  static template = hbs`<p>{{this.shout}}</p>`;
+  @tracked count = 0;
+  get shout(): string {
+    return this.args.name.toUpperCase();
+  }
+}
+class HomeRoute extends Route {}
+
+const shout: string = new Greeting({}, { name: 'emberx' }).shout;
+// @ts-expect-error: args.name is a string
+const notANumber: number = new Greeting({}, { name: 'emberx' }).args.name;
+// @ts-expect-error: camelize returns a string
+const alsoNotANumber: number = camelize('ember-x');
+const html: Promise<string> = renderToString(Greeting, { args: { name: 'emberx' } });
+// @ts-expect-error: Router.start takes route definitions
+Router.start(42);
+
+export { shout, notANumber, alsoNotANumber, html, eq, render, settled, HomeRoute };
+TS
+npx tsc --noEmit --strict --skipLibCheck --experimentalDecorators --target es2022 \
+  --module nodenext --moduleResolution nodenext consumer-types.ts
 
 # ── Node ────────────────────────────────────────────────────────────────────
 echo "test-release: node (consumer)"

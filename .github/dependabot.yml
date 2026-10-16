@@ -16,12 +16,14 @@ updates:
       interval: 'weekly'
     open-pull-requests-limit: 10
     groups:
-      # ember-source carries the renderer and the autotracking registry, so a
-      # second copy means silently broken reactivity. It moves on its own, and
-      # never auto-merges.
-      ember:
+      # What @emberx/vendor is written from (scripts/build-emberx-vendor.ts): a bump needs
+      # `npm run vendor`, which CI's vendor check enforces, so these move on
+      # their own and never auto-merge.
+      vendored:
         patterns:
           - 'ember-source'
+          - '@glimmer/component'
+          - 'location-bar'
       dev-tooling:
         patterns:
           - 'esbuild'

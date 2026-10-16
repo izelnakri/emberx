@@ -25,7 +25,7 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd)
 CONSUMER=$(mktemp -d)
 trap 'rm -rf "$CONSUMER"' EXIT
 
-PACKAGES=(string helper component router test-helpers ssr)
+PACKAGES=(vendor string helper component router test-helpers ssr)
 
 # ── Build and pack ──────────────────────────────────────────────────────────
 cd "$ROOT"

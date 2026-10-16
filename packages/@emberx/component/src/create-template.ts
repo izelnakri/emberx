@@ -1,5 +1,5 @@
-import { template } from '@ember/template-compiler/runtime';
-import { getComponentTemplate } from '@glimmer/manager';
+import { template } from '@emberx/vendor/@ember/template-compiler/runtime';
+import { getComponentTemplate } from '@emberx/vendor/@glimmer/manager';
 
 interface ScopeValues {
   [key: string]: any;

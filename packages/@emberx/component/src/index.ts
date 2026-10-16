@@ -1,21 +1,21 @@
-import { renderComponent as emberRenderComponent, renderSettled } from '@ember/renderer';
+import { renderComponent as emberRenderComponent, renderSettled } from '@emberx/vendor/@ember/renderer';
 // Internal, but it is what Ember's own test setup uses between tests. See resetRendering().
-import { _resetRenderers } from '@ember/-internals/glimmer';
-import { setComponentTemplate } from '@glimmer/manager';
-import { getOwner } from '@glimmer/owner';
-import templateOnlyComponent from '@ember/component/template-only';
+import { _resetRenderers } from '@emberx/vendor/@ember/-internals/glimmer';
+import { setComponentTemplate } from '@emberx/vendor/@glimmer/manager';
+import { getOwner } from '@emberx/vendor/@glimmer/owner';
+import templateOnlyComponent from '@emberx/vendor/@ember/component/template-only';
+import type EmberOwner from '@emberx/vendor/@ember/owner';
 
-// The Glimmer component base class, vendored in ./glimmer-component. See that
-// file for why it is not the `@glimmer/component` package.
-import Component from './glimmer-component.ts';
+// @glimmer/component, the base class Ember apps use (@emberx/vendor).
+import Component from '@emberx/vendor/@glimmer/component';
 
-import { fn, hash, array, get, concat } from '@ember/helper';
-import { on } from '@ember/modifier';
+import { fn, hash, array, get, concat } from '@emberx/vendor/@ember/helper';
+import { on } from '@emberx/vendor/@ember/modifier';
 import { and, or, not, eq, neq, gt, gte, lt, lte, assign, debug, drop, take } from '@emberx/helper';
 import createTemplate from './create-template.ts';
 
-import { tracked } from '@glimmer/tracking';
-import { action as emberAction } from '@ember/object';
+import { tracked } from '@emberx/vendor/@glimmer/tracking';
+import { action as emberAction } from '@emberx/vendor/@ember/object';
 
 interface Owner {
   [key: string]: any;
@@ -43,8 +43,14 @@ export interface EmberXComponentClass {
 }
 
 export default class EmberXComponent<Args extends FreeObject = FreeObject> extends Component<{
-  Args: Args;
+  Args: { Named: Args };
 }> {
+  // @glimmer/component types the owner as @ember/owner's Owner; emberx's is any
+  // object, @emberx/router's static Owner class among them.
+  constructor(owner: object, args: Args) {
+    super(owner as EmberOwner, args);
+  }
+
   static compiled = false;
   static includes = {};
   static template: string;

@@ -6,7 +6,8 @@ BENCH_BASE ?=
 
 .PHONY: bench bench-check bench-print bench-update build build-dev check check-static clean coverage \
         dev docker-build docker-test fix fmt format help install lint release setup test test-all-browsers \
-        test-browser test-browser-dev test-chrome test-firefox test-deno test-doctests test-node test-release test-webkit typecheck
+        test-browser test-browser-dev test-chrome test-firefox test-deno test-doctests test-node test-release test-webkit typecheck \
+        vendor vendor-check
 
 # ── Build ─────────────────────────────────────────────────────────────────────
 
@@ -40,12 +41,12 @@ check: check-static test test-doctests
 
 # What needs no build and no browser, so it fails in seconds. `make release` runs it
 # before the benchmarks and the suites, the order qunitx and qunitx-cli release in.
-check-static: format lint typecheck
+check-static: format lint typecheck vendor-check
 
 # Formatting is prettier, configured by the "prettier" key in package.json; the
 # files it skips are negated patterns in the npm scripts, so there is no
-# .prettierignore. router/src/vendor/ is vendored verbatim from upstream and is
-# never reformatted, so it still diffs cleanly. README.md says why this is not
+# .prettierignore. packages/@emberx/vendor/ is written by scripts/build-emberx-vendor.ts and
+# is never reformatted or linted, so it stays byte for byte what the script writes. README.md says why this is not
 # `deno fmt`.
 format:
 	npm run format
@@ -63,6 +64,15 @@ lint:
 
 typecheck:
 	npm run typecheck
+
+# Rewrites packages/@emberx/vendor/ from the versions package.json pins
+# (ember-source, @glimmer/component, location-bar). After bumping one: `make vendor`, commit.
+vendor:
+	npm run vendor
+
+# Fails if packages/@emberx/vendor/ differs from what `make vendor` would write.
+vendor-check:
+	npm run vendor -- --check
 
 # Builds, then runs the node suite, the Deno suite and the browser suite.
 test:
@@ -104,7 +114,7 @@ test-all-browsers: test-browser test-firefox test-webkit
 # a terminal summary plus tmp/coverage/lcov.info and tmp/coverage/index.html.
 # Chromium only. The figure includes the test modules themselves, since
 # qunitx-cli only excludes the entry file (test/index.ts).
-# Packs all six packages, installs the tarballs into a throwaway directory, and
+# Packs all seven packages, installs the tarballs into a throwaway directory, and
 # runs a consumer smoke test plus the node suite against what got installed, not
 # the checkout. Catches what source tests cannot: a missing `files` entry, a
 # wrong `exports` path, a dependency only declared at the root.
@@ -150,7 +160,7 @@ docker-test: docker-build
 
 # ── Release ───────────────────────────────────────────────────────────────────
 
-# Checks, cheapest first, then bump, publish all six packages, changelog, commit, tag, push.
+# Checks, cheapest first, then bump, publish all seven packages, changelog, commit, tag, push.
 # CI creates the GitHub release from the tag.
 #
 # Usage: make release LEVEL=patch|minor|major|x.y.z
@@ -208,11 +218,13 @@ help:
 	@echo ""
 	@echo "Verify"
 	@echo "  check             check-static + test + test-doctests"
-	@echo "  check-static      format + lint + typecheck: no build, no browser"
+	@echo "  check-static      format + lint + typecheck + vendor-check: no build, no browser"
 	@echo "  format            Check formatting (prettier)"
 	@echo "  fix / fmt         Auto-fix formatting"
 	@echo "  lint              Lint sources (deno lint)"
 	@echo "  typecheck         tsc --noEmit over all package sources"
+	@echo "  vendor            Rewrite @emberx/vendor from the pinned packages"
+	@echo "  vendor-check      Fail if @emberx/vendor differs from them"
 	@echo "  test              Build, then node suite, then browser suite"
 	@echo "  test-node         string, helper and component under node + jsdom"
 	@echo "  test-deno         The same suite under Deno"

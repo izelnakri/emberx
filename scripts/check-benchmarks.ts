@@ -48,13 +48,9 @@
  * emberx: the packages are built first (`npm run build:dev`), so the benchmarks
  * measure the dist/ users get, and each bench file is bundled by esbuild before
  * it runs: a page in Chrome cannot resolve bare imports, and bundling the Deno
- * files the same way keeps both measuring the same code. emberSourcePlugin
- * resolves any bare Ember name (`@glimmer/manager`) to its ember-source path, as
- * the build does.
+ * files the same way keeps both measuring the same code.
  */
 import * as esbuild from 'esbuild';
-
-import { emberSourcePlugin } from './lib/esbuild-plugins.js';
 
 const paint =
   (open: number, close: number) =>
@@ -119,7 +115,6 @@ async function bundle(files: string[]): Promise<void> {
     target: 'esnext',
     logLevel: 'warning' as const,
     mainFields: ['module', 'main'],
-    plugins: [emberSourcePlugin()],
   };
   const denoFiles = files.filter((file) => !isChromeBench(file));
   const chromeFiles = files.filter(isChromeBench);

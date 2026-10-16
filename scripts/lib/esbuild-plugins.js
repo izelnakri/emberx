@@ -1,58 +1,6 @@
 /**
- * esbuild plugins shared by the package build, the node suite, the dev server
- * and (through package.json#qunitx.plugins) the browser suite.
+ * The esbuild plugin the node suite, the dev server and the doctests share.
  */
-import { existsSync } from 'node:fs';
-import { createRequire } from 'node:module';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const require = createRequire(import.meta.url);
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
-
-/**
- * The Glimmer VM and Ember's public modules ship inside `ember-source`, which
- * publishes them as `ember-source/@glimmer/manager/index.js`,
- * `ember-source/@ember/renderer/index.js` and so on. Its type declarations, on
- * the other hand, declare the familiar bare names (`@glimmer/manager`,
- * `@ember/renderer`), and those names only resolve inside an Embroider build.
- *
- * So emberx source imports the bare names, which typecheck, and this plugin
- * rewrites each one to the `ember-source/...` path that actually exists. With
- * `external: true` the rewrite is left in the output, which is how the
- * published dist/ reaches ember-source without asking consumers to alias
- * anything. Otherwise the path is resolved and bundled.
- *
- * Only names ember-source really provides are rewritten; anything else under
- * @ember/ or @glimmer/ falls through to normal resolution.
- */
-export function emberSourcePlugin({ external = false } = {}) {
-  const packagesDir = join(dirname(require.resolve('ember-source/package.json')), 'dist', 'prod', 'packages');
-
-  function emberSourcePath(specifier) {
-    if (existsSync(join(packagesDir, `${specifier}.js`))) return `ember-source/${specifier}.js`;
-    if (existsSync(join(packagesDir, specifier, 'index.js'))) return `ember-source/${specifier}/index.js`;
-    return null;
-  }
-
-  return {
-    name: 'emberx:ember-source',
-    setup(build) {
-      build.onResolve({ filter: /^@(ember|glimmer)\// }, (args) => {
-        const target = emberSourcePath(args.path);
-        if (!target) return null;
-        if (external) return { path: target, external: true };
-        return build.resolve(target, { kind: args.kind, resolveDir: args.resolveDir ?? ROOT });
-      });
-    },
-  };
-}
-
-/** qunitx-cli loads `"./scripts/lib/esbuild-plugins.js"` from package.json#qunitx.plugins and calls this. */
-export default function qunitxPlugin() {
-  return emberSourcePlugin();
-}
-
 /**
  * Every emberx package is consumed by the others through its bare specifier
  * (`@emberx/component`, not a relative path). When building or testing from a

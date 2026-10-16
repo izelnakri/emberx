@@ -18,18 +18,20 @@
  * babel-plugin-module-extension-resolver to make relative imports node-ESM
  * resolvable. Bundling removes that problem entirely.
  */
+
 import { cp, rm, mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname } from 'node:path';
 import * as esbuild from 'esbuild';
 import ts from 'typescript';
 
-import { emberSourcePlugin } from './scripts/lib/esbuild-plugins.js';
-
 const ROOT = dirname(fileURLToPath(import.meta.url));
 
 /** Build order is irrelevant (packages are external to each other) but kept stable for readable logs. */
 export const PACKAGES = ['string', 'helper', 'component', 'router', 'test-helpers', 'ssr'];
+
+/** What a release publishes, leaf first: @emberx/vendor (scripts/build-emberx-vendor.ts), which has no build, then PACKAGES. */
+export const PUBLISHED = ['vendor', ...PACKAGES];
 
 const isDevelopment = process.env.ENVIRONMENT === 'development';
 
@@ -60,7 +62,7 @@ async function buildPackage(name: string) {
     sourcemap: isDevelopment ? 'inline' : true,
     minify: false,
     logLevel: 'warning',
-    plugins: [emberSourcePlugin({ external: true }), externalizeBareImports],
+    plugins: [externalizeBareImports],
   });
 
   return name;
@@ -75,6 +77,7 @@ async function buildPackage(name: string) {
  * compiler API, so it is the same on Deno and node and on every platform. It emits into `.tmp/types/@emberx/<pkg>/src/`,
  * mirroring `rootDir: packages`, and we relocate that into
  * `packages/@emberx/<pkg>/dist/` so `types: ./dist/index.d.ts` resolves.
+
  */
 async function emitTypes() {
   const staging = `${ROOT}/.tmp/types`;
@@ -110,7 +113,6 @@ async function emitTypes() {
       }),
     ),
   );
-  await Promise.all(PACKAGES.map((name) => referenceEmberTypes(`${ROOT}/packages/@emberx/${name}/dist`)));
 
   await rm(`${ROOT}/.tmp`, { recursive: true, force: true });
 }
@@ -130,30 +132,6 @@ async function pointDeclarationsAtJavaScript(directory: string) {
       const source = await readFile(file, 'utf8');
 
       await writeFile(file, source.replace(/((?:from|import)\s*\(?\s*['"]\.{1,2}\/[^'"]*)\.ts(['"])/g, '$1.js$2'));
-    }),
-  );
-}
-
-/**
- * Ember's modules (`@ember/owner`, `@glimmer/manager`, …) have no packages of
- * their own: ember-source declares them as ambient modules in `ember-source/types`,
- * which a consumer's compiler loads only when told to. Without it, every type
- * from Ember in these declarations silently became `any` (under skipLibCheck,
- * as consumers have it). So each declaration file that imports one references
- * ember-source's types itself.
- */
-async function referenceEmberTypes(directory: string) {
-  const declarations = (await readdir(directory, { recursive: true })).filter((path) => path.endsWith('.d.ts'));
-  const reference = '/// <reference types="ember-source/types" />\n';
-
-  await Promise.all(
-    declarations.map(async (path) => {
-      const file = `${directory}/${path}`;
-      const source = await readFile(file, 'utf8');
-
-      if (/(?:from\s*|import\(\s*)['"]@(?:ember|glimmer)\//.test(source) && !source.startsWith(reference)) {
-        await writeFile(file, reference + source);
-      }
     }),
   );
 }

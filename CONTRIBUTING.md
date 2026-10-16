@@ -25,7 +25,9 @@ Run `make` with no arguments for the full target list.
 ## How the repository is laid out
 
 ```
-packages/@emberx/       the six published packages
+packages/@emberx/       the seven published packages
+  vendor/               ember-source, @glimmer/component and location-bar, as emberx uses
+                        them; written by scripts/build-emberx-vendor.ts, never by hand
   string/               zero dependencies; Ember's string utils
   helper/               template helpers, with owner services as a third argument
   component/            the Glimmer component layer + runtime template compilation
@@ -63,27 +65,28 @@ Deno can load a module without a bundler. `deno lint`'s `no-sloppy-imports` rule
 it. The build rewrites those specifiers to `.js` in the emitted declarations, the files a
 consumer has.
 
-`scripts/lib/esbuild-plugins.js` resolves Ember's modules. The Glimmer VM and Ember's
-public API ship inside `ember-source` as `ember-source/@glimmer/manager/index.js` and so on,
-while its type declarations use the bare names (`@glimmer/manager`, `@ember/renderer`),
-which only resolve inside an Embroider build. So the source imports the bare names, which
-typecheck, and the plugin rewrites them to the `ember-source/...` paths. The package build
-leaves the rewritten path in `dist/`, so consumers need no aliases. The browser suite loads
-the same plugin through `package.json#qunitx.plugins`.
+Ember's modules come from `@emberx/vendor`: `import { tracked } from
+'@emberx/vendor/@glimmer/tracking'`. `ember-source` ships the Glimmer VM and Ember's API as
+files (`ember-source/@glimmer/manager/index.js`) whose types it declares under bare names
+(`@glimmer/manager`) that only an Embroider build resolves. `@emberx/vendor` holds the
+modules emberx uses as plain package exports, with their types, so node, Deno, esbuild,
+TypeScript and every consumer resolve them with nothing in between (see "Vendored code"
+below).
 
-Previously this and three sibling problems were solved by scripts that **rewrote files
-inside `node_modules`** before every build. Those are gone. If you find yourself wanting
-to patch a dependency on disk, add an esbuild plugin or an `overrides` entry instead.
+Previously such problems were solved by scripts that **rewrote files inside
+`node_modules`** before every build. Those are gone. If you find yourself wanting to patch a
+dependency on disk, vendor it through `scripts/build-emberx-vendor.ts`, or add an `overrides` entry.
 
 ## Invariants worth knowing
 
-**There must be one `ember-source`.** The renderer, the autotracking registry and every
+**There must be one `@emberx/vendor`.** The renderer, the autotracking registry and every
 manager live inside it. Two copies mean two registries, and `@tracked` updates made through
-one are invisible to the renderer using the other. Every package that needs it declares the
-same range, and Dependabot's `ember` group is never auto-merged. Verify a bump with:
+one are invisible to the renderer using the other. Every package that needs it depends on
+the exact version a release stamps, and `ember-source` itself is only a devDependency of the
+repo, the source `scripts/build-emberx-vendor.ts` copies from. Verify with:
 
 ```sh
-npm ls ember-source   # every entry should be one version, deduped
+npm ls @emberx/vendor   # every entry should be the one workspace package
 ```
 
 **`pretender` is pinned to 3.4.3** via `overrides`. `@memserver/server` — the API mock used
@@ -95,8 +98,8 @@ or replacing memserver first.
 
 **Debug assertions are off by default.** `@glimmer/env` ships `DEBUG = false` and expects a
 build plugin to flip it; emberx has no such plugin, so Glimmer's development assertions
-have never run here. `packages/@emberx/component/src/glimmer-component.ts` preserves that
-default. Turn them on either way, before `@emberx/component` is first imported:
+have never run here. The component base class (below) checks `EMBERX_DEBUG` instead. Turn
+its checks on either way, before `@emberx/component` is first imported:
 
 - in an app's own bundler, define `EMBERX_DEBUG` as `true` (esbuild:
   `--define:EMBERX_DEBUG=true`), which also lets it drop the checks when `false`;
@@ -106,13 +109,30 @@ default. Turn them on either way, before `@emberx/component` is first imported:
 This repo's build and dev scripts take no such flag. Expect failures when it is on, since
 `@emberx/router` constructs `new Route()` with no arguments.
 
-**The component base class is vendored,** in
-`packages/@emberx/component/src/glimmer-component.ts`. `@glimmer/component` is published as
-an ember-addon, so depending on it also pulls `ember-cli-babel`, `broccoli-*` and
-`ember-cli-typescript` — 394 of 423 packages — none of which emberx can use, because it
-deliberately has no ember-cli pipeline. The vendored copy is ~60 lines of real code and is
-behaviourally identical apart from one documented change: it accepts a function as an
-owner, because `@emberx/router`'s `Owner` is a static class.
+**Vendored code is written by a script.** `npm run vendor` (`scripts/build-emberx-vendor.ts`) writes
+`@emberx/vendor` (`packages/@emberx/vendor/`) from the versions `package.json` pins as exact
+devDependencies, laid out as each upstream package publishes its files:
+
+- `ember-source` → `@ember/…`, `@glimmer/…`, `shared-chunks/…`: the modules emberx imports,
+  found by reading every `@emberx/vendor/…` import under `packages/@emberx/*/src`, and every
+  file they reach, from ember-source's `dist/prod/packages`; with the type declarations
+  ember-source has for them (`types/`) and one declaration per module beside its
+  JavaScript. A new import of an Ember module is one `npm run vendor` away. None of
+  ember-source's 17 dependencies, which only its ember-cli hooks and blueprints use, is
+  installed by a consumer.
+- `@glimmer/component` → `@glimmer/component/`: the base class Ember apps use, published from
+  ember.js, its imports pointed at the modules above. Two changes, marked `emberx:` in the
+  file: its checks follow `EMBERX_DEBUG` (above), and an owner may be a function, as
+  `@emberx/router`'s static `Owner` is.
+- `location-bar` → `location-bar/location-bar.js`: Backbone's history handling, published
+  in 2016 as a UMD script, turned into an ES module.
+
+The script writes the package's `exports` and its `LICENSE` (the upstream licenses) too.
+To update a vendored package, bump its devDependency (Dependabot's `vendored` group opens
+that PR, and never auto-merges) and run `npm run vendor`. `make check-static` runs
+`npm run vendor -- --check`, which fails when `packages/@emberx/vendor/` differs from what
+the script would write, so a hand edit or a forgotten re-vendor cannot merge. Format and
+lint skip it.
 
 ## Tests
 
@@ -221,7 +241,7 @@ This only runs on `main`, in sync with `origin/main` and with a clean tree — `
 happens before the release commit, so releasing from any other branch would publish code
 `main` never contained. It then runs the checks cheapest first, as qunitx and qunitx-cli do:
 `make check-static`, `make bench-check`, the suites, then `make test-release`. Then it stamps
-all six packages to one version (rewriting their intra-`@emberx` ranges to match, which
+all seven packages to one version (rewriting their intra-`@emberx` ranges to match, which
 `npm version --workspaces` does not), publishes them leaf-first, prepends the new section to
 `CHANGELOG.md` with [git-cliff](https://git-cliff.org), commits, tags and pushes. CI creates the GitHub release from the tag.
 

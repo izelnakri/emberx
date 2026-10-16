@@ -9,7 +9,7 @@
  * `precompile` is measured separately from `createTemplate` to separate the
  * compiler's cost from evaluating its output and building the template.
  */
-import { precompile } from 'ember-source/ember-template-compiler/index.js';
+import { precompile } from '@emberx/vendor/ember-template-compiler';
 import { createTemplate } from '@emberx/component';
 
 const TRIVIAL = `<span>{{@name}}</span>`;

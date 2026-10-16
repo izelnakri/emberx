@@ -15,23 +15,22 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as esbuild from 'esbuild';
 
-import { emberSourcePlugin, emberxWorkspacePlugin } from './esbuild-plugins.js';
+import { emberxWorkspacePlugin } from './esbuild-plugins.js';
 import { PACKAGES } from '../../build.ts';
 
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 /**
- * Resolves @emberx/* and ember-source from `directory`'s node_modules rather
- * than the workspace. ember-source follows along so the suite and the installed
+ * Resolves @emberx/* from `directory`'s node_modules rather than the
+ * workspace. @emberx/vendor follows along, so the suite and the installed
  * packages share one renderer and autotracking registry: two copies would make
- * reactivity tests fail for the wrong reason. Bare @glimmer/* and @ember/*
- * imports reach it through emberSourcePlugin's rewrite to ember-source/...
+ * reactivity tests fail for the wrong reason.
  */
 function installedPackagesPlugin(directory) {
   return {
     name: 'emberx:installed-packages',
     setup(build) {
-      build.onResolve({ filter: /^(@emberx\/|ember-source(\/|$))/ }, (args) => {
+      build.onResolve({ filter: /^@emberx\// }, (args) => {
         // build.resolve re-enters this callback; the marker ends the recursion.
         if (args.pluginData?.fromInstalled) return null;
         return build.resolve(args.path, {
@@ -89,7 +88,6 @@ export async function bundleTestSuite({ runtime = 'node', outfile, packagesFrom 
     },
     plugins: [
       ...(runtime === 'deno' ? [singleQUnitPlugin] : []),
-      emberSourcePlugin(),
       packagesFrom ? installedPackagesPlugin(packagesFrom) : emberxWorkspacePlugin(ROOT, PACKAGES),
     ],
   });

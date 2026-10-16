@@ -1,0 +1,241 @@
+declare module 'router_js/lib/transition' {
+    import { Promise } from "rsvp";
+    import type { Dict, Maybe, Option } from "router_js/lib/core";
+    import type { ModelFor, Route, RouteInfo, RouteInfoWithAttributes } from "router_js/lib/route-info";
+    import type InternalRouteInfo from "router_js/lib/route-info";
+    import type Router from "router_js/lib/router";
+    import type { TransitionAbortedError } from "router_js/lib/transition-aborted-error";
+    import type { OpaqueIntent } from "router_js/lib/transition-intent";
+    import type TransitionState from "router_js/lib/transition-state";
+    export type OnFulfilled<T, TResult1> = ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null;
+    export type OnRejected<T, TResult2> = ((reason: T) => TResult2 | PromiseLike<TResult2>) | undefined | null;
+    export type PublicTransition = Transition<any>;
+    export type OpaqueTransition = PublicTransition;
+    export const STATE_SYMBOL = "__STATE__-2619860001345920-3322w3";
+    export const PARAMS_SYMBOL = "__PARAMS__-261986232992830203-23323";
+    export const QUERY_PARAMS_SYMBOL = "__QPS__-2619863929824844-32323";
+    export const REDIRECT_DESTINATION_SYMBOL = "__RDS__-2619863929824844-32323";
+    /**
+      A Transition is a thenable (a promise-like object) that represents
+      an attempt to transition to another route. It can be aborted, either
+      explicitly via `abort` or by attempting another transition while a
+      previous one is still underway. An aborted transition can also
+      be `retry()`d later.
+
+      @class Transition
+      @constructor
+      @param {Object} router
+      @param {Object} intent
+      @param {Object} state
+      @param {Object} error
+      @private
+     */
+    export default class Transition<R extends Route> implements Partial<Promise<R>> {
+        [STATE_SYMBOL]: TransitionState<R>;
+        from: Maybe<RouteInfoWithAttributes>;
+        to?: RouteInfo | RouteInfoWithAttributes;
+        router: Router<R>;
+        data: Dict<any>;
+        intent: Maybe<OpaqueIntent>;
+        resolvedModels: Dict<ModelFor<R> | undefined>;
+        [QUERY_PARAMS_SYMBOL]: Dict<unknown>;
+        promise?: Promise<any>;
+        error: Maybe<unknown>;
+        [PARAMS_SYMBOL]: Dict<unknown>;
+        routeInfos: InternalRouteInfo<R>[];
+        targetName: Maybe<string>;
+        pivotHandler: Maybe<object>;
+        sequence: number;
+        isAborted: boolean;
+        isActive: boolean;
+        urlMethod: Option<string>;
+        resolveIndex: number;
+        queryParamsOnly: boolean;
+        isTransition: boolean;
+        isCausedByAbortingTransition: boolean;
+        isCausedByInitialTransition: boolean;
+        isCausedByAbortingReplaceTransition: boolean;
+        _visibleQueryParams: Dict<unknown>;
+        isIntermediate: boolean;
+        [REDIRECT_DESTINATION_SYMBOL]?: Transition<R>;
+        /**
+          In non-production builds, this function will return the stack that this Transition was
+          created within. In production builds, this function will not be present.
+      
+          @method debugCreationStack
+          @return string
+        */
+        debugCreationStack?: () => string | undefined;
+        /**
+          In non-production builds, this function will return the stack that this Transition was
+          aborted within (or `undefined` if the Transition has not been aborted yet). In production
+          builds, this function will not be present.
+      
+          @method debugAbortStack
+          @return string
+        */
+        debugAbortStack?: () => string | undefined;
+        /**
+          In non-production builds, this property references the Transition that _this_ Transition
+          was derived from or `undefined` if this transition did not derive from another. In
+          production builds, this property will not be present.
+      
+          @property debugPreviousTransition
+          @type {Transition | undefined}
+        */
+        debugPreviousTransition: Maybe<Transition<R>>;
+        constructor(router: Router<R>, intent: Maybe<OpaqueIntent>, state: TransitionState<R> | undefined, error?: Maybe<unknown>, previousTransition?: Maybe<Transition<R>>);
+        /**
+          The Transition's internal promise. Calling `.then` on this property
+          is that same as calling `.then` on the Transition object itself, but
+          this property is exposed for when you want to pass around a
+          Transition's promise, but not the Transition object itself, since
+          Transition object can be externally `abort`ed, while the promise
+          cannot.
+      
+          @property promise
+          @type {Object}
+          @public
+         */
+        /**
+          Custom state can be stored on a Transition's `data` object.
+          This can be useful for decorating a Transition within an earlier
+          hook and shared with a later hook. Properties set on `data` will
+          be copied to new transitions generated by calling `retry` on this
+          transition.
+      
+          @property data
+          @type {Object}
+          @public
+         */
+        /**
+          A standard promise hook that resolves if the transition
+          succeeds and rejects if it fails/redirects/aborts.
+      
+          Forwards to the internal `promise` property which you can
+          use in situations where you want to pass around a thenable,
+          but not the Transition itself.
+      
+          @method then
+          @param {Function} onFulfilled
+          @param {Function} onRejected
+          @param {String} label optional string for labeling the promise.
+          Useful for tooling.
+          @return {Promise}
+          @public
+         */
+        then<TResult1 = R, TResult2 = never>(onFulfilled?: ((value: R) => TResult1 | PromiseLike<TResult1>) | undefined | null, onRejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null, label?: string): Promise<TResult1 | TResult2>;
+        /**
+      
+          Forwards to the internal `promise` property which you can
+          use in situations where you want to pass around a thennable,
+          but not the Transition itself.
+      
+          @method catch
+          @param {Function} onRejection
+          @param {String} label optional string for labeling the promise.
+          Useful for tooling.
+          @return {Promise}
+          @public
+         */
+        catch<T>(onRejection?: OnRejected<TransitionState<any>, T>, label?: string): import("rsvp").default.Promise<any>;
+        /**
+      
+          Forwards to the internal `promise` property which you can
+          use in situations where you want to pass around a thenable,
+          but not the Transition itself.
+      
+          @method finally
+          @param {Function} callback
+          @param {String} label optional string for labeling the promise.
+          Useful for tooling.
+          @return {Promise}
+          @public
+         */
+        finally<T>(callback?: T | undefined, label?: string): import("rsvp").default.Promise<any>;
+        /**
+          Aborts the Transition. Note you can also implicitly abort a transition
+          by initiating another transition while a previous one is underway.
+      
+          @method abort
+          @return {Transition} this transition
+          @public
+         */
+        abort(): this;
+        rollback(): void;
+        redirect(newTransition: Transition<R>): void;
+        /**
+      
+          Retries a previously-aborted transition (making sure to abort the
+          transition if it's still active). Returns a new transition that
+          represents the new attempt to transition.
+      
+          @method retry
+          @return {Transition} new transition
+          @public
+         */
+        retry(): Transition<R>;
+        /**
+      
+          Sets the URL-changing method to be employed at the end of a
+          successful transition. By default, a new Transition will just
+          use `updateURL`, but passing 'replace' to this method will
+          cause the URL to update using 'replaceWith' instead. Omitting
+          a parameter will disable the URL change, allowing for transitions
+          that don't update the URL at completion (this is also used for
+          handleURL, since the URL has already changed before the
+          transition took place).
+      
+          @method method
+          @param {String} method the type of URL-changing method to use
+            at the end of a transition. Accepted values are 'replace',
+            falsy values, or any other non-falsy value (which is
+            interpreted as an updateURL transition).
+      
+          @return {Transition} this transition
+          @public
+         */
+        method(method: Option<string>): this;
+        send(ignoreFailure: boolean | undefined, _name: string, err?: Error, transition?: Transition<R>, handler?: Route): void;
+        /**
+      
+          Fires an event on the current list of resolved/resolving
+          handlers within this transition. Useful for firing events
+          on route hierarchies that haven't fully been entered yet.
+      
+          Note: This method is also aliased as `send`
+      
+          @method trigger
+          @param {Boolean} [ignoreFailure=false] a boolean specifying whether unhandled events throw an error
+          @param {String} name the name of the event to fire
+          @public
+         */
+        trigger(ignoreFailure: boolean | undefined, name: string, ...args: any[]): void;
+        /**
+          Transitions are aborted and their promises rejected
+          when redirects occur; this method returns a promise
+          that will follow any redirects that occur and fulfill
+          with the value fulfilled by any redirecting transitions
+          that occur.
+      
+          @method followRedirects
+          @return {Promise} a promise that fulfills with the same
+            value that the final redirecting transition fulfills with
+          @public
+         */
+        followRedirects(): Promise<R>;
+        toString(): string;
+        /**
+          @private
+         */
+        log(message: string): void;
+    }
+    /**
+      @private
+
+      Logs and returns an instance of TransitionAborted.
+     */
+    export function logAbort(transition: Transition<any>): TransitionAbortedError;
+    export function isTransition(obj: unknown): obj is typeof Transition;
+    export function prepareResult(obj: Dict<unknown> | undefined): Dict<unknown> | null | undefined;
+}

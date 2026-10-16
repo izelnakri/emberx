@@ -49,8 +49,9 @@
 
     /* No ambient @types packages. Every package source file is browser-targeted,
        so DOM comes from `lib` above. Node-only code lives in scripts/ and
-       benches/, which this project does not type-check. */
-    "types": ["ember-source/types"]
+       benches/, which this project does not type-check. Ember's types come with
+       the @emberx/vendor modules that use them. */
+    "types": []
   },
   "include": ["packages/@emberx/*/src/**/*.ts"],
   "exclude": ["node_modules", "tmp", "dist", "**/dist/**"]

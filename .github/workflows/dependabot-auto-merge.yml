@@ -19,11 +19,12 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       # Patch and minor bumps merge themselves once CI is green. Majors — and
-      # ember-source, which carries the renderer — always want a human.
+      # what @emberx/vendor is written from, which needs `npm run vendor` — always
+      # want a human.
       - name: Enable auto-merge
         if: |
           steps.metadata.outputs.update-type != 'version-update:semver-major' &&
-          steps.metadata.outputs.dependency-group != 'ember'
+          steps.metadata.outputs.dependency-group != 'vendored'
         run: gh pr merge --auto --squash "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}

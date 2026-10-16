@@ -43,10 +43,10 @@ test/                   entry points (index.html, index.ts, node.ts, setup-dom.j
 ```
 
 `build.ts` and every script in `scripts/` are TypeScript run by Deno, as in qunitx and
-qunitx-cli: the build, the release, the dev server, `clean`, the benchmarks and the test
-runners. Two exceptions: `scripts/test-node.ts` runs in node, since node is what it tests
-(Node 24 runs `.ts` files as they are), and `scripts/test-release.sh` stays bash, since it drives `npm pack` and
-`npm install`, then runs `scripts/release-consumer-test.ts` in the throwaway project it
+qunitx-cli: the build, the release, the dev server, the benchmarks and the test runners.
+Two exceptions: `scripts/test-node.ts` runs in node, since node is what it tests (Node 24
+runs `.ts` files as they are), and `scripts/test-release.sh` stays bash, since it drives
+`npm pack` and `npm install`, then runs `scripts/release-consumer-test.ts` in the throwaway project it
 installs the tarballs into. The helpers in `scripts/lib/` are plain JavaScript modules that
 both runtimes import.
 
@@ -201,10 +201,11 @@ make release LEVEL=patch   # or minor / major / an explicit x.y.z
 
 This only runs on `main`, in sync with `origin/main` and with a clean tree — `npm publish`
 happens before the release commit, so releasing from any other branch would publish code
-`main` never contained. It then runs `make check` and `make bench-check`, stamps all six
-packages to one version (rewriting their intra-`@emberx` ranges to match), publishes them
-leaf-first, prepends the new section to `CHANGELOG.md` with [git-cliff](https://git-cliff.org),
-commits, tags and pushes. CI creates the GitHub release from the tag.
+`main` never contained. It then runs the checks cheapest first, as qunitx and qunitx-cli do:
+`make check-static`, `make bench-check`, the suites, then `make test-release`. Then it stamps
+all six packages to one version (rewriting their intra-`@emberx` ranges to match, which
+`npm version --workspaces` does not), publishes them leaf-first, prepends the new section to
+`CHANGELOG.md` with [git-cliff](https://git-cliff.org), commits, tags and pushes. CI creates the GitHub release from the tag.
 
 The changelog is built from conventional commit subjects: `feat`, `fix`, `perf`,
 `refactor`, `deps` and `docs` appear in it; `build`, `ci`, `test` and `chore` do not.

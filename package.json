@@ -31,7 +31,7 @@
     "changelog:latest": "git-cliff --latest --strip all",
     "changelog:preview": "git-cliff --unreleased",
     "changelog:update": "git-cliff --unreleased --prepend CHANGELOG.md",
-    "clean": "deno run -A scripts/clean.ts",
+    "clean": "rm -rf packages/@emberx/*/dist dist tmp .tmp",
     "dev": "deno run -A scripts/dev.ts",
     "format": "prettier --check . \"!CHANGELOG.md\" \"!package-lock.json\" \"!packages/@emberx/router/src/vendor/**\"",
     "format:fix": "prettier --write . \"!CHANGELOG.md\" \"!package-lock.json\" \"!packages/@emberx/router/src/vendor/**\"",

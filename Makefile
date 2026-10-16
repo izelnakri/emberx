@@ -4,7 +4,7 @@ LEVEL ?= patch
 REGRESSION_THRESHOLD ?= 26
 BENCH_BASE ?=
 
-.PHONY: bench bench-check bench-print bench-update build build-dev check clean coverage \
+.PHONY: bench bench-check bench-print bench-update build build-dev check check-static clean coverage \
         dev docker-build docker-test fix fmt format help install lint release setup test test-all-browsers \
         test-browser test-browser-dev test-chrome test-firefox test-deno test-doctests test-node test-release test-webkit typecheck
 
@@ -36,7 +36,11 @@ install setup:
 
 # The gate that CI runs and that `make release` requires. Everything a
 # reviewer needs to trust a change.
-check: format lint typecheck test test-doctests
+check: check-static test test-doctests
+
+# What needs no build and no browser, so it fails in seconds. `make release` runs it
+# before the benchmarks and the suites, the order qunitx and qunitx-cli release in.
+check-static: format lint typecheck
 
 # Formatting is prettier, configured by the "prettier" key in package.json; the
 # files it skips are negated patterns in the npm scripts, so there is no
@@ -146,7 +150,7 @@ docker-test: docker-build
 
 # ── Release ───────────────────────────────────────────────────────────────────
 
-# Full check, bump, publish all six packages, changelog, commit, tag, push.
+# Checks, cheapest first, then bump, publish all six packages, changelog, commit, tag, push.
 # CI creates the GitHub release from the tag.
 #
 # Usage: make release LEVEL=patch|minor|major|x.y.z
@@ -172,9 +176,11 @@ release:
 		exit 1; \
 	fi
 	@npm whoami > /dev/null 2>&1 || npm login
-	$(MAKE) check
-	$(MAKE) test-release
+	$(MAKE) check-static
 	$(MAKE) bench-check BENCH_BASE=$$(git describe --tags --abbrev=0 2>/dev/null)
+	$(MAKE) test
+	$(MAKE) test-doctests
+	$(MAKE) test-release
 	deno run -A scripts/release.ts $(LEVEL)
 	@VERSION=$$(node -p "require('./package.json').version"); \
 	npm install --package-lock-only --ignore-scripts && \
@@ -201,7 +207,8 @@ help:
 	@echo "  install / setup   npm ci for a fresh checkout"
 	@echo ""
 	@echo "Verify"
-	@echo "  check             format + lint + typecheck + test + test-doctests"
+	@echo "  check             check-static + test + test-doctests"
+	@echo "  check-static      format + lint + typecheck: no build, no browser"
 	@echo "  format            Check formatting (prettier)"
 	@echo "  fix / fmt         Auto-fix formatting"
 	@echo "  lint              Lint sources (deno lint)"
@@ -228,7 +235,7 @@ help:
 	@echo "  docker-test       Build the image and run make check inside it"
 	@echo ""
 	@echo "Release"
-	@echo "  release           check + test-release + bench + bump + publish + tag + push"
+	@echo "  release           check-static + bench-check + test + test-release + bump + publish + tag + push"
 	@echo ""
 	@echo "Escape hatches"
 	@echo "  SKIP_BENCHMARK=true    skip bench-check (noisy machine)"

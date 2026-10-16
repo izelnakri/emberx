@@ -168,3 +168,23 @@ bundle from packages/@emberx/*/src. In order:
 6. No compile step at all (long term, not ours alone): once JS engines ship standard decorators and emberx moves
    @tracked, @action and @service off legacy decorators, step 5 only resolves names. Browsers always need .ts
    compiled, which qunitx and the dev server already do in memory, with no dist/.
+
+Fewer scripts, as in qunitx (scripts/ there: check-benchmarks.ts, check-coverage.ts, release-consumer-test.ts,
+sync-jsr-version.ts, test-release.sh). Each script is one more file a newcomer has to read, so a bare command
+replaces it wherever one can:
+- Same as qunitx, kept: check-benchmarks.ts, release-consumer-test.ts, test-release.sh.
+- scripts/clean.ts: done, now `rm -rf` in package.json, as qunitx's build:cold.
+- test-node.ts, test-deno.ts and lib/test-bundle.js: bundle the suites with esbuild first only because the
+  sources do not run as they are. After steps 4 and 5 above they become `node --import ./scripts/register.ts
+  --test test/node.ts` and `deno test test/node.ts`, as qunitx's `node --test test/index.ts`, with
+  test/setup-dom.js imported by test/node.ts itself.
+- test-doctests.ts: after step 4, `deno test --doc README.md packages/@emberx/*/README.md packages/@emberx/*/src`,
+  as qunitx's test:doctests. The `// => value` comments become explicit assertions, which `deno test --doc`
+  does not add for us.
+- dev.ts: no qunitx counterpart (qunitx has no app to serve). Keep it, but let esbuild serve it (its serve API
+  with `fallback` for the blog's URLs) instead of the hand-written node:http server.
+- release.ts: kept. `npm version --workspaces --include-workspace-root` bumps all seven package.json files but
+  leaves the exact @emberx/* dependency pins at the old version (checked with npm 11.19), and the packages must
+  be published leaf-first.
+- After all of the above, scripts/ is check-benchmarks.ts, dev.ts, register.ts, release.ts,
+  release-consumer-test.ts and test-release.sh, plus lib/chrome-bench.js and lib/esbuild-plugins.js.

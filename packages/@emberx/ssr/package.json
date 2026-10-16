@@ -1,6 +1,6 @@
 {
   "name": "@emberx/ssr",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Server-side rendering for emberx components",
   "type": "module",
   "author": "Izel Nakri",
@@ -25,7 +25,7 @@
     }
   },
   "dependencies": {
-    "@emberx/component": "0.1.0",
+    "@emberx/component": "0.2.0",
     "@simple-dom/document": "^1.4.0",
     "@simple-dom/serializer": "^1.4.0",
     "@simple-dom/void-map": "^1.4.0",

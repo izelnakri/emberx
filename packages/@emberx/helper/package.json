@@ -1,6 +1,6 @@
 {
   "name": "@emberx/helper",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Template helpers for emberx, with owner services injected as a third argument",
   "type": "module",
   "author": "Izel Nakri",

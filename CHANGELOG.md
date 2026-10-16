@@ -1,3 +1,12 @@
+## [0.2.0] - 2026-10-16
+[`v0.1.0...v0.2.0`](https://github.com/izelnakri/emberx/compare/v0.1.0...v0.2.0)
+
+### Documentation
+- ROADMAP, CONTRIBUTING and Dependabot for ember-source — 2026-09-28 by [@izelnakri](https://github.com/izelnakri) ([`c1e72d9`](https://github.com/izelnakri/emberx/commit/c1e72d97c6996a49ed21686ec98c9b70ee5d6d8a))
+
+### Refactoring
+- [**breaking**] Render with ember-source 7 instead of glimmer.js — 2026-09-28 by [@izelnakri](https://github.com/izelnakri) ([`107f4c6`](https://github.com/izelnakri/emberx/commit/107f4c6bcd0d43f338a896c81a315c36893fa431))
+
 ## [0.1.0] - 2026-10-16
 [`0.0.14...v0.1.0`](https://github.com/izelnakri/emberx/compare/0.0.14...v0.1.0)
 

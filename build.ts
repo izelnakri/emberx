@@ -110,6 +110,7 @@ async function emitTypes() {
       }),
     ),
   );
+  await Promise.all(PACKAGES.map((name) => referenceEmberTypes(`${ROOT}/packages/@emberx/${name}/dist`)));
 
   await rm(`${ROOT}/.tmp`, { recursive: true, force: true });
 }
@@ -129,6 +130,30 @@ async function pointDeclarationsAtJavaScript(directory: string) {
       const source = await readFile(file, 'utf8');
 
       await writeFile(file, source.replace(/((?:from|import)\s*\(?\s*['"]\.{1,2}\/[^'"]*)\.ts(['"])/g, '$1.js$2'));
+    }),
+  );
+}
+
+/**
+ * Ember's modules (`@ember/owner`, `@glimmer/manager`, …) have no packages of
+ * their own: ember-source declares them as ambient modules in `ember-source/types`,
+ * which a consumer's compiler loads only when told to. Without it, every type
+ * from Ember in these declarations silently became `any` (under skipLibCheck,
+ * as consumers have it). So each declaration file that imports one references
+ * ember-source's types itself.
+ */
+async function referenceEmberTypes(directory: string) {
+  const declarations = (await readdir(directory, { recursive: true })).filter((path) => path.endsWith('.d.ts'));
+  const reference = '/// <reference types="ember-source/types" />\n';
+
+  await Promise.all(
+    declarations.map(async (path) => {
+      const file = `${directory}/${path}`;
+      const source = await readFile(file, 'utf8');
+
+      if (/(?:from\s*|import\(\s*)['"]@(?:ember|glimmer)\//.test(source) && !source.startsWith(reference)) {
+        await writeFile(file, reference + source);
+      }
     }),
   );
 }

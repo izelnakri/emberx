@@ -64,17 +64,25 @@ test('@emberx/component renders, and re-renders on a tracked change', async () =
   assert.equal(element.querySelector('#label').textContent, 'Clicks: 2');
 });
 
-test('@emberx/ssr renders to a string', async () => {
+test('@emberx/ssr renders to a string, which a browser render hydrates', async () => {
   installDOM();
 
-  const { default: Component, hbs } = await import('@emberx/component');
+  const { default: Component, hbs, renderComponent } = await import('@emberx/component');
   const { renderToString } = await import('@emberx/ssr');
 
   class Greeting extends Component {
     static template = hbs`<p>Hello {{@name}}</p>`;
   }
 
-  assert.equal(await renderToString(Greeting, { args: { name: 'npm' } }), '<p>Hello npm</p>');
+  assert.equal(await renderToString(Greeting, { args: { name: 'npm' }, hydratable: false }), '<p>Hello npm</p>');
+
+  const element = document.createElement('div');
+  element.innerHTML = await renderToString(Greeting, { args: { name: 'npm' } });
+  const paragraph = element.querySelector('p');
+  await renderComponent(Greeting, { element, args: { name: 'npm' } });
+
+  assert.equal(element.querySelector('p'), paragraph, 'the server-rendered node is adopted, not replaced');
+  assert.equal(element.innerHTML, '<p>Hello npm</p>');
 });
 
 /**

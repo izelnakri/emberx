@@ -1,30 +1,31 @@
-import { renderComponent, renderSettled } from '@emberx/vendor/@ember/renderer';
+import { renderSettled } from '@emberx/vendor/@ember/renderer';
+import { serializeBuilder } from '@emberx/vendor/@glimmer/node';
+import { clientBuilder } from '@emberx/vendor/@glimmer/runtime';
 import createDocument from '@simple-dom/document';
 import HTMLSerializer from '@simple-dom/serializer';
 import voidMap from '@simple-dom/void-map';
-import type { EmberXComponentClass } from '@emberx/component';
+import { renderWithBuilder, traverseAndCompileAllComponents, type EmberXComponentClass } from '@emberx/component';
+import { Owner } from '@emberx/router';
 
 interface RenderOptions {
   args?: Record<string, unknown>;
   owner?: object;
-}
-
-function traverseAndCompileAllComponents(ComponentClass: EmberXComponentClass) {
-  if ('compiled' in ComponentClass && !ComponentClass.compiled) {
-    ComponentClass.setTemplate(ComponentClass.template);
-    ComponentClass.compiled = true;
-    Object.entries(ComponentClass.includes).forEach(([_key, value]: [string, any]) =>
-      traverseAndCompileAllComponents(value),
-    );
-  }
+  /**
+   * Whether the markup carries the comments Glimmer's rehydration reads, so a
+   * browser render into it adopts it rather than replacing it. On by default;
+   * off for static output.
+   */
+  hydratable?: boolean;
 }
 
 /**
- * Renders a component to an HTML string without a browser DOM.
+ * Renders a component to an HTML string without a browser DOM, the way Ember's
+ * FastBoot does: into a simple-dom document, with modifiers and `{{on}}` off,
+ * then serialized.
  *
- * @glimmer/ssr did this before and is gone with the rest of glimmer.js. This is
- * the same approach Ember's FastBoot takes: render into a simple-dom document
- * with interactivity off, then serialize it.
+ * The markup is hydratable: rendered into the browser's copy of it, with
+ * @emberx/component's renderComponent (as @emberx/router renders each page), the
+ * component adopts the server's DOM instead of rebuilding it.
  */
 async function renderToString(component: EmberXComponentClass, options: RenderOptions = {}): Promise<string> {
   traverseAndCompileAllComponents(component);
@@ -33,34 +34,61 @@ async function renderToString(component: EmberXComponentClass, options: RenderOp
   const into = document.createElement('div');
   document.body.appendChild(into);
 
-  // @ember/renderer checks `into instanceof Element`, which throws where there
-  // is no DOM at all, plain node included. A stand-in class for that one
-  // synchronous call makes the check false, which is right: `into` is a fresh,
-  // empty simple-dom element with nothing to clear.
-  const globals = globalThis as { Element?: unknown };
-  const hadElement = 'Element' in globals;
-  if (!hadElement) globals.Element = class {};
-
-  let result;
-  try {
-    result = renderComponent(
-      component as object,
-      {
-        into: into as unknown as Element,
-        owner: options.owner,
-        args: options.args,
-        env: { document, isInteractive: false, hasDOM: false },
-      } as any,
-    );
-  } finally {
-    if (!hadElement) delete globals.Element;
-  }
+  const renderer = renderWithBuilder(component, {
+    into,
+    args: options.args,
+    owner: options.owner ?? {},
+    document,
+    builder: options.hydratable === false ? clientBuilder : serializeBuilder,
+    interactive: false,
+  });
   await renderSettled();
 
   const html = new HTMLSerializer(voidMap).serializeChildren(into);
-  result.destroy();
+  renderer.destroy();
 
   return html;
 }
 
-export { renderToString };
+/** Renders queue, since @emberx/router's Owner and router are one per process. */
+let queue: Promise<unknown> = Promise.resolve();
+
+/**
+ * Renders the page a URL shows to an HTML string: the router Router.start()
+ * started goes to `url`, model hooks, redirects and loading or error substates
+ * included, and the page it ends on renders as renderToString() renders it.
+ *
+ * The router keeps the URL in memory (its `none` location, the default without
+ * a `window`). One URL renders at a time: emberx's Owner holds one router.
+ */
+function renderURLToString(url: string, options: Pick<RenderOptions, 'hydratable'> = {}): Promise<string> {
+  const render = queue.then(async () => {
+    const router = Owner.lookup('service:router');
+    if (!router) {
+      throw new Error('renderURLToString() needs Router.start() to have started a router first.');
+    }
+
+    let page: { Page: EmberXComponentClass; args: Record<string, unknown> } | undefined;
+    const renderPage = router.renderPage;
+    router.renderPage = async (Page: EmberXComponentClass, args: Record<string, unknown>) => {
+      page = { Page, args };
+    };
+
+    try {
+      await router.visit(url);
+    } finally {
+      router.renderPage = renderPage;
+    }
+
+    if (!page) {
+      throw new Error(`${url} rendered no page.`);
+    }
+
+    return renderToString(page.Page, { args: page.args, owner: Owner, hydratable: options.hydratable });
+  });
+  queue = render.catch(() => {});
+
+  return render;
+}
+
+export { renderToString, renderURLToString };

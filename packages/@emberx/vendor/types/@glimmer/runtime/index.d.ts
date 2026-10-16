@@ -1,0 +1,37 @@
+declare module '@glimmer/runtime' {
+    import type { RichIteratorResult } from "@glimmer/interfaces";
+    export { clear, ConcreteBounds, CursorImpl } from "@glimmer/runtime/lib/bounds";
+    export { type DebugCallback, resetDebuggerCallback, setDebuggerCallback, } from "@glimmer/runtime/lib/compiled/opcodes/debugger";
+    export { TEMPLATE_ONLY_COMPONENT_MANAGER, TemplateOnlyComponentDefinition as TemplateOnlyComponent, templateOnlyComponent, TemplateOnlyComponentManager, } from "@glimmer/runtime/lib/component/template-only";
+    export { CurriedValue, curry } from "@glimmer/runtime/lib/curried-value";
+    export { DOMChanges, DOMTreeConstruction, DOMChangesImpl as IDOMChanges, isWhitespace, } from "@glimmer/runtime/lib/dom/helper";
+    export { normalizeProperty } from "@glimmer/runtime/lib/dom/props";
+    export { type EnvironmentDelegate, EnvironmentImpl, inTransaction, runtimeOptions, } from "@glimmer/runtime/lib/environment";
+    export { and } from "@glimmer/runtime/lib/helpers/and";
+    export { array } from "@glimmer/runtime/lib/helpers/array";
+    export { concat } from "@glimmer/runtime/lib/helpers/concat";
+    export { eq } from "@glimmer/runtime/lib/helpers/eq";
+    export { fn } from "@glimmer/runtime/lib/helpers/fn";
+    export { get } from "@glimmer/runtime/lib/helpers/get";
+    export { gt } from "@glimmer/runtime/lib/helpers/gt";
+    export { gte } from "@glimmer/runtime/lib/helpers/gte";
+    export { hash } from "@glimmer/runtime/lib/helpers/hash";
+    export { invokeHelper } from "@glimmer/runtime/lib/helpers/invoke";
+    export { lt } from "@glimmer/runtime/lib/helpers/lt";
+    export { lte } from "@glimmer/runtime/lib/helpers/lte";
+    export { neq } from "@glimmer/runtime/lib/helpers/neq";
+    export { not } from "@glimmer/runtime/lib/helpers/not";
+    export { or } from "@glimmer/runtime/lib/helpers/or";
+    export { on } from "@glimmer/runtime/lib/modifiers/on";
+    export { renderComponent, renderMain, renderSync } from "@glimmer/runtime/lib/render";
+    export { DynamicScopeImpl, ScopeImpl } from "@glimmer/runtime/lib/scope";
+    export type { SafeString } from "@glimmer/runtime/lib/upsert";
+    export { UpdatingVM, type VM } from "@glimmer/runtime/lib/vm";
+    export { createCapturedArgs, EMPTY_ARGS, EMPTY_NAMED, EMPTY_POSITIONAL, reifyArgs, reifyNamed, reifyPositional, } from "@glimmer/runtime/lib/vm/arguments";
+    export { DynamicAttribute, dynamicAttribute, SimpleDynamicAttribute, } from "@glimmer/runtime/lib/vm/attributes/dynamic";
+    export { clientBuilder, NewTreeBuilder, RemoteBlock, ResettableBlockImpl, } from "@glimmer/runtime/lib/vm/element-builder";
+    export { LowLevelVM } from "@glimmer/runtime/lib/vm/low-level";
+    export { isSerializationFirstNode, RehydrateTree, rehydrationBuilder, SERIALIZATION_FIRST_NODE_STRING, } from "@glimmer/runtime/lib/vm/rehydrate-builder";
+    export { destroy, isDestroyed, isDestroying, registerDestructor } from "@glimmer/destroyable";
+    export type IteratorResult<T> = RichIteratorResult<null, T>;
+}

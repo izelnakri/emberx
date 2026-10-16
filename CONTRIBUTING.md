@@ -73,6 +73,13 @@ modules emberx uses as plain package exports, with their types, so node, Deno, e
 TypeScript and every consumer resolve them with nothing in between (see "Vendored code"
 below).
 
+Two internal exports of Ember's are imported, where nothing public does the job (ROADMAP.md
+#1 and #4), and both only in `packages/@emberx/component/src/ember-internals.ts`:
+`_resetRenderers`, which forgets every renderer between tests, and `Renderer`, which renders
+with Glimmer's `serializeBuilder` for `@emberx/ssr` and its `rehydrationBuilder` to hydrate.
+An ember-source update that moves either breaks that file alone. Keep any new internal
+import there.
+
 Previously such problems were solved by scripts that **rewrote files inside
 `node_modules`** before every build. Those are gone. If you find yourself wanting to patch a
 dependency on disk, vendor it through `scripts/build-emberx-vendor.ts`, or add an `overrides` entry.

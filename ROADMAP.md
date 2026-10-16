@@ -9,18 +9,18 @@ Ordered by what unblocks the most downstream work, not by size.
 
 ## 0. Where things actually stand
 
-| Package                | Tests | State                                                                      |
-| ---------------------- | ----- | -------------------------------------------------------------------------- |
-| `@emberx/string`       | ✅    | Complete. Zero dependencies.                                               |
-| `@emberx/helper`       | ✅    | Complete.                                                                  |
-| `@emberx/component`    | ✅    | Complete for the current renderer.                                         |
-| `@emberx/test-helpers` | ✅    | Complete; browser-only (see #3).                                           |
-| `@emberx/router`       | ✅    | Complete apart from re-rendering (see #2); browser-only (see #3).          |
-| `@emberx/ssr`          | ⚠️    | Renders to a string under node and Deno; no routing or hydration (see #4). |
+| Package                | Tests | State                                                                 |
+| ---------------------- | ----- | --------------------------------------------------------------------- |
+| `@emberx/string`       | ✅    | Complete. Zero dependencies.                                          |
+| `@emberx/helper`       | ✅    | Complete.                                                             |
+| `@emberx/component`    | ✅    | Complete for the current renderer.                                    |
+| `@emberx/test-helpers` | ✅    | Complete; browser-only (see #3).                                      |
+| `@emberx/router`       | ✅    | Complete (see #2); its suite is browser-only (see #3).                |
+| `@emberx/ssr`          | ✅    | Components and URLs to hydratable HTML, under node and Deno (see #4). |
 
 347 tests pass in the browser (the full suite). The 65 of them that need no router
-also pass under node and under Deno, as do @emberx/ssr's 2, which run there only, and
-the 13 code examples in the docs run as doctests. See #3 for what keeps the rest browser-only.
+also pass under node and under Deno, as do @emberx/ssr's 11, which run there only, and
+the 14 code examples in the docs run as doctests. See #3 for what keeps the rest browser-only.
 
 ---
 
@@ -89,14 +89,14 @@ running on a route whose `afterModel` redirected.
 under Deno. The router and test-helpers suites do not yet. Getting them there would let the whole suite
 run headless, and it is a prerequisite for real SSR.
 
-- **Router state outlives each test.** Every test that starts a router builds a new
-  `RouterService` with a new `LocationBar` against `window`. Starting one now stops the
-  previous one following the browser, but nothing tears the router down in `afterEach`. Transitions from a finished
-  test then render into a container the next test has already removed ("#app or
+- **Router state outlives each test.** Starting a router stops the previous one following
+  the browser, but nothing tears the router down in `afterEach`. Transitions from a
+  finished test then render into a container the next test has already removed ("#app or
   #ember-testing not found"). The browser tolerates this, but `node:test` reports it as a
-  failure. Fixes: a router teardown in `setupTest` (stop the `LocationBar`, reset the URL),
-  and an injectable location strategy — a `history` implementation and a `none`
-  implementation, as Ember has — which is worth doing on its own merits.
+  failure. The fix left is a router teardown in `setupTest`. The router itself runs without
+  a browser already: `Router.start(…, { location: 'none' })`, the default without a
+  `window`, keeps the URL in memory as Ember's NoneLocation does, and @emberx/ssr's suite
+  routes under node and Deno with it.
 - **The test-helpers suite hangs under node** for the same reason, plus event helpers that
   lean on real layout. Revisit once the router tears down cleanly.
 
@@ -104,10 +104,24 @@ run headless, and it is a prerequisite for real SSR.
 
 ## 4. Server-side rendering
 
-`@emberx/ssr` renders a component to a string, and the node suite covers that. It
-duplicates `traverseAndCompileAllComponents` from `@emberx/component` instead of importing
-it. Needs: routing support (#2, #3) and a hydration story — SSR without hydration is a
-static-site generator.
+`@emberx/ssr` renders a component (`renderToString`) or the page a URL shows
+(`renderURLToString`, through the router with its `none` location) to HTML that carries
+Glimmer's rehydration markers. A browser render into that markup, `renderComponent` or the
+router's first page, adopts the server's nodes instead of building them again. The node
+suite covers both sides, and test:release runs a hydration against the packed tarballs.
+What is left:
+
+- **One render at a time.** emberx's `Owner` is a static class, so a process holds one
+  router, and `renderURLToString` queues requests rather than rendering them together.
+  Parallel rendering needs an owner per request, as FastBoot has an application instance
+  per request: a change to how the packages find their owner, not to SSR.
+- **Ember internals.** Serializing and hydrating go through Ember's `Renderer` and Glimmer's
+  `serializeBuilder` and `rehydrationBuilder`, in `@emberx/component`'s
+  `ember-internals.ts`: `renderComponent` always builds the DOM afresh and takes no
+  builder. FastBoot relies on the same builders; a builder or mode option on
+  `renderComponent` is the upstream ask that would make all of it public API.
+- **The document around the page**: its `<title>`, meta tags and the data a route loaded,
+  which the browser would otherwise fetch again before hydrating.
 
 ---
 

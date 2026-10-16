@@ -1,6 +1,4 @@
 import { renderComponent as emberRenderComponent, renderSettled } from '@emberx/vendor/@ember/renderer';
-// Internal, but it is what Ember's own test setup uses between tests. See resetRendering().
-import { _resetRenderers } from '@emberx/vendor/@ember/-internals/glimmer';
 import { setComponentTemplate } from '@emberx/vendor/@glimmer/manager';
 import { getOwner } from '@emberx/vendor/@glimmer/owner';
 import templateOnlyComponent from '@emberx/vendor/@ember/component/template-only';
@@ -13,6 +11,7 @@ import { fn, hash, array, get, concat } from '@emberx/vendor/@ember/helper';
 import { on } from '@emberx/vendor/@ember/modifier';
 import { and, or, not, eq, neq, gt, gte, lt, lte, assign, debug, drop, take } from '@emberx/helper';
 import createTemplate from './create-template.ts';
+import { _resetRenderers, isServerRendered, rehydrationBuilder, renderWithBuilder } from './ember-internals.ts';
 
 import { tracked } from '@emberx/vendor/@glimmer/tracking';
 import { action as emberAction } from '@emberx/vendor/@ember/object';
@@ -121,6 +120,11 @@ export function action(context, value, descriptor) {
  * @glimmer/core's renderComponent did. Ember's renderComponent takes `into`
  * rather than `element` and returns synchronously; `owner` and `args` are the
  * same.
+ *
+ * An element that holds markup @emberx/ssr rendered, which starts with
+ * Glimmer's serialization marker, is hydrated instead: the render adopts the
+ * server's DOM, and from then on updates it in place. A later render into the
+ * same element replaces the hydrated one, as renderComponent replaces its own.
  */
 async function renderComponent(ComponentClass: EmberXComponentClass, optionsOrElement: any): Promise<void> {
   const { element, ...options }: any =
@@ -132,10 +136,36 @@ async function renderComponent(ComponentClass: EmberXComponentClass, optionsOrEl
   // renderer per owner, so an ownerless render would build a whole renderer
   // (and program heap) every time.
   const owner = renderingOwnerFor(options.owner ?? DEFAULT_OWNER);
+
+  if (isServerRendered(element)) {
+    const renderer = renderWithBuilder(ComponentClass, {
+      into: element,
+      args: options.args,
+      owner,
+      document: element.ownerDocument,
+      builder: rehydrationBuilder,
+      interactive: true,
+    });
+    hydratedRenderers.set(element, renderer);
+
+    return renderSettled();
+  }
+
+  const hydrated = hydratedRenderers.get(element);
+  if (hydrated) {
+    hydratedRenderers.delete(element);
+    hydrated.destroy();
+    // The hydrated render's teardown finishes before anything renders in its place.
+    await renderSettled();
+  }
+
   emberRenderComponent(ComponentClass as object, { ...options, owner, into: element });
 
   return renderSettled();
 }
+
+/** Renderers that hydrated server-rendered markup, by the element they hydrated. */
+const hydratedRenderers = new Map<Element, { destroy(): void }>();
 
 /**
  * Ember keeps one renderer per owner, and a root that throws during its first
@@ -164,6 +194,8 @@ function renderingOwnerFor(owner: object): object {
 /** Forgets every renderer. @emberx/test-helpers calls this after each test. */
 function resetRendering(): void {
   renderingOwners = new WeakMap();
+  hydratedRenderers.forEach((renderer) => renderer.destroy());
+  hydratedRenderers.clear();
   _resetRenderers();
 }
 
@@ -217,6 +249,7 @@ function traverseAndCompileAllComponents(ComponentClass: EmberXComponentClass) {
 export {
   didRender,
   resetRendering,
+  renderWithBuilder,
   createTemplate,
   setComponentTemplate,
   getOwner,

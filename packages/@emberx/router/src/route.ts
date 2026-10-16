@@ -1,12 +1,11 @@
 // NOTE: params could be manipulated if needed during routeWillChange and routeDidChange
 // TODO: make this sticky params if needed
 import type RouterService from './router-service.ts';
-import type { GlobalWithQUnit } from './router-service.ts';
 import { ROUTE_ABOVE_PAGE } from './route-above-page.ts';
 import Router from './index.ts';
 import Owner from './owner.ts';
 import { buildQueryParams, type QueryParamDeclarations } from './query-params.ts';
-import EmberXComponent, { action, renderComponent, service } from '@emberx/component';
+import EmberXComponent, { action, service } from '@emberx/component';
 import { QUERY_PARAMS_SYMBOL } from 'router_js';
 
 interface FreeObject {
@@ -154,32 +153,20 @@ export default class Route extends EmberXComponent<FreeObject> {
       return;
     }
 
-    const containerElement: HTMLElement | null = (globalThis as GlobalWithQUnit).QUnit
-      ? document.getElementById('ember-testing')
-      : document.getElementById('app');
-
-    if (!containerElement) {
-      throw new Error('#app or #ember-testing not found for the @emberx/router to boot/render the application!');
-    }
-
-    // No manual clearing: renderComponent replaces what it rendered here before.
+    // No manual clearing: renderComponent replaces what it rendered before.
     // Clearing innerHTML behind its back removes nodes it still owns, and its
     // asynchronous teardown then fails to find them.
     const target = getRenderedRouteInfo(routeInfos);
     const router = this.router;
 
-    await renderComponent(target.route as typeof Route, {
-      element: containerElement as HTMLElement,
-      args: {
-        model: (target === routeInfos[routeInfos.length - 1] ? model : target.context) || {},
-        params: Object.assign({}, ...routeInfos.map((routeInfo) => routeInfo.params)),
-        // A getter, so a query-param change that keeps the route updates it in
-        // place through the tracked router state.
-        get queryParams() {
-          return router.queryParamsWithDefaults;
-        },
+    await router.renderPage(target.route as typeof Route, {
+      model: (target === routeInfos[routeInfos.length - 1] ? model : target.context) || {},
+      params: Object.assign({}, ...routeInfos.map((routeInfo) => routeInfo.params)),
+      // A getter, so a query-param change that keeps the route updates it in
+      // place through the tracked router state.
+      get queryParams() {
+        return router.queryParamsWithDefaults;
       },
-      owner: Owner,
     });
   }
 

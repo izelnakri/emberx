@@ -2,7 +2,7 @@ import DefaultResolver from './resolvers/default.ts';
 import router, { logAbort, type Route as RouterJSRoute } from 'router_js';
 import Owner from './owner.ts';
 import EmberXRouter from './index.ts';
-import { tracked } from '@emberx/component';
+import { renderComponent, tracked } from '@emberx/component';
 import LocationBar from '@emberx/vendor/location-bar';
 import {
   buildQueryParams,
@@ -93,24 +93,47 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
     routeDidChange: new Set(),
   };
 
+  /**
+   * Where the URL lives. `history`: the address bar, through pushState, with the
+   * back and forward buttons followed. `none`: only here, as Ember's
+   * NoneLocation keeps it, for rendering on a server. Without a `window`, `none`.
+   */
+  location: 'history' | 'none' = typeof window === 'undefined' ? 'none' : 'history';
+
   constructor(options: FreeObject | undefined) {
     super();
 
     if (options) {
       Object.entries(options).forEach(([key, value]) => {
-        (this as FreeObject)[key] = value;
+        if (value !== undefined) (this as FreeObject)[key] = value;
       });
     }
 
-    this.locationBar = new LocationBar();
-    this.locationBar.start({ pushState: true });
-    // Back and forward change the URL first, then fire popstate: go where they went.
-    this.locationBar.onChange((path: string) => this.#followBrowserURL(path));
+    if (this.location === 'history') {
+      this.locationBar = new LocationBar();
+      this.locationBar.start({ pushState: true });
+      // Back and forward change the URL first, then fire popstate: go where they went.
+      this.locationBar.onChange((path: string) => this.#followBrowserURL(path));
+    }
   }
 
   /** Stops following the browser's back and forward buttons, for a router that is being replaced. */
   stopListening(): void {
-    this.locationBar.stop();
+    this.locationBar?.stop();
+  }
+
+  /**
+   * Renders the page a transition ended on: into `#app`, or `#ember-testing`
+   * in a test. @emberx/ssr's renderURLToString() replaces it, to render the
+   * page to a string instead.
+   */
+  async renderPage(Page: object, args: FreeObject): Promise<void> {
+    const element = document.getElementById(this.testing ? 'ember-testing' : 'app');
+    if (!element) {
+      throw new Error('#app or #ember-testing not found for the @emberx/router to boot/render the application!');
+    }
+
+    await renderComponent(Page as any, { element, args, owner: Owner });
   }
 
   /**
@@ -176,7 +199,7 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
     this.currentURL = url;
 
     if (!this.testing) {
-      this.locationBar.update(url, { replace: true });
+      this.locationBar?.update(url, { replace: true });
     }
   }
 
@@ -184,7 +207,7 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
     this.currentURL = url;
 
     if (!this.testing) {
-      this.locationBar.update(url);
+      this.locationBar?.update(url);
     }
   }
 

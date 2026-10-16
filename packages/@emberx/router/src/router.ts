@@ -42,6 +42,12 @@ export interface StartOptions {
    * explicit declaration always wins over what it returns.
    */
   resolve?: (name: string) => ResolvedRoute;
+  /**
+   * Where the URL lives: `history`, the address bar (the default in a
+   * browser), or `none`, only in the router, for rendering on a server (the
+   * default without a `window`).
+   */
+  location?: 'history' | 'none';
 }
 
 export interface routerJSRouteDefinition {
@@ -86,7 +92,7 @@ export default class Router {
     startOptions: StartOptions = {},
   ): Router {
     const routeMap = typeof routeMapOrOptions === 'function' ? routeMapOrOptions : undefined;
-    const { resolve } = typeof routeMapOrOptions === 'object' ? routeMapOrOptions : startOptions;
+    const { resolve, location } = typeof routeMapOrOptions === 'object' ? routeMapOrOptions : startOptions;
     stopPreviousRouter();
     Owner.clear('routes');
 
@@ -97,7 +103,7 @@ export default class Router {
       resolveByConvention(resolve);
     }
     const routerJSRouteArray = this.convertToRouterJSRouteArray(Owner.routes);
-    const routerService = Owner.register('service:router', new RouterService({ Resolver: this.Resolver }));
+    const routerService = Owner.register('service:router', new RouterService({ Resolver: this.Resolver, location }));
     // Every route is under the application route, as in Ember: it has no URL of
     // its own, and the names of the routes under it are not prefixed with it.
     routerService.map(function (match: any) {

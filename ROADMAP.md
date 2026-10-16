@@ -18,7 +18,7 @@ Ordered by what unblocks the most downstream work, not by size.
 | `@emberx/router`       | ✅    | Complete apart from re-rendering (see #2); browser-only (see #3). |
 | `@emberx/ssr`          | ❌ 0% | Untested, blocked on the router.                                  |
 
-304 tests pass in the browser (the full suite). The 65 of them that need no router
+317 tests pass in the browser (the full suite). The 65 of them that need no router
 also pass under node and under Deno, and the 13 code examples in the docs run as
 doctests. See #3 for what keeps the rest browser-only.
 
@@ -58,9 +58,10 @@ the existing suite) → port the environment delegate and render loop behind the
 ## 2. Finish the router
 
 Implemented and covered by `packages/@emberx/router/test/`: the model hook lifecycle,
-query params (`static queryParams`), loading and error substates,
-`Route.refresh()`, `router.urlFor()`, `router.on('routeWillChange' | 'routeDidChange')`,
-and the browser's back and forward buttons. What is left:
+query params (`static queryParams`), loading and error substates, page actions that
+`this.send()` takes up the routes, `willTransition`, `Route.refresh()`, `router.urlFor()`,
+`router.on('routeWillChange' | 'routeDidChange')`, and the browser's back and forward
+buttons. What is left:
 
 - **Substates are not discovered by convention.** Ember creates a loading and an error
   route under every route and enters one when the app has a template or class for it.

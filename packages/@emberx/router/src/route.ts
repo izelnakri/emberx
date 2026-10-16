@@ -1,6 +1,7 @@
 // NOTE: params could be manipulated if needed during routeWillChange and routeDidChange
 // TODO: make this sticky params if needed
 import RouterService, { type GlobalWithQUnit } from './router-service.ts';
+import { ROUTE_ABOVE_PAGE } from './route-above-page.ts';
 import Router from './index.ts';
 import Owner from './owner.ts';
 import { buildQueryParams, type QueryParamDeclarations } from './query-params.ts';
@@ -65,14 +66,27 @@ export default class Route extends EmberXComponent<FreeObject> {
     return router.refresh(this as any);
   }
 
-  /** The model of `routeKey` in the transition under way, whether it resolved it or the route stays active. */
+  /**
+   * The model of `routeKey`: from the transition under way, whether it resolved
+   * it or the route stays active, or, between transitions, from the active
+   * routes, as Ember's does.
+   */
   static modelFor(routeKey: string) {
     const transition = this.router.activeTransition;
-    if (!transition || !transition.resolvedModels[routeKey]) {
+    if (transition) {
+      if (!(routeKey in transition.resolvedModels)) {
+        throw new Error(`@emberx/router Route: ${routeKey} not found on current transition!`);
+      }
+
+      return transition.resolvedModels[routeKey];
+    }
+
+    const routeInfo = currentRouteInfos(this.router).find((routeInfo) => routeInfo.name === routeKey);
+    if (!routeInfo) {
       throw new Error(`@emberx/router Route: ${routeKey} not found on current transition!`);
     }
 
-    return transition.resolvedModels[routeKey];
+    return routeInfo.context;
   }
 
   /** The dynamic-segment params of `routeName`, which must be active or part of the current transition. */
@@ -177,6 +191,27 @@ export default class Route extends EmberXComponent<FreeObject> {
       },
       owner: Owner,
     });
+  }
+
+  constructor(owner: object, args: FreeObject) {
+    super(owner, args);
+
+    // The latest route rendered is the page on screen. The router also makes
+    // instances of the routes above it, for actions sent their way.
+    if (!(args as any)?.[ROUTE_ABOVE_PAGE]) {
+      this.router.currentPage = this;
+    }
+  }
+
+  /**
+   * Sends an action to this page, then to the routes above it: router.send()
+   * as an action, so a template can pass arguments with fn:
+   * `{{on "click" (fn this.send "share" this.model)}}`. Async, so click() in
+   * tests waits for an async action to finish.
+   */
+  @action
+  async send(name: string, ...args: unknown[]): Promise<unknown> {
+    return await this.router.send(name, ...args);
   }
 
   /** Route.refresh() for the route on screen, as an action: `{{on "click" this.refresh}}`. */

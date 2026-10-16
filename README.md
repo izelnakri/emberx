@@ -68,7 +68,7 @@ Although the project is not production-ready one can still experiment with it us
 - No runloop, we dont need it anymore.
 - test helpers(`click()`, `keyPress()` etc.) wait without a waiter when the fired action returns a promise, and for any router transition it started.
 - Explicit and flexible routes declarations with @emberx/router.
-- Ember Route hooks (`beforeModel`, `model`, `afterModel`, `redirect`) are static methods instead of instance methods.
+- Ember Route hooks (`beforeModel`, `model`, `afterModel`, `redirect`) are static methods instead of instance methods. Actions are the routes' own `@action` methods, which do the work of Ember's controller and route actions; `this.send()` reaches the routes above a page (see Actions on a page).
 - No sticky queryParams, instead link building is explicit with `<LinkTo @query={{hash param=value}}/>` or with object helpers `<LinkTo @query={{assign (hash active=true) this.router.queryParams}}/>`.
 - No `{{outlet}}`, instead parent routes included in the child route template with `{{yield}}`. This allows compiling individual route files for the browser without a magical build step.
 - No need for initializers and instance initializers, all code runs in module file import and execution order.
@@ -275,7 +275,8 @@ Router.start([
 | `/posts/1` | `PostsLoadingRoute` | `PostErrorRoute`, or `PostsErrorRoute` if loading the posts failed |
 
 A loading or error route is an ordinary route with a template, entered without changing the
-URL. A model that resolves right away never shows its loading route.
+URL. A model that resolves right away never shows its loading route, and a hook that catches
+its own error shows no error route (see Actions on a page).
 
 For Ember users: `loadingRoute` and `errorRoute` declare the `posts_loading` and `posts_error`
 substates. The Ember names work too, as definitions without a path (`{ name: 'posts.loading',
@@ -301,7 +302,7 @@ class PostsRoute extends Route {
   }
 
   static model({ queryParams }) {
-    return fetch(`/posts?page=${queryParams.page}`).then((response) => response.json());
+    return fetch(`/posts?page=${queryParams.page}`).then((response) => response.json()); // a failure shows PostsErrorRoute
   }
 
   static template = hbs`
@@ -320,6 +321,196 @@ router.on('routeDidChange', (transition) => analytics.trackPage(transition.to.na
 router.urlFor('posts.post', post, { queryParams: { page: 2 } }); // '/posts/1?page=2', no transition
 PostsRoute.refresh(); // its model hooks again, and its children's; {{on "click" this.refresh}} in a template
 ```
+
+#### Actions on a page:
+
+In emberx a page is a route: one class holds the page's hooks, its template and everything the
+page does. A page needs no component to act, and no controller: its `@action` methods and
+`@tracked` fields belong to the route.
+
+```ts ignore
+import Router, { Route, hbs, action, service, tracked } from '@emberx/router';
+
+class PostRoute extends Route {
+  @service sharing; // what several pages do the same way lives in a service
+
+  @tracked isLiked = false;
+  @tracked draft = '';
+
+  static model({ post_id }) {
+    return fetch(`/posts/${post_id}`).then((response) => response.json());
+  }
+
+  @action toggleLike() {
+    this.isLiked = !this.isLiked;
+  }
+
+  @action updateDraft(event) {
+    this.draft = event.target.value;
+  }
+
+  @action async saveComment() {
+    await fetch(`/posts/${this.model.id}/comments`, { method: 'POST', body: this.draft });
+    this.draft = '';
+    await this.refresh(); // the model hook again, for the new comment
+  }
+
+  @action share(medium) {
+    this.sharing.share(this.model, medium);
+  }
+
+  // The router calls this on the page on screen, before it leaves the page.
+  @action willTransition(transition) {
+    if (this.draft && !window.confirm('Leave without posting your comment?')) {
+      transition.abort(); // stays on the page; the URL does not change
+    }
+  }
+
+  static template = hbs`
+    <h1>{{this.model.title}}</h1>
+
+    <button type="button" {{on "click" this.toggleLike}}>{{if this.isLiked "Liked" "Like"}}</button>
+
+    <textarea value={{this.draft}} {{on "input" this.updateDraft}}></textarea>
+    <button type="button" {{on "click" this.saveComment}}>Comment</button>
+
+    <button type="button" {{on "click" (fn this.share "mastodon")}}>Share</button>
+  `;
+}
+```
+
+In an action, `this` is the page on screen: its `@tracked` fields, `this.model`, `this.router` and
+its services. `click()`, `fillIn()` and the other test helpers wait for an async action to finish.
+
+##### Sending an action to the routes above a page
+
+A page can also send an action to the routes above it: `this.send(name, ...args)`, or
+`(fn this.send "name" ...)` in its template. The action goes to the page first, then to its
+parent route, then to that route's parent, and runs on the first that has an `@action` by that
+name. An action that returns `true` passes it on to the next route up. This is how Ember's
+`send()` works, and it suits what belongs to a part of the app rather than to one page:
+
+```ts ignore
+class BlogRoute extends Route {
+  @service sharing;
+
+  @action subscribe(email) {
+    return fetch('/subscriptions', { method: 'POST', body: email }); // any page of the blog can send it
+  }
+
+  @action share(post, medium) {
+    this.sharing.share(post, medium);
+  }
+}
+
+class PostsRoute extends Route {
+  @service sharing;
+  @tracked archivedCount = 0;
+
+  static model() {
+    return fetch('/posts').then((response) => response.json());
+  }
+
+  @action async archive(post) {
+    await fetch(`/posts/${post.id}/archive`, { method: 'POST' });
+    post.isArchived = true;
+    this.archivedCount++;
+  }
+
+  @action share(post, medium) {
+    if (medium !== 'mastodon') {
+      return true; // the blog shares by every other medium
+    }
+
+    this.sharing.toot(post);
+  }
+}
+
+// What /blog/posts shows. It needs no actions of its own.
+class PostsIndexRoute extends Route {
+  static model() {
+    return this.modelFor('blog.posts');
+  }
+
+  static template = hbs`
+    {{#each this.model as |post|}}
+      <h2>{{post.title}}</h2>
+      <button type="button" {{on "click" (fn this.send "archive" post)}}>Archive</button>
+      <button type="button" {{on "click" (fn this.send "share" post "mastodon")}}>Mastodon</button>
+      <button type="button" {{on "click" (fn this.send "share" post "email")}}>Email</button>
+    {{/each}}
+    <button type="button" {{on "click" (fn this.send "subscribe" "reader@example.com")}}>Subscribe</button>
+  `;
+}
+
+Router.start([
+  { path: '/blog', name: 'blog', route: BlogRoute },
+  { path: '/blog/posts', name: 'blog.posts', route: PostsRoute, indexRoute: PostsIndexRoute },
+  { path: '/blog/posts/:post_id', name: 'blog.posts.post', route: PostRoute },
+]);
+```
+
+- **A route above the page has no template on screen.** Its action runs on an instance of the
+  route the router makes, with that route's own `this.model`, params and services. The instance
+  lasts while the route stays active with the same model, so `archivedCount` keeps counting
+  across the pages under `/blog/posts`. Leaving the route, or a `refresh()` of it, starts a new
+  one.
+- **`this.send()` returns what the action that ran returned**, a promise for an async one, so
+  `click()` in tests waits for it. An action that neither the page nor a route above it has
+  throws `Nothing handles the action '<name>'`.
+- **`willTransition` takes the same path:** the page first, then the routes above it, so a
+  parent route can guard its whole section.
+- **Outside a page,** in a component or a service, `this.router.send(name, ...args)` does the
+  same, starting from the page on screen.
+
+The rest of what a page reacts to has one place each:
+
+| To                                                        | Use                                                                                    |
+| --------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| change what the page shows                                | an `@action` that sets `@tracked` fields                                               |
+| do what the pages under one route share: archive, share   | an `@action` on that route, sent with `this.send()`                                    |
+| do what pages all over the app share: log out, notify     | a service, called from the pages' `@action` methods                                    |
+| warn before leaving a page, or keep the user on it        | `willTransition(transition)` on the page or a route above it, and `transition.abort()` |
+| load the page's data again                                | `this.refresh()`                                                                       |
+| show something while a page loads                         | a `loadingRoute`                                                                       |
+| recover from a failing request, or redirect (403 → login) | a `catch` in the model hooks                                                           |
+| show an error page                                        | an `errorRoute`; it gets the error as `@model`                                         |
+| react to every transition: analytics, scroll, page titles | `router.on('routeWillChange')` and `router.on('routeDidChange')`                       |
+
+A hook that catches its own error is not an error to the router: no error route shows, and
+`visit()` resolves.
+
+```ts ignore
+class DashboardRoute extends Route {
+  static async model() {
+    const response = await fetch('/dashboard');
+    if (response.status === 403) {
+      return this.router.transitionTo('login');
+    } else if (!response.ok) {
+      throw new Error(`The dashboard could not load (${response.status})`); // the nearest errorRoute shows it
+    }
+
+    return response.json();
+  }
+}
+```
+
+For Ember users: actions are `@action` methods on routes, and `this.send()` goes from the page
+up the routes, as in Ember. With services and the router's own hooks, they cover what Ember
+splits between controllers and route actions:
+
+| In Ember                                               | In emberx                                                               |
+| ------------------------------------------------------ | ----------------------------------------------------------------------- |
+| a controller's `@action` methods and `@tracked` fields | the route's `@action` methods and `@tracked` fields                     |
+| route actions, and `this.send()` to reach them         | `@action` methods on the routes above the page, and `this.send()`       |
+| `{{action "share"}}`                                   | `{{on "click" (fn this.send "share")}}`, or the page's own `this.share` |
+| the route's `error` action                             | a `catch` in the model hooks, or an `errorRoute`                        |
+| the route's `loading` action                           | a `loadingRoute`, or `router.on('routeWillChange')`                     |
+| the route's `willTransition` action                    | `willTransition` on the page or a route above it                        |
+| the route's `didTransition` action                     | `router.on('routeDidChange')`, or the page's constructor                |
+
+A route written the Ember way, with an `error`, `loading` or `didTransition` method, gets a
+console warning naming the emberx way, once.
 
 #### Familiar @emberx/component:
 

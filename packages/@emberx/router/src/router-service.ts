@@ -12,6 +12,7 @@ import {
   isHiddenFromURL,
 } from './query-params.ts';
 import { findSubstate, type Substate } from './substates.ts';
+import { ROUTE_ABOVE_PAGE } from './route-above-page.ts';
 
 /**
  * router_js publishes both an ESM and a CJS build; under the CJS interop shape
@@ -64,6 +65,19 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
   /** The URL the transition under way is leaving. */
   @tracked transitionFromURL: string | undefined;
 
+  /**
+   * The page on screen: the route instance whose template the router rendered
+   * last. Actions sent with send(), and `willTransition`, reach it first.
+   */
+  currentPage: object | undefined;
+
+  /**
+   * Instances of the routes above the page, made when an action first needs
+   * one. Keyed by route info, so an instance lasts while its route stays active
+   * with the same model.
+   */
+  #routesAbovePage = new WeakMap<object, object>();
+
   /** Errors an error substate dealt with; visit() resolves for these instead of rejecting. */
   #handledErrors = new Set<unknown>();
   #loadingTimer: ReturnType<typeof setTimeout> | undefined;
@@ -102,7 +116,9 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
 
   /**
    * router_js's hook for the events it fires during a transition. The
-   * query-param events and loading/error go to the router's own handling.
+   * query-param events and loading/error go to the router's own handling, and
+   * `willTransition` goes where send() goes: the page on screen, then the routes
+   * above it. Any of them can abort it.
    */
   triggerEvent(routeInfos: any[], ignoreFailure: boolean, name: string, args: any[]) {
     if (name === 'finalizeQueryParamChange') {
@@ -111,13 +127,42 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
       return this.#refreshForQueryParams(routeInfos, args[0], args[2]);
     } else if (name === 'willResolveModel') {
       return this.#scheduleLoadingEvent(args[0], args[1]);
+    } else if (name === 'willTransition') {
+      return this.#dispatch('willTransition', args).result;
     } else if (name === 'loading') {
       return this.#enterSubstate(routeInfos, 'loading', args[0]);
     } else if (name === 'error') {
       return this.#enterSubstate(routeInfos, 'error', args[1], args[0]);
     } else if (!ignoreFailure) {
-      throw new Error(`Nothing handles '${name}': emberx routes have no actions. Call a page's @action, or a service.`);
+      throw new Error(`Nothing handles '${name}'.`);
     }
+  }
+
+  /**
+   * Sends the action `name` to the page on screen, then to each route above it,
+   * deepest first, as Ember's route actions go up the routes: the first with an
+   * @action by that name runs it, and one that returns true passes it on.
+   * Returns what the action that handled it returned, a promise for an async
+   * one. Throws when none of them has the action.
+   *
+   * A route above the page has no template on screen; the action runs on an
+   * instance of it the router makes, with that route's own model, params and
+   * services, and keeps while the route stays active with that model.
+   */
+  send(name: string, ...args: unknown[]): unknown {
+    const { handled, result } = this.#dispatch(name, args);
+    if (!handled) {
+      throw new Error(
+        `Nothing handles the action '${name}': neither the page on screen nor a route above it has an @action by that name.`,
+      );
+    }
+
+    return result;
+  }
+
+  /** router_js's name for send(). */
+  trigger(name: string, ...args: unknown[]): unknown {
+    return this.send(name, ...args);
   }
 
   replaceURL(url: string): void {
@@ -234,6 +279,11 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
   }
 
   willTransition(_oldRouteInfos: any, _newRouteInfos: any, transition: any) {
+    // The page's willTransition can abort the transition before this runs.
+    if (transition.isAborted) {
+      return;
+    }
+
     const targetRouteInfo = transition.routeInfos[transition.resolveIndex];
 
     this.isTransitioning = true;
@@ -258,6 +308,8 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
 
     const targetRoute = this.Resolver.resolve(name);
 
+    warnAboutEmberRouteMethods(targetRoute);
+
     return Object.assign(targetRoute, Owner.services);
   }
 
@@ -273,6 +325,62 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
         throw error;
       }
     }
+  }
+
+  #dispatch(name: string, args: unknown[]): { handled: boolean; result?: unknown } {
+    let handled = false;
+    for (const target of this.#actionTargets(name)) {
+      handled = true;
+
+      const result = target[name](...args);
+      if (result !== true) {
+        return { handled, result };
+      }
+    }
+
+    return { handled };
+  }
+
+  /** The page on screen, then the routes above it that have an action `name`, deepest first. */
+  *#actionTargets(name: string): Generator<any> {
+    const page = this.currentPage as any;
+    if (!page) {
+      return;
+    }
+
+    if (typeof page[name] === 'function') {
+      yield page;
+    }
+
+    // The page is the deepest active route of its class; its index route renders it when it has none.
+    const routeInfos: any[] = this.state?.routeInfos ?? [];
+    let pageIndex = routeInfos.length - 1;
+    while (pageIndex >= 0 && routeInfos[pageIndex].route !== page.constructor) {
+      pageIndex--;
+    }
+
+    for (let index = pageIndex - 1; index >= 0; index--) {
+      if (hasInstanceMethod(routeInfos[index].route, name)) {
+        yield this.#routeAbovePage(routeInfos, index);
+      }
+    }
+  }
+
+  #routeAbovePage(routeInfos: any[], index: number): object {
+    const routeInfo = routeInfos[index];
+    let instance = this.#routesAbovePage.get(routeInfo);
+    if (!instance) {
+      const RouteClass = routeInfo.route;
+      instance = new RouteClass(Owner, {
+        model: routeInfo.context,
+        params: Object.assign({}, ...routeInfos.slice(0, index + 1).map((info) => info.params)),
+        queryParams: this.queryParamsWithDefaults,
+        [ROUTE_ABOVE_PAGE]: true,
+      }) as object;
+      this.#routesAbovePage.set(routeInfo, instance);
+    }
+
+    return instance;
   }
 
   /**
@@ -396,4 +504,51 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
       this.intermediateTransitionTo(name);
     }
   }
+}
+
+/** Ember route methods emberx routes do not have, with what to use instead. */
+const EMBER_ROUTE_METHODS: Record<string, string> = {
+  error: 'catch the error in its model hooks, or declare an errorRoute',
+  loading: "declare a loadingRoute, or time transitions with router.on('routeWillChange')",
+  didTransition: "use router.on('routeDidChange'), or the page's constructor",
+};
+
+/** Route classes already checked for Ember route methods, so each is warned about once. */
+const checkedRoutes = new WeakSet<object>();
+
+/**
+ * Ember routes catch loading, errors and finished transitions with methods such
+ * as `@action error(error) {}`. emberx routes have no actions, so a route ported
+ * from Ember would lose that handling without a sound: say so, once per route.
+ */
+function warnAboutEmberRouteMethods(Route: any) {
+  if (!Route || checkedRoutes.has(Route)) {
+    return;
+  }
+
+  checkedRoutes.add(Route);
+  for (const name of Object.keys(EMBER_ROUTE_METHODS)) {
+    if (hasInstanceMethod(Route, name)) {
+      console.warn(
+        `@emberx/router: ${Route.name} has ${/^[aeiou]/.test(name) ? 'an' : 'a'} "${name}" method, which the router does not call. ` +
+          `Instead, ${EMBER_ROUTE_METHODS[name]}.`,
+      );
+    }
+  }
+}
+
+function hasInstanceMethod(Class: any, name: string): boolean {
+  for (
+    let prototype = Class?.prototype;
+    prototype && prototype !== Object.prototype;
+    prototype = Object.getPrototypeOf(prototype)
+  ) {
+    const descriptor = Object.getOwnPropertyDescriptor(prototype, name);
+    if (descriptor) {
+      // @action defines a getter that binds the method.
+      return typeof descriptor.value === 'function' || typeof descriptor.get === 'function';
+    }
+  }
+
+  return false;
 }

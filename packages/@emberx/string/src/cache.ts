@@ -3,11 +3,13 @@ export default class Cache<T, V> {
   public misses = 0;
   public hits = 0;
 
-  constructor(
-    private limit: number,
-    private func: (obj: T) => V,
-    private store?: any,
-  ) {
+  private limit: number;
+  private func: (obj: T) => V;
+  private store: Map<T, V>;
+
+  constructor(limit: number, func: (obj: T) => V, store?: Map<T, V>) {
+    this.limit = limit;
+    this.func = func;
     this.store = store || new Map();
   }
 
@@ -15,7 +17,7 @@ export default class Cache<T, V> {
     if (this.store.has(key)) {
       this.hits += 1;
 
-      return this.store.get(key);
+      return this.store.get(key) as V; // has() just found it
     } else {
       this.misses += 1;
 

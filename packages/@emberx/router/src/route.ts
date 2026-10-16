@@ -1,6 +1,7 @@
 // NOTE: params could be manipulated if needed during routeWillChange and routeDidChange
 // TODO: make this sticky params if needed
-import RouterService, { type GlobalWithQUnit } from './router-service.ts';
+import type RouterService from './router-service.ts';
+import type { GlobalWithQUnit } from './router-service.ts';
 import { ROUTE_ABOVE_PAGE } from './route-above-page.ts';
 import Router from './index.ts';
 import Owner from './owner.ts';

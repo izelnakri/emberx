@@ -1,7 +1,7 @@
 export { hbs } from '@emberx/component';
 import RouterService from './router-service.ts';
 import Route from './route.ts';
-import Owner, { RouteRegistry } from './owner.ts';
+import Owner, { type RouteRegistry } from './owner.ts';
 import RouteMapContext from './route-map-context.ts';
 import DefaultResolver from './resolvers/default.ts';
 import { isSubstateName, getSubstatePath } from './substates.ts';

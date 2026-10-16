@@ -1,5 +1,5 @@
 import { didRender } from '@emberx/component';
-import inputs, { Target } from 'browser-inputs';
+import inputs, { type Target } from 'browser-inputs';
 import type { KeyboardEventType } from './fire-event.ts';
 import { settled } from '../wait.ts';
 

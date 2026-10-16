@@ -1,4 +1,4 @@
-import { RouteDefinition } from './router.ts';
+import type { RouteDefinition } from './router.ts';
 
 type RegistryKeys = 'components' | 'helpers' | 'routes' | 'services';
 

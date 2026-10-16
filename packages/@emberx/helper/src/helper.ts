@@ -24,7 +24,11 @@ class HelperWithServicesManager implements HelperManager<HelperBucket> {
     hasValue: true,
   });
 
-  constructor(private owner: { services: unknown }) {}
+  private owner: { services: unknown };
+
+  constructor(owner: { services: unknown }) {
+    this.owner = owner;
+  }
 
   createHelper(fn: helperFunc, args: Arguments): HelperBucket {
     return { fn, args, services: this.owner.services };

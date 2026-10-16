@@ -23,7 +23,11 @@
        emitting, so tsc is only ever used for checking and for .d.ts output. */
     "noEmit": true,
     "isolatedModules": true,
-    "verbatimModuleSyntax": false,
+    /* Only TypeScript that node can strip, leaving JavaScript: no parameter
+       properties, enums or namespaces, and types imported with `import type`.
+       Node 24 runs such files as they are (TODO, running without a build). */
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,

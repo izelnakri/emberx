@@ -1,5 +1,5 @@
 import DefaultResolver from './resolvers/default.ts';
-import router, { logAbort, Route as RouterJSRoute } from 'router_js';
+import router, { logAbort, type Route as RouterJSRoute } from 'router_js';
 import Owner from './owner.ts';
 import EmberXRouter from './index.ts';
 import { tracked } from '@emberx/component';

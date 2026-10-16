@@ -24,7 +24,7 @@ clean:
 # ── Develop ───────────────────────────────────────────────────────────────────
 
 # Serves examples/blog at http://localhost:1234 with esbuild watch.
-# `npm run dev -- --basic` serves the basic example shell instead.
+# The basic example is at http://localhost:1234/basic.html.
 dev:
 	npm run dev
 

@@ -1,5 +1,5 @@
 import { didRender } from '@emberx/component';
-import inputs, { Target } from 'browser-inputs';
+import inputs, { type Target } from 'browser-inputs';
 import { settled } from '../wait.ts';
 
 export default async function fillIn(target: Target, text: string): Promise<void> {

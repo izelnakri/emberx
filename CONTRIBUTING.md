@@ -183,8 +183,8 @@ Files named `*.chrome.bench.ts` run in Chrome instead, through `Chrome.bench`
 (`scripts/lib/chrome-bench.js`): the same signature as `Deno.bench` and the same JSON out, so
 they are checked and compared the same way. Neither Chrome nor the DevTools Protocol has a
 benchmark harness of its own, so this one warms up, sizes batches, samples and reports, on a
-cross-origin-isolated page for 5µs timer precision. They need Chrome: `CHROME_BIN`, or
-Playwright's. `CHROME_BENCH_CPU_THROTTLE=4` slows the CPU down 4× through CDP, roughly a
+cross-origin-isolated page for 5µs timer precision. They need Chrome, found as the browser suite
+finds it: `CHROME_BIN`, else a Chrome on your `PATH`, else Playwright's. `CHROME_BENCH_CPU_THROTTLE=4` slows the CPU down 4× through CDP, roughly a
 mid-range phone. On this branch they are observational, for the reason in
 `benches/render.chrome.bench.ts`.
 

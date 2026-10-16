@@ -18,7 +18,7 @@ Ordered by what unblocks the most downstream work, not by size.
 | `@emberx/router`       | ✅    | Complete apart from re-rendering (see #2); browser-only (see #3).          |
 | `@emberx/ssr`          | ⚠️    | Renders to a string under node and Deno; no routing or hydration (see #4). |
 
-341 tests pass in the browser (the full suite). The 65 of them that need no router
+347 tests pass in the browser (the full suite). The 65 of them that need no router
 also pass under node and under Deno, as do @emberx/ssr's 2, which run there only, and
 the 13 code examples in the docs run as doctests. See #3 for what keeps the rest browser-only.
 
@@ -70,19 +70,12 @@ override.
 
 Implemented and covered by `packages/@emberx/router/test/`: route names from paths, a
 `console.error` for a route declared twice, the application route, the model hook lifecycle,
-query params (`static queryParams`), loading and error substates, page actions that
-`this.send()` takes up the routes, `willTransition`, `Route.refresh()`, `router.urlFor()`,
-`router.on('routeWillChange' | 'routeDidChange')`, and the browser's back and forward
-buttons. What is left:
-
-- **Substates are not discovered by convention.** Ember creates a loading and an error
-  route under every route and enters one when the app has a template or class for it.
-  emberx enters a substate only when it is declared, in `Router.start()` or in a
-  `Router.map()` definition, and has a class. Finding them by file name is the job of the
-  classic and module-unification resolvers, which are still stubs.
-- **`Route.setup` wipes `innerHTML`** on every transition and is marked "temporary
-  solution" in the source. It defeats Glimmer's diffing — every navigation is a full
-  re-render. Fixing this is both a correctness and a performance item.
+query params (`static queryParams`), loading and error substates, routes and substates found
+by name through `Router.start(…, { resolve })` as Ember finds them by file name, page actions
+that `this.send()` takes up the routes, `willTransition`, `Route.refresh()`,
+`router.urlFor()`, `router.on('routeWillChange' | 'routeDidChange')`, and the browser's back
+and forward buttons. Each transition renders the new page in place of the old one, through
+Ember's renderer, which tears the previous one down; nothing clears the DOM behind it.
 
 `router_js` is on `^8`. The lifecycle, query-param and substate suites pin its behaviour,
 including the parts emberx relies on that are not documented, such as `redirect` still

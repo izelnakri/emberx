@@ -136,49 +136,39 @@ declaration replaces the earlier one:
 - the application route, or the same loading or error route (by its `loadingRoute`/`errorRoute`
   or by its name), twice.
 
-This API also will allow custom resolvers that can resolve current ember routers(ie. routes in `Router.map(function() {})`) with a specific resolver definition(classic or MUD) in future:
+#### An existing `Router.map()`, with routes found by name:
 
-#### Backward-compatible API suggestion:
+`Router.start()` also takes an Ember `Router.map()` definition, as it is. A route a map
+declares has no class of its own; `resolve` finds one by its name, as Ember finds
+`app/routes/posts/post.js`. It is called for every route declared without a class, index
+routes included, and for every route's loading and error substates, by Ember's names:
+`posts_loading` while `posts` loads, `posts.loading` while a route under `posts` loads, and a
+top-level `loading` and `error` for everything else. It returns a route class, or a module
+whose default export is one, so a bundler's glob is enough:
 
 ```ts ignore
 import Router from '@emberx/router';
-import SomeCustomResolver from './custom-resolver';
 
-Router.Resolver = SomeCustomResolver;
+// { './routes/posts.ts': { default: PostsRoute }, './routes/posts/loading.ts': ..., ... }
+const modules = import.meta.glob('./routes/**/*.ts', { eager: true });
 
-let existingMapDefinition = function () {
-  this.route('public', { path: '/' }, function () {
-    this.route('index', { path: '/' });
-    this.route('blog-post', { path: '/:slug' });
-  });
-
-  this.route('admin', function () {
-    this.route('index', { path: '/' });
-  });
-
-  this.route('settings');
-  this.route('login');
-};
-
-let router = Router.start(
-  [
-    {
-      path: '/',
-      name: 'index',
-      route: IndexRoute,
-    },
-    {
-      path: '/posts',
-      name: 'posts',
-      route: PostsRoute,
-      indexRoute: PostsIndexRoute,
-    },
-  ],
-  existingMapDefinition,
+Router.start(
+  [],
+  function () {
+    this.route('posts', function () {
+      this.route('post', { path: '/:post_id' });
+    });
+    this.route('about');
+  },
+  { resolve: (name) => modules[`./routes/${name.replaceAll('.', '/')}.ts`] },
 );
-
-export default router;
 ```
+
+Here `routes/posts/index.ts` is what `/posts` shows, `routes/posts/loading.ts` shows while a
+post loads, and `routes/error.ts` catches a failure nothing closer handles. Definitions mix
+with it, and win over it: `Router.start(definitions, { resolve })` without a map, or
+`Router.start(definitions, map, { resolve })` with one. A route that declares a
+`loadingRoute` keeps it whatever `resolve` returns for `<name>_loading`.
 
 This experiment is also a sketch/request for a new ember edition.
 

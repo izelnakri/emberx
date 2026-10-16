@@ -66,9 +66,17 @@
       "types": "./@glimmer/manager/index.d.ts",
       "default": "./@glimmer/manager/index.js"
     },
+    "./@glimmer/node": {
+      "types": "./@glimmer/node/index.d.ts",
+      "default": "./@glimmer/node/index.js"
+    },
     "./@glimmer/owner": {
       "types": "./@glimmer/owner/index.d.ts",
       "default": "./@glimmer/owner/index.js"
+    },
+    "./@glimmer/runtime": {
+      "types": "./@glimmer/runtime/index.d.ts",
+      "default": "./@glimmer/runtime/index.js"
     },
     "./@glimmer/tracking": {
       "types": "./@glimmer/tracking/index.d.ts",

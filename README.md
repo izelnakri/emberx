@@ -56,7 +56,7 @@ make test-browser
 - @emberx/helper - Test coverage: ✔️
 - @emberx/test-helpers - Test coverage: ✔️
 - @emberx/router - Test coverage: ✔️
-- @emberx/ssr - Test coverage: 0%. Waiting to finish @emberx.router.
+- @emberx/ssr - Test coverage: ✔️
 
 Although the project is not production-ready one can still experiment with it using the blog example as a guide.
 `@emberx` packages are distributed on npm
@@ -667,6 +667,61 @@ document.querySelector('#locale-info').textContent; // => Component gets rendere
 
 Template/Component imports are respecting typescript standards, thus can be easily run node.js with npm, allowing
 simple server side rendering.
+
+#### Server-side rendering, and hydration in the browser:
+
+`@emberx/ssr` renders on a server, in node or Deno, with no browser DOM:
+
+```ts
+import Component, { hbs } from '@emberx/component';
+import { renderToString } from '@emberx/ssr';
+
+class Greeting extends Component {
+  static template = hbs`<p>Hello {{@name}}</p>`;
+}
+
+await renderToString(Greeting, { args: { name: 'server' }, hydratable: false }); // => <p>Hello server</p>
+```
+
+Without `hydratable: false` the markup also carries the comments Glimmer's rehydration reads.
+A browser render into an element holding it then adopts it: `renderComponent` reuses the
+server's nodes, attaches their event handlers, and updates them in place from then on,
+instead of building the page again.
+
+For a whole app, `renderURLToString(url)` renders the page a URL shows: the router goes to it
+as it would in a browser, model hooks, redirects and loading or error substates included,
+and the page it ends on renders to a string. Start the same router on both sides; in the
+browser, its first render hydrates the server's page:
+
+```ts ignore
+// start-router.ts, shared
+import Router from '@emberx/router';
+import routes from './routes.ts';
+
+export default () => Router.start(routes);
+
+// server.ts: without a `window`, the router keeps the URL in memory (`location: 'none'`)
+import { renderURLToString } from '@emberx/ssr';
+import startRouter from './start-router.ts';
+
+startRouter();
+
+Deno.serve(async (request) => {
+  const { pathname, search } = new URL(request.url);
+  const page = await renderURLToString(pathname + search);
+  const html = `<!doctype html><body><div id="app">${page}</div><script type="module" src="/app.js"></script>`;
+
+  return new Response(html, { headers: { 'content-type': 'text/html' } });
+});
+
+// app.ts, in the browser
+import startRouter from './start-router.ts';
+
+await startRouter().visit(`${location.pathname}${location.search}`);
+```
+
+emberx's `Owner` holds one router per process, so `renderURLToString` renders one URL at a
+time: requests that arrive together wait their turn.
 
 This also allows the ability to distribute every component, route, helper, module as an npm package without a need for a build/addon system.
 Parent components can use `static includes` to include the components they depend on.

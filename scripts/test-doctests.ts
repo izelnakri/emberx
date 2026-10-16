@@ -29,7 +29,6 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { test } from 'node:test';
 import * as esbuild from 'esbuild';
 
-import { emberxWorkspacePlugin } from './lib/esbuild-plugins.js';
 import { PACKAGES } from '../build.ts';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -111,7 +110,6 @@ await esbuild.build({
   banner: {
     js: "import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);",
   },
-  plugins: [emberxWorkspacePlugin(ROOT, PACKAGES)],
 });
 
 await import(pathToFileURL(`${ROOT}/test/setup-dom.js`).href);

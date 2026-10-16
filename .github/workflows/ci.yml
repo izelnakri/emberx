@@ -68,7 +68,8 @@ jobs:
       # CI installs it the same way.
       - run: node_modules/.bin/playwright-core install chromium-headless-shell
         if: runner.os == 'macOS'
-      - run: npm run build
+      # No build: every suite runs from the sources, which each package's
+      # exports point at. One that needed dist/ again would fail here.
       # The node suite proves the packages resolve and run under plain node,
       # which is emberx's central claim. The browser suite is where the renderer,
       # the router and every DOM assertion actually run.
@@ -134,7 +135,6 @@ jobs:
         run: npx playwright@${{ steps.pw-version.outputs.version }} install --with-deps ${{ matrix.browser }}
       - if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright@${{ steps.pw-version.outputs.version }} install-deps ${{ matrix.browser }}
-      - run: npm run build
       - run: npm run test:browser
         env:
           QUNITX_BROWSER: ${{ matrix.browser }}

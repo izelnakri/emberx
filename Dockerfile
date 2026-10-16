@@ -33,6 +33,4 @@ COPY . .
 # an extract rather than a download. Requires BuildKit, Docker's default builder.
 RUN --mount=type=cache,target=/root/.npm npm ci --no-audit --no-fund
 
-RUN npm run build
-
 CMD ["make", "check"]

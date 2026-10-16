@@ -45,9 +45,8 @@
  *   SKIP_BENCHMARK        comma-separated bench-file basenames to skip (without
  *                         `.bench.ts`). `true|1|all` skips the whole gate.
  *
- * emberx: the packages are built first (`npm run build:dev`), so the benchmarks
- * measure the dist/ users get, and each bench file is bundled by esbuild before
- * it runs: a page in Chrome cannot resolve bare imports, and bundling the Deno
+ * emberx: each bench file is bundled by esbuild from the package sources, as
+ * the build bundles dist/, before it runs: a page in Chrome cannot resolve bare imports, and bundling the Deno
  * files the same way keeps both measuring the same code.
  */
 import * as esbuild from 'esbuild';
@@ -104,9 +103,8 @@ async function run(command: string, args: string[], cwd = ROOT, quiet = false): 
 /** emberx: `*.chrome.bench.ts` files run in Chrome, through scripts/lib/chrome-bench.js. */
 const isChromeBench = (file: string): boolean => file.endsWith('.chrome.bench.ts');
 
-/** emberx: builds the packages, then bundles every bench file once into tmp/benches/. */
+/** emberx: bundles every bench file once into tmp/benches/. */
 async function bundle(files: string[]): Promise<void> {
-  await run('npm', ['run', 'build:dev', '--silent'], ROOT, true);
   const common = {
     outdir: BUNDLE_DIR,
     outbase: `${ROOT}benches`,

@@ -8,8 +8,8 @@
 #     silently degrades to `any`;
 #   - scripts/release-consumer-test.ts, what an npm user does first: import each
 #     package, render a component, render one to a string;
-#   - the node suite (test/node.ts), bundled with @emberx/* and ember-source
-#     resolved from the consumer's node_modules instead of the workspace.
+#   - the node suite (test/node.ts), with @emberx/* and ember-source resolved
+#     from the consumer's node_modules instead of the workspace.
 # The last two run under node, then under Deno.
 #
 # Source tests cannot see packaging mistakes: a `files` entry that omits dist/,
@@ -30,8 +30,12 @@ PACKAGES=(vendor string helper component router test-helpers ssr)
 # ── Build and pack ──────────────────────────────────────────────────────────
 cd "$ROOT"
 npm run build
+# What a release publishes: each package's dist/, which the build gives its own
+# package.json, and @emberx/vendor as it is (build.ts, publishedDirectory).
 for package in "${PACKAGES[@]}"; do
-  npm pack --workspace="@emberx/$package" --pack-destination "$CONSUMER" --quiet > /dev/null
+  directory="$ROOT/packages/@emberx/$package/dist"
+  [ "$package" = vendor ] && directory="$ROOT/packages/@emberx/vendor"
+  npm pack "$directory" --pack-destination "$CONSUMER" --quiet > /dev/null
 done
 
 # ── Install into a clean consumer ───────────────────────────────────────────
@@ -85,7 +89,8 @@ npx tsc --noEmit --strict --skipLibCheck --experimentalDecorators --target es202
 echo "test-release: node (consumer)"
 node --test release-consumer-test.ts
 echo "test-release: node (full suite against the installed packages)"
-node "$ROOT/scripts/test-node.ts" --packages-from="$CONSUMER"
+EMBERX_PACKAGES_FROM="$CONSUMER" node --import "$ROOT/scripts/register.ts" --import "$ROOT/test/setup-dom.js" \
+  --test "$ROOT/test/node.ts"
 
 # ── Deno ────────────────────────────────────────────────────────────────────
 echo "test-release: deno (consumer)"

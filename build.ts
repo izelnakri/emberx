@@ -1,17 +1,22 @@
 #!/usr/bin/env -S deno run -A
 /**
- * Builds every @emberx package to `dist/`.
+ * Builds every @emberx package to `dist/`, the directory a release publishes.
  *
  * Each package is bundled to a single ESM file with all bare specifiers left
  * external, so package boundaries survive: `@emberx/router` still imports
- * `@emberx/component` at runtime rather than inlining a copy of it. Relative
- * imports and vendored files (e.g. router's location-bar) are inlined.
+ * `@emberx/component` and `@emberx/vendor` at runtime rather than inlining a
+ * copy of them.
  *
  * Type declarations are emitted separately, through the TypeScript compiler
  * API with tsconfig.build.json, which is the only thing esbuild cannot do.
  *
  *   deno run -A build.ts
- *   ENVIRONMENT=development deno run -A build.ts   (inline sourcemaps, no .d.ts)
+ *
+ * Only publishing needs it. In the repo each package's exports point at its
+ * src/, so the tests, the dev server, the benchmarks and the doctests run the
+ * sources; dist/ gets a package.json of its own whose exports point at the
+ * bundle and its declarations, with the package's README and LICENSE, and that
+ * is what `npm publish` and `npm pack` are given.
  *
  * Replaces the previous pipeline (tsc -> babel-over-every-emitted-file, or in
  * development a per-file babel invocation), which needed
@@ -19,6 +24,7 @@
  * resolvable. Bundling removes that problem entirely.
  */
 
+import { existsSync } from 'node:fs';
 import { cp, rm, mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname } from 'node:path';
@@ -33,7 +39,10 @@ export const PACKAGES = ['string', 'helper', 'component', 'router', 'test-helper
 /** What a release publishes, leaf first: @emberx/vendor (scripts/build-emberx-vendor.ts), which has no build, then PACKAGES. */
 export const PUBLISHED = ['vendor', ...PACKAGES];
 
-const isDevelopment = process.env.ENVIRONMENT === 'development';
+/** The directory `npm publish` and `npm pack` are given: a built package's dist/, or @emberx/vendor itself. */
+export function publishedDirectory(name: string): string {
+  return name === 'vendor' ? `${ROOT}/packages/@emberx/vendor` : `${ROOT}/packages/@emberx/${name}/dist`;
+}
 
 /** Mark every bare specifier external; only relative/absolute imports get inlined. */
 const externalizeBareImports: esbuild.Plugin = {
@@ -59,7 +68,7 @@ async function buildPackage(name: string) {
     format: 'esm',
     platform: 'neutral',
     target: 'es2022',
-    sourcemap: isDevelopment ? 'inline' : true,
+    sourcemap: true,
     minify: false,
     logLevel: 'warning',
     plugins: [externalizeBareImports],
@@ -136,16 +145,44 @@ async function pointDeclarationsAtJavaScript(directory: string) {
   );
 }
 
+/**
+ * dist/package.json: the package's own manifest, with exports pointing at the
+ * bundle and its declarations instead of src/, plus its README and LICENSE.
+ */
+async function writeDistManifest(name: string) {
+  const packageDir = `${ROOT}/packages/@emberx/${name}`;
+  const {
+    exports: _sources,
+    dependencies,
+    ...fields
+  } = JSON.parse(await readFile(`${packageDir}/package.json`, 'utf8'));
+  const published = {
+    ...fields,
+    main: './index.js',
+    types: './index.d.ts',
+    exports: { '.': { types: './index.d.ts', default: './index.js' } },
+    dependencies,
+  };
+
+  await writeFile(`${packageDir}/dist/package.json`, `${JSON.stringify(published, null, 2)}\n`);
+  await Promise.all(
+    ['README.md', 'LICENSE']
+      .filter((file) => existsSync(`${packageDir}/${file}`))
+      .map((file) => cp(`${packageDir}/${file}`, `${packageDir}/dist/${file}`)),
+  );
+}
+
 async function main() {
   const started = Date.now();
 
   const built = await Promise.all(PACKAGES.map(buildPackage));
   process.stdout.write(`built ${built.length} packages: ${built.join(', ')}\n`);
 
-  if (!isDevelopment) {
-    await emitTypes();
-    process.stdout.write('emitted type declarations\n');
-  }
+  await emitTypes();
+  process.stdout.write('emitted type declarations\n');
+
+  await Promise.all(PACKAGES.map(writeDistManifest));
+  process.stdout.write('wrote each dist/package.json\n');
 
   process.stdout.write(`done in ${Date.now() - started}ms\n`);
 }

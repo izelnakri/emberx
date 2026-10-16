@@ -19,7 +19,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
-import { PUBLISHED } from '../build.ts';
+import { PUBLISHED, publishedDirectory } from '../build.ts';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -97,6 +97,13 @@ await writeJSON(`${ROOT}/package.json`, rootManifest);
 const names = await Promise.all(PUBLISHED.map((name) => stampPackage(name, version)));
 process.stdout.write(`stamped ${names.length} packages at ${version}\n`);
 
+// dist/package.json is written from each package's manifest, so the build runs
+// after the stamp, for the published manifests to carry the new version.
+if (npm(['run', 'build']).status !== 0) {
+  process.stderr.write('the build failed; nothing was published.\n');
+  process.exit(1);
+}
+
 if (isDryRun) {
   process.stdout.write(`[dry run] would publish: ${names.join(', ')}\n`);
   process.exit(0);
@@ -105,7 +112,7 @@ if (isDryRun) {
 // Published leaf-first (PUBLISHED is ordered that way), so at no point does the
 // registry hold an @emberx package whose @emberx dependencies are missing.
 for (const name of PUBLISHED) {
-  const { status } = npm(['publish', `--workspace=@emberx/${name}`, '--access', 'public']);
+  const { status } = npm(['publish', publishedDirectory(name), '--access', 'public']);
   if (status !== 0) {
     process.stderr.write(`publishing @emberx/${name}@${version} failed; nothing after it was published.\n`);
     process.exit(status ?? 1);

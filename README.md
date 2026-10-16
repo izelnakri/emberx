@@ -22,14 +22,14 @@ Everything runs through `make`; run `make` on its own for the full list.
 | Command              | What it does                                            |
 | -------------------- | ------------------------------------------------------- |
 | `make check`         | format + lint + typecheck + tests, the core CI checks   |
-| `make test`          | build, then the node, Deno and browser suites           |
+| `make test`          | the node, Deno and browser suites, with no build        |
 | `make test-node`     | string, helper and component under node + jsdom         |
 | `make test-deno`     | the same suite under Deno                               |
 | `make test-doctests` | the code examples in the docs, run and checked          |
 | `make test-browser`  | the full suite in a real browser (chromium)             |
 | `make coverage`      | browser-suite line coverage, written to `tmp/coverage/` |
 | `make bench`         | runtime template-compilation and per-render benchmarks  |
-| `make build`         | bundle every package to `dist/` and emit `.d.ts`        |
+| `make build`         | `dist/` and `.d.ts` for every package, for publishing   |
 | `make dev`           | example app with watch rebuilds                         |
 
 CI runs these same checks as separate jobs, and also runs the browser suite in Firefox and WebKit,

@@ -4,7 +4,7 @@ LEVEL ?= patch
 REGRESSION_THRESHOLD ?= 26
 BENCH_BASE ?=
 
-.PHONY: bench bench-check bench-print bench-update build build-dev check check-static clean coverage \
+.PHONY: bench bench-check bench-print bench-update build check check-static clean coverage \
         dev docker-build docker-test fix fmt format help install lint release setup test test-all-browsers \
         test-browser test-browser-dev test-chrome test-firefox test-deno test-doctests test-node test-release test-webkit typecheck \
         vendor vendor-check
@@ -12,19 +12,18 @@ BENCH_BASE ?=
 # ── Build ─────────────────────────────────────────────────────────────────────
 
 # Bundles each @emberx package to dist/ with esbuild, then emits .d.ts with tsc.
+# Only publishing needs it (make test-release, make release): everything else
+# runs from the sources.
 build:
 	npm run build
-
-# Same, but skips declaration emit — the fast loop used by `make test`.
-build-dev:
-	npm run build:dev
 
 clean:
 	npm run clean
 
 # ── Develop ───────────────────────────────────────────────────────────────────
 
-# Serves examples/blog at http://localhost:1234 with esbuild watch.
+# Serves examples/blog at http://localhost:1234, esbuild rebuilding on change, from the
+# sources: no build first. `npm run dev -- --serve=4000` picks another port.
 # The basic example is at http://localhost:1234/basic.html.
 dev:
 	npm run dev
@@ -74,7 +73,7 @@ vendor:
 vendor-check:
 	npm run vendor -- --check
 
-# Builds, then runs the node suite, the Deno suite and the browser suite.
+# The node suite, the Deno suite and the browser suite, from the sources.
 test:
 	npm test
 
@@ -121,7 +120,7 @@ test-all-browsers: test-browser test-firefox test-webkit
 test-release:
 	npm run test:release
 
-coverage: build-dev
+coverage:
 	npm run test:coverage
 
 # ── Benchmarks ────────────────────────────────────────────────────────────────
@@ -208,8 +207,7 @@ help:
 	@echo "Usage: make <target> [LEVEL=patch|minor|major|x.y.z] [REGRESSION_THRESHOLD=26]"
 	@echo ""
 	@echo "Build"
-	@echo "  build             Bundle all packages to dist/ + emit .d.ts"
-	@echo "  build-dev         Bundle only (skip declarations) — fast loop"
+	@echo "  build             Bundle all packages to dist/ + emit .d.ts (for publishing)"
 	@echo "  clean             Remove every build artefact"
 	@echo ""
 	@echo "Develop"
@@ -225,7 +223,7 @@ help:
 	@echo "  typecheck         tsc --noEmit over all package sources"
 	@echo "  vendor            Rewrite @emberx/vendor from the pinned packages"
 	@echo "  vendor-check      Fail if @emberx/vendor differs from them"
-	@echo "  test              Build, then node suite, then browser suite"
+	@echo "  test              Node, Deno and browser suites, from the sources"
 	@echo "  test-node         string, helper and component under node + jsdom"
 	@echo "  test-deno         The same suite under Deno"
 	@echo "  test-doctests     Run the code examples in the docs"
@@ -253,4 +251,3 @@ help:
 	@echo "  SKIP_BENCHMARK=true    skip bench-check (noisy machine)"
 	@echo "  BENCH_BASE=<ref>       commit bench-check compares against"
 	@echo "  QUNITX_BROWSER=<name>  override the browser for test-browser"
-	@echo "  PORT=<n>               dev server port (default 1234)"

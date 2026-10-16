@@ -3,7 +3,7 @@ import router, { logAbort, Route as RouterJSRoute } from 'router_js';
 import Owner from './owner.ts';
 import EmberXRouter from './index.ts';
 import { tracked } from '@emberx/component';
-import LocationBar from './vendor/location-bar.js';
+import LocationBar from '@emberx/vendor/location-bar';
 import {
   buildQueryParams,
   formatQueryParamValue,

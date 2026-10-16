@@ -10,7 +10,7 @@
  * `make release LEVEL=<patch|minor|major|x.y.z>`, which runs the checks first,
  * then commits, tags and pushes what this script stamped.
  *
- * All six packages share one version, and their intra-@emberx dependency ranges
+ * All seven packages share one version, and their intra-@emberx dependency ranges
  * are rewritten to that exact version, so a published set is always internally
  * consistent.
  */
@@ -19,7 +19,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
-import { PACKAGES } from '../build.ts';
+import { PUBLISHED } from '../build.ts';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -79,7 +79,7 @@ const version = nextVersion(rootManifest.version, level);
 // Checked before anything is stamped: npm rejects a version that already
 // exists, and finding that out after the first package has gone out leaves a
 // half-published set.
-for (const name of PACKAGES) {
+for (const name of PUBLISHED) {
   const probe = spawnSync('npm', ['view', `@emberx/${name}@${version}`, 'version'], {
     cwd: ROOT,
     encoding: 'utf8',
@@ -94,7 +94,7 @@ for (const name of PACKAGES) {
 rootManifest.version = version;
 await writeJSON(`${ROOT}/package.json`, rootManifest);
 
-const names = await Promise.all(PACKAGES.map((name) => stampPackage(name, version)));
+const names = await Promise.all(PUBLISHED.map((name) => stampPackage(name, version)));
 process.stdout.write(`stamped ${names.length} packages at ${version}\n`);
 
 if (isDryRun) {
@@ -102,9 +102,9 @@ if (isDryRun) {
   process.exit(0);
 }
 
-// Published leaf-first (PACKAGES is ordered that way), so at no point does the
+// Published leaf-first (PUBLISHED is ordered that way), so at no point does the
 // registry hold an @emberx package whose @emberx dependencies are missing.
-for (const name of PACKAGES) {
+for (const name of PUBLISHED) {
   const { status } = npm(['publish', `--workspace=@emberx/${name}`, '--access', 'public']);
   if (status !== 0) {
     process.stderr.write(`publishing @emberx/${name}@${version} failed; nothing after it was published.\n`);

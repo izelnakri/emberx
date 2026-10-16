@@ -45,8 +45,9 @@ archived upstream; this is where the VM is maintained now. What is left:
 - **Overlap with `@ember/helper`.** Ember now ships `and`, `or`, `not`, `eq`, `neq`, `gt`,
   `gte`, `lt` and `lte`. `@emberx/helper` could re-export them once their semantics are
   checked against emberx's (`and`/`or` return values in particular).
-- **Install weight.** `ember-source` depends on Babel, broccoli and ember-cli packages for
-  its blueprints, none of which emberx loads at runtime.
+- **Install weight**, settled: `ember-source` depends on Babel, broccoli and ember-cli
+  packages for its blueprints, none of which emberx loads. `@emberx/vendor` holds only the
+  ember-source modules emberx imports, and consumers no longer install ember-source.
 
 ---
 

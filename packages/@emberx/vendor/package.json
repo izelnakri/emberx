@@ -1,0 +1,87 @@
+{
+  "name": "@emberx/vendor",
+  "version": "0.2.0",
+  "description": "The code emberx uses from ember-source, @glimmer/component and location-bar, vendored by scripts/build-emberx-vendor.ts",
+  "type": "module",
+  "author": "Izel Nakri",
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/izelnakri/emberx.git",
+    "directory": "packages/@emberx/vendor"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "sideEffects": true,
+  "exports": {
+    "./@ember/-internals/glimmer": {
+      "types": "./@ember/-internals/glimmer/index.d.ts",
+      "default": "./@ember/-internals/glimmer/index.js"
+    },
+    "./@ember/component": {
+      "types": "./@ember/component/index.d.ts",
+      "default": "./@ember/component/index.js"
+    },
+    "./@ember/component/template-only": {
+      "types": "./@ember/component/template-only.d.ts",
+      "default": "./@ember/component/template-only.js"
+    },
+    "./@ember/destroyable": {
+      "types": "./@ember/destroyable/index.d.ts",
+      "default": "./@ember/destroyable/index.js"
+    },
+    "./@ember/helper": {
+      "types": "./@ember/helper/index.d.ts",
+      "default": "./@ember/helper/index.js"
+    },
+    "./@ember/modifier": {
+      "types": "./@ember/modifier/index.d.ts",
+      "default": "./@ember/modifier/index.js"
+    },
+    "./@ember/object": {
+      "types": "./@ember/object/index.d.ts",
+      "default": "./@ember/object/index.js"
+    },
+    "./@ember/owner": {
+      "types": "./@ember/owner/index.d.ts",
+      "default": "./@ember/owner/index.js"
+    },
+    "./@ember/renderer": {
+      "types": "./@ember/renderer/index.d.ts",
+      "default": "./@ember/renderer/index.js"
+    },
+    "./@ember/runloop": {
+      "types": "./@ember/runloop/index.d.ts",
+      "default": "./@ember/runloop/index.js"
+    },
+    "./@ember/template-compiler/runtime": {
+      "types": "./@ember/template-compiler/runtime.d.ts",
+      "default": "./@ember/template-compiler/runtime.js"
+    },
+    "./@glimmer/interfaces": {
+      "types": "./@glimmer/interfaces/index.d.ts"
+    },
+    "./@glimmer/manager": {
+      "types": "./@glimmer/manager/index.d.ts",
+      "default": "./@glimmer/manager/index.js"
+    },
+    "./@glimmer/owner": {
+      "types": "./@glimmer/owner/index.d.ts",
+      "default": "./@glimmer/owner/index.js"
+    },
+    "./@glimmer/tracking": {
+      "types": "./@glimmer/tracking/index.d.ts",
+      "default": "./@glimmer/tracking/index.js"
+    },
+    "./ember-template-compiler": {
+      "types": "./ember-template-compiler/index.d.ts",
+      "default": "./ember-template-compiler/index.js"
+    },
+    "./@glimmer/component": {
+      "types": "./@glimmer/component/index.d.ts",
+      "default": "./@glimmer/component/index.js"
+    },
+    "./location-bar": "./location-bar/location-bar.js"
+  }
+}

@@ -1,0 +1,12 @@
+/**
+ * The brand for classic (class-based) helpers lives in its own module so that
+ * code which only needs to *detect* classic helpers (e.g. the resolver) does
+ * not have to import the classic `Helper` base class (and with it the classic
+ * object model: `EmberObject`, `Mixin`, meta, etc.).
+ */
+const IS_CLASSIC_HELPER = Symbol('IS_CLASSIC_HELPER');
+function isClassicHelper(obj) {
+  return obj[IS_CLASSIC_HELPER] === true;
+}
+
+export { IS_CLASSIC_HELPER as I, isClassicHelper as i };

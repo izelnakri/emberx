@@ -1,5 +1,5 @@
 import Component, { hbs, service } from '@emberx/component';
-import { tracked } from '@glimmer/tracking';
+import { tracked } from '@emberx/component';
 import { on, action } from '@emberx/component';
 import helper from '@emberx/helper';
 import OtherComponent from './OtherComponent.ts';

@@ -1,4 +1,4 @@
-import { renderComponent, renderSettled } from '@ember/renderer';
+import { renderComponent, renderSettled } from '@emberx/vendor/@ember/renderer';
 import createDocument from '@simple-dom/document';
 import HTMLSerializer from '@simple-dom/serializer';
 import voidMap from '@simple-dom/void-map';

@@ -27,6 +27,7 @@
   "dependencies": {
     "@emberx/component": "0.2.0",
     "@emberx/string": "0.2.0",
+    "@emberx/vendor": "0.2.0",
     "route-recognizer": "^0.3.4",
     "router_js": "^8.0.6",
     "rsvp": "^4.8.5"

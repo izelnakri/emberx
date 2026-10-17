@@ -190,7 +190,7 @@ release:
 	$(MAKE) test
 	$(MAKE) test-doctests
 	$(MAKE) test-release
-	deno run -A scripts/release.ts $(LEVEL)
+	deno run -A scripts/publish-emberx-packages.ts $(LEVEL)
 	@VERSION=$$(node -p "require('./package.json').version"); \
 	npm install --package-lock-only --ignore-scripts && \
 	npm run changelog:update -- --tag "v$$VERSION" && \

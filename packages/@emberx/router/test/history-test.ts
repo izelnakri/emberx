@@ -44,6 +44,9 @@ module('@emberx/router | Back and forward buttons', function (hooks) {
 
   hooks.beforeEach(function () {
     pageURL = `${location.pathname}${location.search}${location.hash}`;
+    // A router under test leaves the address bar alone, so it starts from the
+    // test page's own URL; going back to `/` is only a change from elsewhere.
+    window.history.replaceState(null, '', '/tests');
   });
   hooks.afterEach(function () {
     window.history.replaceState(window.history.state, '', pageURL);

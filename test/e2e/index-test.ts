@@ -1,6 +1,6 @@
 import { module, test } from 'qunitx';
 import { visit, click, currentURL } from '@emberx/test-helpers';
-import startRouter from '@examples/blog/start-router';
+import startRouter from '@examples/blog/start-router.ts';
 import { setupApplicationTest } from '../helpers.ts';
 
 module('E2E | /', function (hooks) {
@@ -34,12 +34,12 @@ module('E2E | /', function (hooks) {
   test('the counter counts clicks', async function (assert) {
     await visit('/');
 
-    assert.dom('#ember-testing > button').hasText('Counter: 1');
+    assert.dom(':scope > button').hasText('Counter: 1');
 
     await click('#ember-testing > button');
     await click('#ember-testing > button');
 
-    assert.dom('#ember-testing > button').hasText('Counter: 3');
+    assert.dom(':scope > button').hasText('Counter: 3');
   });
 
   test('the post link goes to the admin page of that post', async function (assert) {
@@ -47,6 +47,6 @@ module('E2E | /', function (hooks) {
     await click('#intro a');
 
     assert.equal(currentURL(), '/admin/posts/232');
-    assert.dom('#ember-testing p').hasText('Post slug is: 232');
+    assert.dom('p').hasText('Post slug is: 232');
   });
 });

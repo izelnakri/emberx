@@ -48,7 +48,7 @@ module('@emberx/test-helpers | triggerEvent', function (hooks) {
       const element = document.querySelector('[data-test-some-div]');
       element.addEventListener('fliberty', (event) => {
         assert.step('fliberty');
-        assert.ok(event instanceof Event, `fliberty listener receives a native event`);
+        assert.ok(event instanceof window.Event, `fliberty listener receives a native event`);
       });
 
       await triggerEvent(element, 'fliberty');
@@ -112,7 +112,7 @@ module('@emberx/test-helpers | triggerEvent', function (hooks) {
     test('triggering event via window without context set fires the given event type', async function (assert) {
       const listener = (event) => {
         assert.step('resize');
-        assert.ok(event instanceof Event, `resize listener receives a native event`);
+        assert.ok(event instanceof window.Event, `resize listener receives a native event`);
       };
       window.addEventListener('resize', listener);
 

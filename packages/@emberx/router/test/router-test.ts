@@ -15,14 +15,19 @@ function removeRoute(routeRegistry, targetKey) {
   }, {});
 }
 
+module('@emberx/router | Logging', function () {
+  test('the router logs the routes and models it enters by default', function (assert) {
+    assert.true(Router.LOG_ROUTES);
+    assert.true(Router.LOG_MODELS);
+  });
+});
+
 module('@emberx/router | Public API', function (hooks) {
   setupTest(hooks);
 
   test('Router.map creates route registry without Router.start()', async function (assert) {
     Router.reset();
 
-    assert.true(Router.LOG_ROUTES);
-    assert.true(Router.LOG_MODELS);
     assert.deepEqual(Router.owner.routes, {});
     assert.deepEqual(Router.owner.services, {});
 

@@ -27,7 +27,7 @@ export default class QueryParamParentRoute extends Route {
     return { posts: POSTS.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE) };
   }
 
-  @tracked bookmarks = 0;
+  @tracked accessor bookmarks = 0;
 
   get visiblePosts() {
     const { category, sort } = this.queryParams;

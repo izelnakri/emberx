@@ -22,10 +22,9 @@
     "resolveJsonModule": true,
     "allowJs": true,
 
-    /* Routes, components and helpers all use legacy (stage 1) decorators:
-       @tracked, @action, @service. */
-    "experimentalDecorators": true,
-    "useDefineForClassFields": false,
+    /* Routes, components and helpers use standard decorators, which Deno runs
+       as they are: `@tracked accessor count`, `@action`, `@service`. Class
+       fields have the standard semantics, ES2022's default. */
 
     "strict": false,
     "noImplicitAny": true,

@@ -34,7 +34,7 @@ class ApplicationRoute extends LoggedRoute('application') {
     return { currentUser };
   }
 
-  @tracked notifyCount = 0;
+  @tracked accessor notifyCount = 0;
 
   @action
   notify(message) {

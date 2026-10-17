@@ -4,7 +4,7 @@ import { render, rerender, clearRender, hbs } from '@emberx/test-helpers';
 import { setupRenderingTest } from './helpers/index.ts';
 
 class Counter {
-  @tracked count = 1;
+  @tracked accessor count = 1;
 }
 
 // Steps 'destroyed' when it is torn down.

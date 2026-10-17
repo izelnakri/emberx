@@ -6,9 +6,9 @@ This fully tested library allows you to build advanced and very fast browser UI 
 import Component, { hbs, renderComponent, action, tracked } from '@emberx/component';
 
 class UserDisplay extends Component {
-  @tracked count = 55;
-  @tracked loadingMessage: string | null;
-  @tracked user: object | null;
+  @tracked accessor count = 55;
+  @tracked accessor loadingMessage: string | null;
+  @tracked accessor user: object | null;
 
   static template = hbs`
     <h1>This is basic route</h1>
@@ -99,8 +99,8 @@ class UserTable extends Component<{ users: User[] }> {
     </Table>
   `;
 
-  @tracked sortDirection = 'desc';
-  @tracked sortedUsers: User[] | null = null;
+  @tracked accessor sortDirection = 'desc';
+  @tracked accessor sortedUsers: User[] | null = null;
 
   get users() {
     return this.sortedUsers ?? this.args.users;

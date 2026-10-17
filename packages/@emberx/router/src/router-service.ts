@@ -56,14 +56,14 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
   Resolver = DefaultResolver;
 
   /** The query params in the URL, cast to the values they denote. Declared defaults are not in here. */
-  @tracked queryParams: FreeObject = {};
-  @tracked currentRoute: string | undefined;
-  @tracked currentRouteName: string | undefined;
-  @tracked currentURL: string | undefined;
+  @tracked accessor queryParams: FreeObject = {};
+  @tracked accessor currentRoute: string | undefined;
+  @tracked accessor currentRouteName: string | undefined;
+  @tracked accessor currentURL: string | undefined;
   /** Whether a transition is under way. currentURL is already its destination by then. */
-  @tracked isTransitioning = false;
+  @tracked accessor isTransitioning = false;
   /** The URL the transition under way is leaving. */
-  @tracked transitionFromURL: string | undefined;
+  @tracked accessor transitionFromURL: string | undefined;
 
   /**
    * The page on screen: the route instance whose template the router rendered

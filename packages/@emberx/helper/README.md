@@ -10,7 +10,7 @@ import Component, { service, tracked, action, hbs, renderComponent, didRender } 
 const translate = helper(([key], _named, services) => services.intl.t(key));
 
 class Intl {
-  @tracked currentLocale = 'en';
+  @tracked accessor currentLocale = 'en';
 
   translations = {
     en: { 'button.save': 'Save model' },

@@ -22,7 +22,8 @@ module('@emberx/router | Route Unit Test', function (hooks) {
 
     assert.ok('includes' in Route);
     assert.ok('template' in Route);
-    assert.deepEqual(Object.keys(route), ['args']);
+    // Its service and its bound actions are its own: standard decorators set them per instance.
+    assert.deepEqual(Object.keys(route), ['args', 'send', 'refresh', 'router']);
     assert.ok(route.router);
   });
 

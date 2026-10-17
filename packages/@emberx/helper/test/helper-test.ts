@@ -15,7 +15,7 @@ module('@emberx/helper | Public API', function (hooks) {
     });
 
     class SomeComponent extends Component {
-      @tracked message = 'hello world';
+      @tracked accessor message = 'hello world';
 
       static includes = { capitalize };
 
@@ -56,7 +56,7 @@ module('@emberx/helper | Public API', function (hooks) {
     });
 
     class LocaleService {
-      @tracked currentLocale: string;
+      @tracked accessor currentLocale: string;
 
       constructor(currentLocale: string) {
         this.currentLocale = currentLocale;
@@ -70,7 +70,7 @@ module('@emberx/helper | Public API', function (hooks) {
 
     class SomeComponent extends Component {
       @service locale;
-      @tracked message = 'some message';
+      @tracked accessor message = 'some message';
 
       static includes = { myHelper };
 

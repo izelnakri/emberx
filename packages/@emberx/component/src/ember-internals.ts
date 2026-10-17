@@ -6,9 +6,12 @@
  *   resetRendering in index.ts);
  * - `Renderer`: Ember's application renderer, the one place an element builder
  *   is chosen. Public renderComponent always builds the DOM afresh, so
- *   serializing for a server and adopting a server's markup go through it.
+ *   serializing for a server and adopting a server's markup go through it;
+ * - `tagFor`, `consumeTag`, `dirtyTagFor`: Glimmer's autotracking tags, which
+ *   `tracked` is built on, since Ember's own tracked is a legacy decorator.
  */
 import { Renderer, _resetRenderers } from '@emberx/vendor/@ember/-internals/glimmer';
+import { consumeTag, dirtyTagFor, tagFor } from '@emberx/vendor/@glimmer/validator';
 import { isSerializationFirstNode, rehydrationBuilder } from '@emberx/vendor/@glimmer/runtime';
 
 interface RenderWithBuilderOptions {
@@ -52,3 +55,32 @@ export function isServerRendered(element: { firstChild: unknown }): boolean {
 }
 
 export { rehydrationBuilder, _resetRenderers };
+
+/**
+ * `@tracked accessor count = 0`: state a template re-renders on. A standard
+ * decorator, where Ember's own tracked is a legacy one, built as Ember's is:
+ * reading the accessor consumes its tag (and an array's, which changes in
+ * place), and writing it dirties the tag, so whatever read it renders again.
+ */
+export function tracked<This extends object, Value>(
+  target: ClassAccessorDecoratorTarget<This, Value>,
+  context: ClassAccessorDecoratorContext<This, Value>,
+): ClassAccessorDecoratorResult<This, Value> {
+  if (context.kind !== 'accessor') {
+    throw new Error(`@tracked decorates an accessor: write \`@tracked accessor ${String(context.name)}\`.`);
+  }
+  const key = context.name;
+
+  return {
+    get(this: This) {
+      consumeTag(tagFor(this, key));
+      const value = target.get.call(this);
+      if (Array.isArray(value)) consumeTag(tagFor(value, '[]'));
+      return value;
+    },
+    set(this: This, value: Value) {
+      target.set.call(this, value);
+      dirtyTagFor(this, key);
+    },
+  };
+}

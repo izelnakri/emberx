@@ -11,10 +11,13 @@ import { fn, hash, array, get, concat } from '@emberx/vendor/@ember/helper';
 import { on } from '@emberx/vendor/@ember/modifier';
 import { and, or, not, eq, neq, gt, gte, lt, lte, assign, debug, drop, take } from '@emberx/helper';
 import createTemplate from './create-template.ts';
-import { _resetRenderers, isServerRendered, rehydrationBuilder, renderWithBuilder } from './ember-internals.ts';
-
-import { tracked } from '@emberx/vendor/@glimmer/tracking';
-import { action as emberAction } from '@emberx/vendor/@ember/object';
+import {
+  _resetRenderers,
+  isServerRendered,
+  rehydrationBuilder,
+  renderWithBuilder,
+  tracked,
+} from './ember-internals.ts';
 
 interface Owner {
   [key: string]: any;
@@ -90,29 +93,34 @@ export function getAsyncActionsQueue() {
   return ASYNC_ACTIONS_PROMISE_QUEUE;
 }
 
-// @ts-ignore
-export function action(context, value, descriptor) {
-  if (descriptor) {
-    const actionFunction = descriptor.value;
-    Object.assign(descriptor, {
-      value() {
-        if (actionFunction instanceof AsyncFunction) {
-          // @ts-ignore NOTE: this hack allows @emberx/test-helper input helpers to listen the finish of async
-          const promise = actionFunction.apply(this, arguments);
-
-          ASYNC_ACTIONS_PROMISE_QUEUE.add(promise);
-          promise.finally(() => ASYNC_ACTIONS_PROMISE_QUEUE.delete(promise));
-
-          return promise;
-        }
-
-        return actionFunction.apply(this, arguments);
-      },
-    });
+/**
+ * `@action`: binds a method to its instance, so `{{on "click" this.save}}`
+ * calls it on the component it belongs to, and records the promise of an
+ * async one, which @emberx/test-helpers' settled() waits for.
+ */
+export function action<This, Args extends unknown[], Return>(
+  method: (this: This, ...args: Args) => Return,
+  context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Return>,
+): (this: This, ...args: Args) => Return {
+  if (context.kind !== 'method') {
+    throw new Error(`@action decorates a method, not ${String(context.name)}.`);
   }
+  const name = context.name;
 
-  // @ts-ignore: @ember/object's action is typed as a decorator, and is called as one here
-  return emberAction(context, value, descriptor);
+  function settledAware(this: This, ...args: Args): Return {
+    const result = method.apply(this, args);
+    if (method instanceof AsyncFunction) {
+      const promise = result as Promise<unknown>;
+      ASYNC_ACTIONS_PROMISE_QUEUE.add(promise);
+      promise.finally(() => ASYNC_ACTIONS_PROMISE_QUEUE.delete(promise));
+    }
+    return result;
+  }
+  context.addInitializer(function (this: This) {
+    (this as Record<PropertyKey, unknown>)[name] = settledAware.bind(this);
+  });
+
+  return settledAware;
 }
 
 /**
@@ -204,29 +212,23 @@ function didRender(): Promise<void> {
   return renderSettled();
 }
 
-function service(...args: any[]) {
-  const [target, key] = args;
-
-  if (!target || !key) {
-    throw new Error(
-      `You attempted to use @service with an argument, you can only use it with the owners exact service name. Example: @service locale`,
-    );
+/**
+ * `@service locale`: the owner's service of that name, as the instance is
+ * built. Its owner is set by then: the component base class sets it first.
+ */
+function service<This extends object, Value>(
+  _value: undefined,
+  context: ClassFieldDecoratorContext<This, Value>,
+): (this: This) => Value {
+  if (context.kind !== 'field') {
+    throw new Error(`@service decorates a field, named as the service: \`@service locale\`.`);
   }
+  const name = String(context.name);
 
-  Object.defineProperty(target, key, {
-    enumerable: true,
-    configurable: false,
-    get() {
-      const owner = getOwner(this) as Owner;
-      if (owner && owner.services) {
-        return owner.services[key];
-      }
-
-      return {};
-    },
-  });
-
-  return target[key];
+  return function (this: This): Value {
+    const owner = getOwner(this) as Owner | undefined;
+    return (owner?.services?.[name] ?? {}) as Value;
+  };
 }
 
 function hbs(sourceCode: TemplateStringsArray): string {

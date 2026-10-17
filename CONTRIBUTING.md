@@ -151,7 +151,7 @@ In the repo, each package's `exports` point at its source:
 
 So every tool resolves `@emberx/router` to `packages/@emberx/router/src/` as it is: esbuild
 (the browser suite, `npm run dev`, the benchmarks, the Deno suite, the doctests),
-TypeScript, and node, where `scripts/register.ts` compiles the legacy decorators that node's
+TypeScript, and node, where `scripts/register.ts` compiles the decorators that node's
 type stripping rejects. That holds for imports from inside `node_modules` too:
 `@memserver/model` imports `@emberx/string`, and gets its source. Nothing is built but a
 release, and CI's test jobs run with no `dist/`, so a change that needs one fails there.
@@ -162,7 +162,7 @@ declarations, the README and LICENSE, and a `package.json` whose `exports` point
 and `@emberx/vendor` as it is, so a consumer installs `dist/` and never `src/`.
 
 Deno still runs a bundle (`scripts/test-deno.ts`): it compiles a decorated field such as
-`@tracked count = 0` with standard class-field semantics whatever `deno.json` says, so the
+`@tracked accessor count = 0` with standard class-field semantics whatever `deno.json` says, so the
 field's initializer overwrites the tracked accessor. That ends with standard decorators
 (TODO).
 

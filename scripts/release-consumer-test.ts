@@ -3,8 +3,9 @@
  * directory where only the packed @emberx tarballs (and jsdom) are installed,
  * so every import below resolves to a published artefact, never the checkout.
  *
- * Run directly by the runtime, with no bundler and so no decorators: `tracked`
- * is applied by hand, the way the decorator would.
+ * Run directly by the runtime, with no bundler and so no decorators, which no
+ * engine runs yet: `tracked` is applied by hand, the way `@tracked accessor`
+ * applies it.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -47,11 +48,20 @@ test('@emberx/component renders, and re-renders on a tracked change', async () =
 
     increment = () => this.count++;
   }
-  Object.defineProperty(
-    Counter.prototype,
-    'count',
-    tracked(Counter.prototype, 'count', { configurable: true, enumerable: true, writable: true, initializer: () => 1 }),
+  // What `@tracked accessor count = 1` does: the decorator wraps the accessor's own storage.
+  const storage = new WeakMap();
+  const { get, set } = tracked(
+    {
+      get() {
+        return storage.has(this) ? storage.get(this) : 1;
+      },
+      set(value) {
+        storage.set(this, value);
+      },
+    },
+    { kind: 'accessor', name: 'count' },
   );
+  Object.defineProperty(Counter.prototype, 'count', { get, set, configurable: true });
 
   const element = document.createElement('div');
   document.body.appendChild(element);

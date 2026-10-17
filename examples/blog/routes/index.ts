@@ -5,7 +5,7 @@ import Counter from '../components/Counter.ts';
 export default class IndexRoute extends Route {
   @service intl;
 
-  @tracked dynamicObject;
+  @tracked accessor dynamicObject;
 
   constructor(owner, args) {
     super(owner, args);

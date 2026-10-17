@@ -1,7 +1,7 @@
 import { tracked } from '@emberx/component';
 
 export default class Locale {
-  @tracked currentLocale = 'en';
+  @tracked accessor currentLocale = 'en';
 
   locales = {
     en: {

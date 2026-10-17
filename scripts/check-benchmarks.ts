@@ -110,7 +110,7 @@ async function bundle(files: string[]): Promise<void> {
     outbase: `${ROOT}benches`,
     bundle: true,
     format: 'esm' as const,
-    target: 'esnext',
+    target: 'es2022',
     logLevel: 'warning' as const,
     mainFields: ['module', 'main'],
   };

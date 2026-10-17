@@ -153,9 +153,8 @@ a change would eliminate.
   through this repo's workspace link on every platform except Windows, where esbuild
   cannot follow the junction — so the Windows CI leg runs the node suite only. Declaring
   the dependency upstream, or replacing memserver, restores the full Windows matrix.
-- **TypeScript 7** is current; this repo is on 5.9 because the codebase leans on legacy
-  (`experimentalDecorators`) decorators. Worth evaluating, together with a move to standard
-  decorators.
+- **TypeScript 7** is current; this repo is on 5.9. Its decorators are standard ones now,
+  which the native TypeScript 7 compiler supports, so the move is worth evaluating.
 - **`Router.visit` rejects when a transition fails** and no `error` handler or error
   substate deals with it, where it used to swallow every error. A caller that relied on
   that needs an error path: a handler, a substate, or a `catch`.

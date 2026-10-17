@@ -21,10 +21,10 @@ module('@emberx/component | Action tests', function (hooks) {
   setupMemserver(hooks);
 
   class SomeComponent extends Component {
-    @tracked count = 55;
-    @tracked secretMessage: string | null;
-    @tracked loadingMessage: string | null;
-    @tracked user: object | null;
+    @tracked accessor count = 55;
+    @tracked accessor secretMessage: string | null;
+    @tracked accessor loadingMessage: string | null;
+    @tracked accessor user: object | null;
 
     static template = hbs`
       <h1>This is basic route</h1>

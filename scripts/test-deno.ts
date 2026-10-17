@@ -73,7 +73,7 @@ await esbuild.build({
   bundle: true,
   format: 'esm',
   platform: 'node',
-  target: 'esnext',
+  target: 'es2022',
   sourcemap: 'inline',
   logLevel: 'warning',
   // Prefer each dependency's ESM build. esbuild defaults to `main` (CommonJS)

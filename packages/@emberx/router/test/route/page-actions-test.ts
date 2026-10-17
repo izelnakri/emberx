@@ -39,7 +39,7 @@ class BlogRoute extends Route {
 
 // The parent: shares on Mastodon itself, and leaves every other medium to the blog.
 class PostsRoute extends Route {
-  @tracked shares = 0;
+  @tracked accessor shares = 0;
 
   static model() {
     return POSTS;
@@ -84,8 +84,8 @@ class PostsIndexRoute extends Route {
 class PostRoute extends Route {
   @service sharing;
 
-  @tracked isLiked = false;
-  @tracked draft = '';
+  @tracked accessor isLiked = false;
+  @tracked accessor draft = '';
 
   static model({ post_id }) {
     return POSTS.find((post) => post.id === Number(post_id));

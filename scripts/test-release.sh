@@ -64,7 +64,7 @@ import { render, settled } from '@emberx/test-helpers';
 
 class Greeting extends Component<{ name: string }> {
   static template = hbs`<p>{{this.shout}}</p>`;
-  @tracked count = 0;
+  @tracked accessor count = 0;
   get shout(): string {
     return this.args.name.toUpperCase();
   }
@@ -82,7 +82,7 @@ Router.start(42);
 
 export { shout, notANumber, alsoNotANumber, html, eq, render, settled, HomeRoute };
 TS
-npx tsc --noEmit --strict --skipLibCheck --experimentalDecorators --target es2022 \
+npx tsc --noEmit --strict --skipLibCheck --target es2022 \
   --module nodenext --moduleResolution nodenext consumer-types.ts
 
 # ── Node ────────────────────────────────────────────────────────────────────

@@ -39,10 +39,6 @@
       "types": "./@ember/modifier/index.d.ts",
       "default": "./@ember/modifier/index.js"
     },
-    "./@ember/object": {
-      "types": "./@ember/object/index.d.ts",
-      "default": "./@ember/object/index.js"
-    },
     "./@ember/owner": {
       "types": "./@ember/owner/index.d.ts",
       "default": "./@ember/owner/index.js"
@@ -78,9 +74,9 @@
       "types": "./@glimmer/runtime/index.d.ts",
       "default": "./@glimmer/runtime/index.js"
     },
-    "./@glimmer/tracking": {
-      "types": "./@glimmer/tracking/index.d.ts",
-      "default": "./@glimmer/tracking/index.js"
+    "./@glimmer/validator": {
+      "types": "./@glimmer/validator/index.d.ts",
+      "default": "./@glimmer/validator/index.js"
     },
     "./ember-template-compiler": {
       "types": "./ember-template-compiler/index.d.ts",

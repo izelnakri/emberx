@@ -102,7 +102,7 @@ await esbuild.build({
   splitting: true,
   format: 'esm',
   platform: 'node',
-  target: 'esnext',
+  target: 'es2022',
   sourcemap: 'inline',
   logLevel: 'warning',
   mainFields: ['module', 'main'],

@@ -4,10 +4,10 @@
  *   node --import ./scripts/register.ts <file.ts>
  *
  * In the repo each @emberx/* package's exports point at its src/, and node
- * strips their types. What it cannot do is compile legacy decorators (@tracked,
- * @action, @service), which its type stripping rejects; this hook has esbuild
- * compile a file that has them, as the build does. Every other file is left
- * to node.
+ * strips their types. What it cannot do is run decorators (@tracked, @action,
+ * @service), which no JavaScript engine does yet, node 26's included; this hook
+ * has esbuild compile a file that has them, as the build does. Every other
+ * file is left to node.
  *
  * EMBERX_PACKAGES_FROM=<dir> resolves @emberx/* from <dir>'s node_modules
  * instead, as scripts/test-release.sh does to test the packed tarballs.
@@ -41,7 +41,7 @@ registerHooks({
       target: 'es2022',
       sourcemap: 'inline',
       sourcefile: fileURLToPath(url),
-      tsconfigRaw: { compilerOptions: { experimentalDecorators: true, useDefineForClassFields: false } },
+      tsconfigRaw: {},
     });
     return { format: 'module', source: code, shortCircuit: true };
   },

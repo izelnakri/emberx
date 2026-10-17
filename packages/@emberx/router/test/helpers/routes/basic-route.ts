@@ -13,10 +13,10 @@ function getJSONWithXHR(url: string): Promise<any> {
 }
 
 export default class BasicRoute extends Route {
-  @tracked count = 55;
-  @tracked secretMessage: string | null;
-  @tracked loadingMessage: string | null;
-  @tracked user: object | null;
+  @tracked accessor count = 55;
+  @tracked accessor secretMessage: string | null;
+  @tracked accessor loadingMessage: string | null;
+  @tracked accessor user: object | null;
 
   static model() {
     return {

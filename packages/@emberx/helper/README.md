@@ -3,6 +3,7 @@
 EmberX helpers are UI functions that return data when its parameters or related services state changes:
 
 ```ts
+import assert from 'node:assert/strict';
 import helper from '@emberx/helper';
 import Component, { service, tracked, action, hbs, renderComponent, didRender } from '@emberx/component';
 
@@ -42,11 +43,11 @@ await renderComponent(UserDisplay, {
   owner: { services: { intl: new Intl() } },
 });
 
-document.querySelector('#save').textContent; // => Save model
+assert.equal(document.querySelector('#save').textContent, 'Save model');
 
 // The helper re-runs when the service state it read changes:
 document.querySelector('#change-locale').click();
 await didRender();
 
-document.querySelector('#save').textContent; // => Guardar modelo
+assert.equal(document.querySelector('#save').textContent, 'Guardar modelo');
 ```

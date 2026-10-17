@@ -18,6 +18,7 @@ export interface Options {
 
   @example
   ```ts
+  import assert from 'node:assert/strict';
   import { find, waitUntil } from '@emberx/test-helpers';
 
   document.body.innerHTML = '<p class="status">loading</p>';
@@ -25,7 +26,7 @@ export interface Options {
 
   await waitUntil(() => find('.status')!.textContent!.includes('loaded'), { timeout: 2000 });
 
-  find('.status')!.textContent; // => loaded
+  assert.equal(find('.status')!.textContent, 'loaded');
   ```
 */
 export function waitUntil<T>(callback: () => T | void | Falsy, options: Options = {}): Promise<T> {
@@ -77,13 +78,14 @@ export function waitUntil<T>(callback: () => T | void | Falsy, options: Options 
   Waiting until a selector is rendered:
 
   ```ts
+  import assert from 'node:assert/strict';
   import { waitFor } from '@emberx/test-helpers';
 
   setTimeout(() => document.body.insertAdjacentHTML('beforeend', '<p class="ready">ready</p>'), 50);
 
   const element = (await waitFor('.ready', { timeout: 2000 })) as Element;
 
-  element.textContent; // => ready
+  assert.equal(element.textContent, 'ready');
   ```
 */
 export function waitFor(selector: string, options: Options = {}): Promise<Element | Element[]> {

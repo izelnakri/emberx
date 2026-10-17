@@ -161,10 +161,8 @@ declarations, the README and LICENSE, and a `package.json` whose `exports` point
 `npm publish` and `npm pack` are given that directory (`make release`, `make test-release`),
 and `@emberx/vendor` as it is, so a consumer installs `dist/` and never `src/`.
 
-Deno still runs a bundle (`scripts/test-deno.ts`): it compiles a decorated field such as
-`@tracked accessor count = 0` with standard class-field semantics whatever `deno.json` says, so the
-field's initializer overwrites the tracked accessor. That ends with standard decorators
-(TODO).
+Deno runs the sources as they are, decorators included, since emberx's decorators are
+standard ones: `npm run test:deno` is `deno test` on the same entry the node suite runs.
 
 ## Tests
 
@@ -194,15 +192,15 @@ browser, `qunitx <test file> --open`; `resumeTest()` in the browser console carr
 
 Every ` ```ts ` and ` ```js ` block in a README or in a JSDoc comment under
 `packages/@emberx/*/src` runs in `make test-doctests` (and `make check`), so examples cannot
-drift from the code. Write them self-contained: import what they use, and render into
-`document.getElementById('app')`, which each example gets fresh. End a statement with
-`// => value` to assert what it returns, as `String(statement)`. A multi-file sketch that
-imports files a reader would write themselves is marked ` ```ts ignore `.
+drift from the code. That is Deno's own `deno test --doc`, as in qunitx, with
+`test/setup-dom.js` preloaded for a DOM. Write examples self-contained: import what they
+use, and render into `document.getElementById('app')`, which the DOM has. Check a result
+with `assert.equal(...)`, from `import assert from 'node:assert/strict'`, so a reader sees
+both what runs and what it gives. A multi-file sketch that imports files a reader would write
+themselves is marked ` ```ts ignore `.
 
-This is qunitx's `deno test --doc` in spirit, and it runs under `deno test` too, but esbuild
-bundles the examples first: `deno test --doc` would compile them itself, with standard
-decorator semantics, under which a legacy `@tracked` field is overwritten by its
-initializer, and nearly every emberx example uses `@tracked`.
+Deno gives each file its own isolate, each loading jsdom and Ember again, so the examples run
+with `--parallel`.
 
 ## Benchmarks
 

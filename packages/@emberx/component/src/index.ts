@@ -1,5 +1,6 @@
 import { renderComponent as emberRenderComponent, renderSettled } from '@emberx/vendor/@ember/renderer';
 import { setComponentTemplate } from '@emberx/vendor/@glimmer/manager';
+import { createTemplateFactory } from '@emberx/vendor/@ember/template-factory';
 import { destroy } from '@emberx/vendor/@ember/destroyable';
 import { getOwner } from '@emberx/vendor/@glimmer/owner';
 import templateOnlyComponent from '@emberx/vendor/@ember/component/template-only';
@@ -10,7 +11,7 @@ import Component from '@emberx/vendor/@glimmer/component';
 
 import { fn, hash, array, get, concat } from '@emberx/vendor/@ember/helper';
 import { on } from '@emberx/vendor/@ember/modifier';
-import { and, or, not, eq, neq, gt, gte, lt, lte, assign, debug, drop, take } from '@emberx/helper';
+import BUILTINS from './builtins.ts';
 import createTemplate from './create-template.ts';
 import {
   _resetRenderers,
@@ -41,9 +42,15 @@ interface FreeObject {
 export interface EmberXComponentClass {
   compiled: boolean;
   includes: FreeObject;
-  template: string;
-  setTemplate(sourceCode: string): unknown;
+  template: string | PrecompiledTemplate;
+  setTemplate(template: string | PrecompiledTemplate): unknown;
 }
+
+/**
+ * A template @emberx/component/precompile compiled at build time: given the
+ * template's scope, its wire format, for Ember's createTemplateFactory.
+ */
+export type PrecompiledTemplate = (scope: FreeObject) => object;
 
 export default class EmberXComponent<Args extends FreeObject = FreeObject> extends Component<{
   Args: { Named: Args };
@@ -56,30 +63,14 @@ export default class EmberXComponent<Args extends FreeObject = FreeObject> exten
 
   static compiled = false;
   static includes = {};
-  static template: string;
-  static setTemplate(sourceCode: string) {
-    const scope = Object.assign(this.includes, {
-      fn,
-      hash,
-      array,
-      get,
-      concat,
-      on,
-      and,
-      or,
-      not,
-      eq: eq,
-      neq: neq,
-      gt,
-      gte,
-      lt,
-      lte,
-      assign,
-      debug,
-      drop,
-      take,
-    });
-    const templateFactory: any = createTemplate(sourceCode || ``, { strictMode: true }, scope);
+  static template: string | PrecompiledTemplate;
+  /** Compiles the template, unless the build already did (@emberx/component/precompile). */
+  static setTemplate(template: string | PrecompiledTemplate) {
+    const scope = Object.assign(this.includes, BUILTINS);
+    const templateFactory: any =
+      typeof template === 'function'
+        ? createTemplateFactory(template(scope) as any)
+        : createTemplate(template || ``, { strictMode: true }, scope);
 
     setComponentTemplate(templateFactory, this);
 

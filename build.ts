@@ -27,9 +27,10 @@
 import { existsSync } from 'node:fs';
 import { cp, rm, mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { dirname } from 'node:path';
+import { dirname, relative } from 'node:path';
 import * as esbuild from 'esbuild';
 import ts from 'typescript';
+import { precompileTemplates } from './packages/@emberx/component/src/precompile.ts';
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 
@@ -55,6 +56,37 @@ const externalizeBareImports: esbuild.Plugin = {
   },
 };
 
+/**
+ * A package's entry points, by the name of the file each builds to, from its
+ * exports: `.` is `./src/index.ts`, built to index.js; `./precompile` is
+ * `./src/precompile.ts`, built to precompile.js.
+ */
+async function entryPoints(packageDir: string): Promise<Record<string, string>> {
+  const { exports } = JSON.parse(await readFile(`${packageDir}/package.json`, 'utf8'));
+
+  return Object.fromEntries(
+    Object.values(exports as Record<string, string>).map((source) => [
+      source.replace(/^\.\/src\//, '').replace(/\.ts$/, ''),
+      `${packageDir}/${source}`,
+    ]),
+  );
+}
+
+/**
+ * Compiles the packages' own templates, LinkTo's and Route's, as an app's build
+ * can compile its own (@emberx/component/precompile), so an app that does
+ * evaluates no template code at all.
+ */
+const precompileOwnTemplates: esbuild.Plugin = {
+  name: 'emberx:precompile-templates',
+  setup(build) {
+    build.onLoad({ filter: /\/src\/[^/]+\.ts$/ }, async ({ path }) => ({
+      contents: precompileTemplates(await readFile(path, 'utf8'), { moduleName: relative(`${ROOT}/packages`, path) }),
+      loader: 'ts',
+    }));
+  },
+};
+
 async function buildPackage(name: string) {
   const packageDir = `${ROOT}/packages/@emberx/${name}`;
 
@@ -62,8 +94,8 @@ async function buildPackage(name: string) {
   await mkdir(`${packageDir}/dist`, { recursive: true });
 
   await esbuild.build({
-    entryPoints: [`${packageDir}/src/index.ts`],
-    outfile: `${packageDir}/dist/index.js`,
+    entryPoints: await entryPoints(packageDir),
+    outdir: `${packageDir}/dist`,
     bundle: true,
     format: 'esm',
     platform: 'neutral',
@@ -71,7 +103,7 @@ async function buildPackage(name: string) {
     sourcemap: true,
     minify: false,
     logLevel: 'warning',
-    plugins: [externalizeBareImports],
+    plugins: [externalizeBareImports, precompileOwnTemplates],
   });
 
   return name;
@@ -147,20 +179,21 @@ async function pointDeclarationsAtJavaScript(directory: string) {
 
 /**
  * dist/package.json: the package's own manifest, with exports pointing at the
- * bundle and its declarations instead of src/, plus its README and LICENSE.
+ * bundles and their declarations instead of src/, plus its README and LICENSE.
  */
 async function writeDistManifest(name: string) {
   const packageDir = `${ROOT}/packages/@emberx/${name}`;
-  const {
-    exports: _sources,
-    dependencies,
-    ...fields
-  } = JSON.parse(await readFile(`${packageDir}/package.json`, 'utf8'));
+  const { exports, dependencies, ...fields } = JSON.parse(await readFile(`${packageDir}/package.json`, 'utf8'));
   const published = {
     ...fields,
     main: './index.js',
     types: './index.d.ts',
-    exports: { '.': { types: './index.d.ts', default: './index.js' } },
+    exports: Object.fromEntries(
+      Object.entries(exports as Record<string, string>).map(([subpath, source]) => {
+        const file = source.replace(/^\.\/src\//, './').replace(/\.ts$/, '');
+        return [subpath, { types: `${file}.d.ts`, default: `${file}.js` }];
+      }),
+    ),
     dependencies,
   };
 

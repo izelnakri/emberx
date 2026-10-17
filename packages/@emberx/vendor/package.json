@@ -1,6 +1,6 @@
 {
   "name": "@emberx/vendor",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "The code emberx uses from ember-source, @glimmer/component and location-bar, vendored by scripts/build-emberx-vendor.ts",
   "type": "module",
   "author": "Izel Nakri",

@@ -1,6 +1,6 @@
 {
   "name": "@emberx/component",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Glimmer components for emberx, compiled at runtime with no build step",
   "type": "module",
   "author": "Izel Nakri",
@@ -17,7 +17,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@emberx/helper": "0.2.0",
-    "@emberx/vendor": "0.2.0"
+    "@emberx/helper": "0.3.0",
+    "@emberx/vendor": "0.3.0"
   }
 }

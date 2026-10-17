@@ -1,3 +1,24 @@
+## [0.3.0] - 2026-10-17
+[`v0.2.0...v0.3.0`](https://github.com/izelnakri/emberx/compare/v0.2.0...v0.3.0)
+
+### Bug Fixes
+- The published declarations load ember-source's types — 2026-10-16 by [@izelnakri](https://github.com/izelnakri) ([`e8a1efa`](https://github.com/izelnakri/emberx/commit/e8a1efa90ac806c939ef550244edb05995891f64))
+
+### Dependencies
+- Ember-source 7.3.1, Deno 2.9.7, Node 24.22.0, fetch-metadata v3 — 2026-10-16 by [@izelnakri](https://github.com/izelnakri) ([`97d4e52`](https://github.com/izelnakri/emberx/commit/97d4e52eba69ed1fb07a7c8e3dc9aca24a30cda2))
+- Jsdom 30 — 2026-10-16 by [@izelnakri](https://github.com/izelnakri) ([`16af782`](https://github.com/izelnakri/emberx/commit/16af782c1505da993edcb076740527b5a4c664f1))
+
+### Documentation
+- What ember-source 7.3.1 still leaves upstream — 2026-10-16 by [@izelnakri](https://github.com/izelnakri) ([`60ab3f0`](https://github.com/izelnakri/emberx/commit/60ab3f024c6a31a6677e4e74c4edab4bbfcce6c1))
+
+### Features
+- Find routes and substates by name with Router.start's resolve — 2026-10-16 by [@izelnakri](https://github.com/izelnakri) ([`05ef44c`](https://github.com/izelnakri/emberx/commit/05ef44cc4bf45d4ee9304dd7f727f82104c667a3))
+- A `none` location, and one place a page is rendered — 2026-10-16 by [@izelnakri](https://github.com/izelnakri) ([`f41b1a9`](https://github.com/izelnakri/emberx/commit/f41b1a945c0604f51c477ee06388ef96ddc93297))
+- Hydratable HTML for components and URLs, adopted in the browser — 2026-10-16 by [@izelnakri](https://github.com/izelnakri) ([`dbefb62`](https://github.com/izelnakri/emberx/commit/dbefb62aa78bc186d64ce25ee6b2f55760e21653))
+
+### Refactoring
+- Only TypeScript that node can strip — 2026-10-16 by [@izelnakri](https://github.com/izelnakri) ([`376d2db`](https://github.com/izelnakri/emberx/commit/376d2dbc90d8fc53dd50e0d151929cd07819c8eb))
+
 ## [0.2.0] - 2026-10-16
 [`v0.1.0...v0.2.0`](https://github.com/izelnakri/emberx/compare/v0.1.0...v0.2.0)
 

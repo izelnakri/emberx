@@ -1,6 +1,6 @@
 {
   "name": "@emberx/router",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Explicit, importable routing for emberx, built on router_js",
   "type": "module",
   "author": "Izel Nakri",
@@ -17,9 +17,9 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@emberx/component": "0.2.0",
-    "@emberx/string": "0.2.0",
-    "@emberx/vendor": "0.2.0",
+    "@emberx/component": "0.3.0",
+    "@emberx/string": "0.3.0",
+    "@emberx/vendor": "0.3.0",
     "route-recognizer": "^0.3.4",
     "router_js": "^8.0.6",
     "rsvp": "^4.8.5"

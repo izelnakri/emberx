@@ -45,6 +45,17 @@ if (!globalThis.window) {
   // jsdom implements no layout. QUnit's HTML reporter scrolls on completion,
   // which would otherwise print a "Not implemented" stack trace on every run.
   window.scrollTo = () => {};
+  // jsdom fires focus and blur events as a focused browser window does, but its
+  // hasFocus() is false until something has focus. Input helpers that see an
+  // unfocused window fire those events themselves, so each would fire twice.
+  document.hasFocus = () => true;
+  // Nor does jsdom implement isContentEditable, which fillIn and typeIn check.
+  Object.defineProperty(window.HTMLElement.prototype, 'isContentEditable', {
+    get() {
+      const editable = this.closest('[contenteditable]');
+      return editable !== null && editable.getAttribute('contenteditable') !== 'false';
+    },
+  });
 
   const qunitFixture = document.createElement('div');
   qunitFixture.id = 'qunit-fixture';

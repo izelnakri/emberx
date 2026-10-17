@@ -166,15 +166,21 @@ standard ones: `npm run test:deno` is `deno test` on the same entry the node sui
 
 ## Tests
 
-| Suite   | Command              | Covers                                          |
-| ------- | -------------------- | ----------------------------------------------- |
-| node    | `make test-node`     | string, helper and component under node + jsdom |
-| deno    | `make test-deno`     | the same suite under Deno                       |
-| browser | `make test-browser`  | everything: routing, rendering, the examples    |
-| docs    | `make test-doctests` | the code examples in the READMEs and JSDoc      |
+| Suite   | Command              | Covers                                              |
+| ------- | -------------------- | --------------------------------------------------- |
+| node    | `make test-node`     | the full suite under node + jsdom, plus @emberx/ssr |
+| deno    | `make test-deno`     | the same under Deno                                 |
+| browser | `make test-browser`  | the full suite in a real browser                    |
+| docs    | `make test-doctests` | the code examples in the READMEs and JSDoc          |
 
-The browser suite is the real one — the router, the renderer and `@emberx/test-helpers`
-only run there. Both must pass before a change lands.
+The same tests run in all three: `test/index.ts` is the browser's entry, and `test/node.ts`
+imports what it does, plus `@emberx/ssr`'s suite, which needs no browser. The browser has
+the final say on layout, focus and real events; jsdom stands in for it elsewhere, and
+`test/setup-dom.js` fills in what jsdom lacks. All of them must pass before a change lands.
+
+`assert.dom()` already looks inside `#ember-testing`, so write `assert.dom('p')`, not
+`assert.dom('#ember-testing p')`: jsdom's `element.querySelector` finds nothing for a
+selector that names the element it is called on, though browsers do.
 
 Tests use [qunitx](https://github.com/izelnakri/qunitx) for assertions and
 [qunitx-cli](https://github.com/izelnakri/qunitx-cli) as the runner; qunitx-cli bundles

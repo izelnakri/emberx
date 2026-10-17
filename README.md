@@ -586,6 +586,7 @@ console warning naming the emberx way, once.
 #### Familiar @emberx/component:
 
 ```ts
+import assert from 'node:assert/strict';
 import Component, { service, tracked, action, hbs, renderComponent } from '@emberx/component';
 
 class LocaleService {
@@ -662,8 +663,8 @@ await renderComponent(MainComponent, {
   owner: { services: { locale: new LocaleService('en') } },
 });
 
-document.querySelector('#main-component-formatted-message').textContent; // => HELLO WORLD
-document.querySelector('#locale-info').textContent; // => Component gets rendered. Current locale is en
+assert.equal(document.querySelector('#main-component-formatted-message').textContent, 'HELLO WORLD');
+assert.equal(document.querySelector('#locale-info').textContent, 'Component gets rendered. Current locale is en');
 ```
 
 Template/Component imports are respecting typescript standards, thus can be easily run node.js with npm, allowing
@@ -674,6 +675,7 @@ simple server side rendering.
 `@emberx/ssr` renders on a server, in node or Deno, with no browser DOM:
 
 ```ts
+import assert from 'node:assert/strict';
 import Component, { hbs } from '@emberx/component';
 import { renderToString } from '@emberx/ssr';
 
@@ -681,7 +683,7 @@ class Greeting extends Component {
   static template = hbs`<p>Hello {{@name}}</p>`;
 }
 
-await renderToString(Greeting, { args: { name: 'server' }, hydratable: false }); // => <p>Hello server</p>
+assert.equal(await renderToString(Greeting, { args: { name: 'server' }, hydratable: false }), '<p>Hello server</p>');
 ```
 
 Without `hydratable: false` the markup also carries the comments Glimmer's rehydration reads.

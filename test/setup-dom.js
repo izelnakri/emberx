@@ -6,10 +6,20 @@
  * browser suite this file is not used at all.
  */
 if (!globalThis.window) {
-  const setupDom = await import('@memserver/server/dist/setup-dom.js');
-  await setupDom.default();
+  // qunitx first, while there is no window: its Deno build carries QUnit twice,
+  // and with a window present the second copy throws "QUnit has already been
+  // defined". Every later `import 'qunitx'` reuses this instance.
+  await import('qunitx');
 
-  const { window } = globalThis;
+  const { JSDOM } = await import('jsdom');
+  const { window } = new JSDOM('<!doctype html><html><body><div id="app"></div></body></html>', {
+    url: 'http://localhost',
+  });
+
+  globalThis.window = window;
+  globalThis.document = window.document;
+  globalThis.location = window.location;
+  globalThis.self ??= globalThis;
 
   // Every DOM class jsdom provides that node does not (Element, HTMLElement,
   // KeyboardEvent, ...), plus `navigator`, which node defines itself since 21

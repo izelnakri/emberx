@@ -96,4 +96,11 @@ EMBERX_PACKAGES_FROM="$CONSUMER" node --import "$ROOT/scripts/register.ts" --imp
 echo "test-release: deno (consumer)"
 deno test --no-check --allow-read --allow-env release-consumer-test.ts
 echo "test-release: deno (full suite against the installed packages)"
-deno run -A "$ROOT/scripts/test-deno.ts" --packages-from="$CONSUMER"
+# Each @emberx/* the suite imports maps to its installed copy; inside them,
+# @emberx/* resolves from the consumer's node_modules as it would for a user.
+node -e '
+  const packages = process.argv.slice(2).map((name) => [`@emberx/${name}`, `./node_modules/@emberx/${name}/index.js`]);
+  require("fs").writeFileSync("import-map.json", JSON.stringify({ imports: Object.fromEntries(packages) }));
+' string helper component router test-helpers ssr
+(cd "$ROOT" && deno test --no-check --allow-read --allow-env --import-map="$CONSUMER/import-map.json" \
+  --preload test/setup-dom.js test/node.ts)

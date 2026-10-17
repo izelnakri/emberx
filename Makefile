@@ -86,8 +86,8 @@ test-node:
 test-deno:
 	npm run test:deno
 
-# Runs every ```ts/```js example in the READMEs and in JSDoc comments, checking
-# each `// => value`. ```ts ignore skips a multi-file sketch.
+# Runs every ```ts/```js example in the READMEs and in JSDoc comments with
+# `deno test --doc`, assertions included. ```ts ignore skips a multi-file sketch.
 test-doctests:
 	npm run test:doctests
 

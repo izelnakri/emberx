@@ -3,6 +3,7 @@
 This fully tested library allows you to build advanced and very fast browser UI components:
 
 ```ts
+import assert from 'node:assert/strict';
 import Component, { hbs, renderComponent, action, tracked } from '@emberx/component';
 
 class UserDisplay extends Component {
@@ -51,12 +52,13 @@ class UserDisplay extends Component {
 
 await renderComponent(UserDisplay, { element: document.getElementById('app') });
 
-document.querySelector('#counter').textContent; // => Counter: 55
+assert.equal(document.querySelector('#counter').textContent, 'Counter: 55');
 ```
 
 EmberX Components are composable, they allow embedding other EmberX components, helpers and modifiers:
 
 ```ts
+import assert from 'node:assert/strict';
 import Component, { hbs, renderComponent, action, tracked } from '@emberx/component';
 
 interface User {
@@ -126,5 +128,5 @@ await renderComponent(UserTable, {
   args: { users: [{ firstName: 'Izel', lastName: 'Nakri', createdAt: '2021-05-01' }] },
 });
 
-document.querySelector('.my-table tbody td').textContent; // => Izel
+assert.equal(document.querySelector('.my-table tbody td').textContent, 'Izel');
 ```

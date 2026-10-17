@@ -1,7 +1,7 @@
 scripts/lib/chrome-bench.js -> review it.
 scripts/lib/esbuild-plugins.js -> gone: @emberx/vendor replaced its Ember name mapping, and exports pointing at src/ its
   workspace resolution.
-scripts/test-deno.ts (lib/test-bundle.js merged into it) -> still bundles, because of @tracked, @service: see step 4 below.
+scripts/test-deno.ts and scripts/test-doctests.ts -> gone: standard decorators let Deno run the sources (step 4).
 
 `@glimmer/compiler`'s top-level `require` (for a sha1 template id), which glimmer-compat.js patched out: gone with
 #73, since ember-source's compiler has no bare `require`.
@@ -151,15 +151,14 @@ Running emberx without a build. Where each step stands after the cleanup PR:
    one again fails there.
 2. Unchanged: @memoria/* replaces @memserver/* (its own PR). Nothing here waits on it any more.
 3. Done: only TypeScript node can strip (erasableSyntaxOnly, verbatimModuleSyntax).
-4. Blocked until 6: Deno compiles a decorated field with standard class-field semantics whatever deno.json
-   says (useDefineForClassFields is ignored), so `@tracked count = 0`'s initializer overwrites the tracked
-   accessor, and Deno has no loader hook to compile it differently. scripts/test-deno.ts keeps bundling.
-   Found on the way: qunitx's Deno build loads QUnit twice (dist/deno/index.js inlines it, and imports
-   ../shared/assert.js, which imports vendor/qunit.js again); with a DOM present the second copy throws
-   "QUnit has already been defined". test-deno.ts drops the second import; worth fixing in qunitx itself.
+4. Done: emberx's decorators are standard ones (`@tracked accessor count = 0`), which Deno runs as they are, so
+   `npm run test:deno` is `deno test` and `npm run test:doctests` is `deno test --doc`. Found on the way:
+   qunitx's Deno build loads QUnit twice (dist/deno/index.js inlines it, and imports ../shared/assert.js, which
+   imports vendor/qunit.js again); with a DOM present the second copy throws "QUnit has already been defined".
+   test/setup-dom.js imports qunitx before it makes the DOM; worth fixing in qunitx itself.
 5. Done: scripts/register.ts. `npm run test:node` runs test/node.ts as it is.
-6. No compile step at all (long term, not ours alone): once JS engines ship standard decorators and emberx moves
-   @tracked, @action and @service off legacy decorators, step 4 unblocks and register.ts goes.
+6. No compile step at all (long term, not ours alone): once JS engines run decorators (node 26 does not, even
+   behind V8's --js-decorators), register.ts goes.
    Browsers always need .ts compiled, which qunitx and the dev server already do in memory, with no dist/.
 
 Fewer scripts, as in qunitx (scripts/ there: check-benchmarks.ts, check-coverage.ts, release-consumer-test.ts,
@@ -168,14 +167,13 @@ replaces it wherever one can:
 - Same as qunitx, kept: check-benchmarks.ts, release-consumer-test.ts, test-release.sh.
 - scripts/clean.ts: done, now `rm -rf` in package.json, as qunitx's build:cold.
 - test-node.ts: done, gone: `npm run test:node` is a bare node command (step 5).
-- lib/test-bundle.js: merged into test-deno.ts, its only user. test-deno.ts and test-doctests.ts stay until
-  step 4 unblocks; then they become `deno test` and `deno test --doc`, as in qunitx, and the doctests' `// =>`
-  comments become explicit assertions.
+- lib/test-bundle.js, test-deno.ts, test-doctests.ts: done, gone: `deno test` and `deno test --doc`, as in
+  qunitx (step 4); the doctests' `// =>` comments are explicit `assert.equal(...)` calls.
 - dev.ts: done, gone: `npm run dev` is one esbuild command (--serve, --serve-fallback=public/index.html),
   now that nothing needs a plugin: Ember's modules come from @emberx/vendor, and exports point at src/.
 - build-emberx-vendor.ts: new, writes @emberx/vendor from pinned devDependencies; register.ts: new, node's loader (step 5).
 - release.ts: kept. `npm version --workspaces --include-workspace-root` bumps all seven package.json files but
   leaves the exact @emberx/* dependency pins at the old version (checked with npm 11.19), and the packages must
   be published leaf-first.
-- Now: check-benchmarks.ts, register.ts, release.ts, release-consumer-test.ts, test-deno.ts,
-  test-doctests.ts, test-release.sh and build-emberx-vendor.ts, plus lib/chrome-bench.js.
+- Now: build-emberx-vendor.ts, check-benchmarks.ts, register.ts, release.ts, release-consumer-test.ts and
+  test-release.sh, plus lib/chrome-bench.js.

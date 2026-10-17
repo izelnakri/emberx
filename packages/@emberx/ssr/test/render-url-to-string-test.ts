@@ -108,8 +108,9 @@ module('@emberx/ssr | renderURLToString', function (hooks) {
     assert.strictEqual(element.querySelector('h1'), heading, 'the same node, not a new one');
     assert.equal(heading!.textContent, 'Adventures in Microbenchmarking');
     assert.notOk(element.innerHTML.includes('%+b'), 'the markers are gone');
-    if (existing) element.innerHTML = '';
-    else element.remove();
+    // A container the page had already is torn down with the router; clearing
+    // it here would remove nodes Ember's teardown still means to remove.
+    if (!existing) element.remove();
   });
 
   test('needs a started router', async function (assert) {

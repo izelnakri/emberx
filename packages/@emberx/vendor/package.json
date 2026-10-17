@@ -55,6 +55,10 @@
       "types": "./@ember/template-compiler/runtime.d.ts",
       "default": "./@ember/template-compiler/runtime.js"
     },
+    "./@ember/template-factory": {
+      "types": "./@ember/template-factory/index.d.ts",
+      "default": "./@ember/template-factory/index.js"
+    },
     "./@glimmer/interfaces": {
       "types": "./@glimmer/interfaces/index.d.ts"
     },

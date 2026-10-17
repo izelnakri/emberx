@@ -154,6 +154,7 @@
 /// <reference path="./@ember/template-compiler/lib/template.d.ts" />
 /// <reference path="./@ember/template-compiler/lib/types.d.ts" />
 /// <reference path="./@ember/template-compiler/runtime.d.ts" />
+/// <reference path="./@ember/template-factory/index.d.ts" />
 /// <reference path="./@ember/template/index.d.ts" />
 /// <reference path="./@glimmer/compiler/index.d.ts" />
 /// <reference path="./@glimmer/compiler/lib/builder/builder-interface.d.ts" />

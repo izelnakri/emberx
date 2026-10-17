@@ -726,6 +726,13 @@ await startRouter().visit(`${location.pathname}${location.search}`);
 emberx's `Owner` holds one router per process, so `renderURLToString` renders one URL at a
 time: requests that arrive together wait their turn.
 
+#### Compiling templates at build time (optional):
+
+Templates compile in the browser on first render, which needs no build step. A production
+build can compile them ahead of time with `@emberx/component/precompile`, so the browser
+compiles nothing and evaluates no code: no `'unsafe-eval'` in a Content Security Policy. See
+[@emberx/component](packages/@emberx/component/README.md#compiling-templates-at-build-time).
+
 This also allows the ability to distribute every component, route, helper, module as an npm package without a need for a build/addon system.
 Parent components can use `static includes` to include the components they depend on.
 

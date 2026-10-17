@@ -130,3 +130,56 @@ await renderComponent(UserTable, {
 
 assert.equal(document.querySelector('.my-table tbody td').textContent, 'Izel');
 ```
+
+## Compiling templates at build time
+
+A template compiles in the browser on its component's first render: that is what lets emberx
+run with no build step. A production build can compile them ahead of time instead, so the
+browser only builds each template from Ember's wire format, which saves the compile on every
+cold load and evaluates no code, so a Content Security Policy needs no `'unsafe-eval'`.
+`precompileTemplates` rewrites a module's `hbs` templates, against the helpers every template
+has and the module's `static includes`:
+
+```ts
+import assert from 'node:assert/strict';
+import { precompileTemplates } from '@emberx/component/precompile';
+
+const code = precompileTemplates(`
+  class Greeting extends Component {
+    static includes = { Badge };
+    static template = hbs\`<p {{on "click" this.wave}}>Hello <Badge @name={{@name}} /></p>\`;
+  }
+`);
+
+assert.ok(code.includes('static template = (({ on, Badge }) => ({'));
+```
+
+In a build, run it over each module, for instance with an esbuild plugin:
+
+```ts ignore
+import * as esbuild from 'esbuild';
+import { readFile } from 'node:fs/promises';
+import { precompileTemplates } from '@emberx/component/precompile';
+
+await esbuild.build({
+  entryPoints: ['src/app.ts'],
+  bundle: true,
+  outdir: 'dist',
+  plugins: [
+    {
+      name: 'emberx-precompile',
+      setup(build) {
+        build.onLoad({ filter: /\/src\/.*\.ts$/ }, async ({ path }) => ({
+          contents: precompileTemplates(await readFile(path, 'utf8'), { moduleName: path }),
+          loader: 'ts',
+        }));
+      },
+    },
+  ],
+});
+```
+
+A template that names something neither the helpers nor the module's `includes` have fails
+the build, naming it. Any template left alone still compiles at runtime, so the build can
+cover some modules and not others. The @emberx packages' own templates, `<LinkTo>`'s and
+`Route`'s, are compiled when they are published.

@@ -11,12 +11,7 @@ In future(not now). Find a solution for
 "npm run clean", "npm run dev", "npm run tests:doctests"
 ============================
 
-309 tests pass in the browser (the full suite). The 65 of them that need no router
-also pass under node and under Deno, and the 13 code examples in the docs run as
-doctests. See #3 for what keeps the rest browser-only.
-
-## 3. Make the suite runnable in node -> Probably should be done *after* the PR#73 gets merged, along with all ROADMAP.md
-items, which is something to keep in the source-code as after we merge PR#73, and iteratively do the fixes for ROADMAP items
+## 3. Make the suite runnable in node -> done: the same tests pass in the browser, under node and under Deno.
 
 ===================================
 
@@ -28,8 +23,8 @@ Deferred from the 2026 modernization PR (#72), each worth a PR of its own:
   settled() also waits for async work that is neither an @action nor a transition: a service's fetch, a timer.
   Then tests stop needing wait(500) or waitFor() to get past it.
 - @emberx/component: @cached, which memoizes a getter until the tracked state it reads changes, and
-  registerDestructor, for cleanup when a component goes away (the blog index route's setInterval, for one).
-  Destructors only run on a renderer that destroys components: ember-source, PR #73, not @glimmer/core.
+  registerDestructor, for cleanup when a component goes away. willDestroy() covers a class component already
+  (the blog routes clear their setInterval in it).
 
 Can we currently pass environment variables to build? process.env.ENVIRONMENT (by default staging otherwise)
 
@@ -37,6 +32,7 @@ Historically:
 
 - history back doesnt resolve the routes currently (fixed: the router follows back and forward now)
 - @emberx/test-helper tests not runnable on node.js!: routerjs/vendor location-bar prevents the app to be runable on node.js.
+  (fixed: every suite runs under node and Deno; ROADMAP.md #3)
 
 // NOTE: @emberx/rsvp: RSVP.defer(); NOTE: probably should just use rsvp npm package.
 // NOTE: @emberx/runloop: later, once, next, cancel, debounce, throttle, currentLoop(?) NO, more importantly and a test-waiter system to register test events

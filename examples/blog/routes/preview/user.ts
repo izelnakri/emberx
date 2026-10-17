@@ -24,7 +24,6 @@ export default class PreviewUserRoute extends Route {
   };
 
   static model(params, transition) {
-    console.log('!!!!!!!!!!!!!!!!MODEL CALLL!!!!!!!!!!!!');
     if (this.router.LOG_ROUTES) {
       console.log('params are', params);
       console.log('transition is', transition);

@@ -23,7 +23,7 @@ Everything runs through `make`; run `make` on its own for the full list.
 | -------------------- | ------------------------------------------------------- |
 | `make check`         | format + lint + typecheck + tests, the core CI checks   |
 | `make test`          | the node, Deno and browser suites, with no build        |
-| `make test-node`     | string, helper and component under node + jsdom         |
+| `make test-node`     | the full suite under node + jsdom, plus @emberx/ssr     |
 | `make test-deno`     | the same suite under Deno                               |
 | `make test-doctests` | the code examples in the docs, run and checked          |
 | `make test-browser`  | the full suite in a real browser (chromium)             |

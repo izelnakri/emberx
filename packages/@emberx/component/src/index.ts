@@ -1,5 +1,6 @@
 import { renderComponent as emberRenderComponent, renderSettled } from '@emberx/vendor/@ember/renderer';
 import { setComponentTemplate } from '@emberx/vendor/@glimmer/manager';
+import { destroy } from '@emberx/vendor/@ember/destroyable';
 import { getOwner } from '@emberx/vendor/@glimmer/owner';
 import templateOnlyComponent from '@emberx/vendor/@ember/component/template-only';
 import type EmberOwner from '@emberx/vendor/@ember/owner';
@@ -182,13 +183,13 @@ const hydratedRenderers = new Map<Element, { destroy(): void }>();
  * Owner, so one failed render would break every render after it.
  *
  * Each owner therefore renders through a stand-in that inherits from it
- * (getOwner(component).services still resolves), and resetRendering() drops the
- * stand-ins along with Ember's global renderer list, giving the next render a
- * fresh renderer.
+ * (getOwner(component).services still resolves), and resetRendering() destroys
+ * the stand-ins, and with them everything rendered through them, then drops
+ * Ember's global renderer list, giving the next render a fresh renderer.
  */
 const DEFAULT_OWNER = {};
 
-let renderingOwners = new WeakMap<object, object>();
+let renderingOwners = new Map<object, object>();
 
 function renderingOwnerFor(owner: object): object {
   let renderingOwner = renderingOwners.get(owner);
@@ -199,9 +200,14 @@ function renderingOwnerFor(owner: object): object {
   return renderingOwner;
 }
 
-/** Forgets every renderer. @emberx/test-helpers calls this after each test. */
+/**
+ * Destroys everything rendered so far, so none of it keeps running, and forgets
+ * every renderer. @emberx/test-helpers calls this after each test.
+ */
 function resetRendering(): void {
-  renderingOwners = new WeakMap();
+  // Ember makes each root a destroyable child of the owner it rendered with.
+  renderingOwners.forEach((renderingOwner) => destroy(renderingOwner));
+  renderingOwners = new Map();
   hydratedRenderers.forEach((renderer) => renderer.destroy());
   hydratedRenderers.clear();
   _resetRenderers();

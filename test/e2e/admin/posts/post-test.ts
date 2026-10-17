@@ -1,6 +1,6 @@
 import { module, test } from 'qunitx';
 import { visit, click, currentURL } from '@emberx/test-helpers';
-import startRouter from '@examples/blog/start-router';
+import startRouter from '@examples/blog/start-router.ts';
 import { setupApplicationTest } from '../../../helpers.ts';
 
 module('E2E | /admin/posts/:slug', function (hooks) {
@@ -10,7 +10,7 @@ module('E2E | /admin/posts/:slug', function (hooks) {
     await visit('/admin/posts/compilers-are-the-new-frameworks');
 
     assert.equal(currentURL(), '/admin/posts/compilers-are-the-new-frameworks');
-    assert.dom('#ember-testing p').hasText('Post slug is: compilers-are-the-new-frameworks');
+    assert.dom('p').hasText('Post slug is: compilers-are-the-new-frameworks');
   });
 
   test('Go back returns to the blog index', async function (assert) {

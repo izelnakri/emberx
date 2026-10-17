@@ -14,13 +14,13 @@ Ordered by what unblocks the most downstream work, not by size.
 | `@emberx/string`       | ✅    | Complete. Zero dependencies.                                          |
 | `@emberx/helper`       | ✅    | Complete.                                                             |
 | `@emberx/component`    | ✅    | Complete for the current renderer.                                    |
-| `@emberx/test-helpers` | ✅    | Complete; browser-only (see #3).                                      |
-| `@emberx/router`       | ✅    | Complete (see #2); its suite is browser-only (see #3).                |
+| `@emberx/test-helpers` | ✅    | Complete.                                                             |
+| `@emberx/router`       | ✅    | Complete (see #2).                                                    |
 | `@emberx/ssr`          | ✅    | Components and URLs to hydratable HTML, under node and Deno (see #4). |
 
-347 tests pass in the browser (the full suite). The 65 of them that need no router
-also pass under node and under Deno, as do @emberx/ssr's 11, which run there only, and
-the 14 code examples in the docs run as doctests. See #3 for what keeps the rest browser-only.
+353 tests pass in the browser (the full suite), and the same 353 pass under node and
+under Deno, as do @emberx/ssr's 11, which run there only. The 14 code examples in the docs
+run as doctests.
 
 ---
 
@@ -83,22 +83,22 @@ running on a route whose `afterModel` redirected.
 
 ---
 
-## 3. Make the suite runnable in node
+## 3. Make the suite runnable in node ✅
 
-`@emberx/string`, `@emberx/helper` and `@emberx/component` run under node + jsdom, and
-under Deno. The router and test-helpers suites do not yet. Getting them there would let the whole suite
-run headless, and it is a prerequisite for real SSR.
+Done: every suite runs under node + jsdom and under Deno, as in the browser, so the whole
+suite runs headless. What it took:
 
-- **Router state outlives each test.** Starting a router stops the previous one following
-  the browser, but nothing tears the router down in `afterEach`. Transitions from a
-  finished test then render into a container the next test has already removed ("#app or
-  #ember-testing not found"). The browser tolerates this, but `node:test` reports it as a
-  failure. The fix left is a router teardown in `setupTest`. The router itself runs without
-  a browser already: `Router.start(…, { location: 'none' })`, the default without a
-  `window`, keeps the URL in memory as Ember's NoneLocation does, and @emberx/ssr's suite
-  routes under node and Deno with it.
-- **The test-helpers suite hangs under node** for the same reason, plus event helpers that
-  lean on real layout. Revisit once the router tears down cleanly.
+- **A router knows it is under test from `Router.testing`**, which @emberx/test-helpers'
+  `setupTest` turns on, as Ember's test setup sets `Ember.testing`. It used to look for a
+  global `QUnit`, which only qunitx's browser build defines, so under node the router
+  rendered into `#app` and wrote its URLs to the address bar.
+- **A test's teardown destroys what it rendered.** `resetRendering()` destroys each owner it
+  rendered through, and Ember destroys every root rendered with one along with it, so a
+  page's `willDestroy` runs and its timers stop instead of keeping node alive.
+- **jsdom's gaps, filled in `test/setup-dom.js`**: `document.hasFocus()` agrees with the
+  focus events jsdom fires, and `isContentEditable` exists. `pauseTest()` turns the
+  timeout off with the longest one there is, since qunitx outside a browser takes no
+  "off" value.
 
 ---
 

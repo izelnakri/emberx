@@ -1,7 +1,7 @@
 import { tracked } from '@emberx/component';
 
 export default class LocaleService {
-  @tracked _currentLocale: string;
+  @tracked accessor _currentLocale: string;
 
   constructor(currentLocale: string) {
     this._currentLocale = currentLocale;

@@ -86,8 +86,8 @@ test-node:
 test-deno:
 	npm run test:deno
 
-# Runs every ```ts/```js example in the READMEs and in JSDoc comments, checking
-# each `// => value`. ```ts ignore skips a multi-file sketch.
+# Runs every ```ts/```js example in the READMEs and in JSDoc comments with
+# `deno test --doc`, assertions included. ```ts ignore skips a multi-file sketch.
 test-doctests:
 	npm run test:doctests
 
@@ -190,7 +190,7 @@ release:
 	$(MAKE) test
 	$(MAKE) test-doctests
 	$(MAKE) test-release
-	deno run -A scripts/release.ts $(LEVEL)
+	deno run -A scripts/publish-emberx-packages.ts $(LEVEL)
 	@VERSION=$$(node -p "require('./package.json').version"); \
 	npm install --package-lock-only --ignore-scripts && \
 	npm run changelog:update -- --tag "v$$VERSION" && \

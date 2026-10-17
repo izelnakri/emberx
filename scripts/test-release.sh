@@ -61,10 +61,11 @@ import { camelize } from '@emberx/string';
 import { eq } from '@emberx/helper';
 import { renderToString } from '@emberx/ssr';
 import { render, settled } from '@emberx/test-helpers';
+import { precompileTemplates } from '@emberx/component/precompile';
 
 class Greeting extends Component<{ name: string }> {
   static template = hbs`<p>{{this.shout}}</p>`;
-  @tracked count = 0;
+  @tracked accessor count = 0;
   get shout(): string {
     return this.args.name.toUpperCase();
   }
@@ -79,10 +80,11 @@ const alsoNotANumber: number = camelize('ember-x');
 const html: Promise<string> = renderToString(Greeting, { args: { name: 'emberx' } });
 // @ts-expect-error: Router.start takes route definitions
 Router.start(42);
+const precompiled: string = precompileTemplates('static template = hbs`<p></p>`;');
 
-export { shout, notANumber, alsoNotANumber, html, eq, render, settled, HomeRoute };
+export { shout, notANumber, alsoNotANumber, html, eq, render, settled, HomeRoute, precompiled };
 TS
-npx tsc --noEmit --strict --skipLibCheck --experimentalDecorators --target es2022 \
+npx tsc --noEmit --strict --skipLibCheck --target es2022 \
   --module nodenext --moduleResolution nodenext consumer-types.ts
 
 # ── Node ────────────────────────────────────────────────────────────────────
@@ -96,4 +98,17 @@ EMBERX_PACKAGES_FROM="$CONSUMER" node --import "$ROOT/scripts/register.ts" --imp
 echo "test-release: deno (consumer)"
 deno test --no-check --allow-read --allow-env release-consumer-test.ts
 echo "test-release: deno (full suite against the installed packages)"
-deno run -A "$ROOT/scripts/test-deno.ts" --packages-from="$CONSUMER"
+# Each @emberx/* entry point the suite imports, `@emberx/component/precompile`
+# included, maps to its installed copy, by that package's exports; inside them,
+# @emberx/* resolves from the consumer's node_modules as it would for a user.
+node -e '
+  const { readFileSync, writeFileSync } = require("fs");
+  const imports = process.argv.slice(2).flatMap((name) =>
+    Object.entries(JSON.parse(readFileSync(`node_modules/@emberx/${name}/package.json`, "utf8")).exports).map(
+      ([subpath, { default: file }]) => [`@emberx/${name}${subpath.slice(1)}`, `./node_modules/@emberx/${name}/${file.slice(2)}`],
+    ),
+  );
+  writeFileSync("import-map.json", JSON.stringify({ imports: Object.fromEntries(imports) }));
+' string helper component router test-helpers ssr
+(cd "$ROOT" && deno test --no-check --allow-read --allow-env --import-map="$CONSUMER/import-map.json" \
+  --preload test/setup-dom.js test/node.ts)

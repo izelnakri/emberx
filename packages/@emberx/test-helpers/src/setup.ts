@@ -1,4 +1,4 @@
-import { Owner } from '@emberx/router';
+import Router, { Owner } from '@emberx/router';
 import { resetRendering } from '@emberx/component';
 import { setContext } from './context.ts';
 import { pauseTest, resumeTest } from './pause.ts';
@@ -51,9 +51,11 @@ export function setupTest(hooks: QUnitHooks, _startRouter?: () => unknown): void
 
     this.element = containerPage;
     this.owner = Owner;
+    Router.testing = true;
   });
 
   hooks.afterEach(function () {
+    Router.testing = false;
     // NOTE: created by the `beforeEach` above, so it is present by construction.
     document.getElementById('ember-testing-container')!.remove();
     // Each test starts with a fresh renderer, so a render that threw in one test

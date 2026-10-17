@@ -14,13 +14,13 @@ Ordered by what unblocks the most downstream work, not by size.
 | `@emberx/string`       | ✅    | Complete. Zero dependencies.                                          |
 | `@emberx/helper`       | ✅    | Complete.                                                             |
 | `@emberx/component`    | ✅    | Complete for the current renderer.                                    |
-| `@emberx/test-helpers` | ✅    | Complete; browser-only (see #3).                                      |
-| `@emberx/router`       | ✅    | Complete (see #2); its suite is browser-only (see #3).                |
+| `@emberx/test-helpers` | ✅    | Complete.                                                             |
+| `@emberx/router`       | ✅    | Complete (see #2).                                                    |
 | `@emberx/ssr`          | ✅    | Components and URLs to hydratable HTML, under node and Deno (see #4). |
 
-347 tests pass in the browser (the full suite). The 65 of them that need no router
-also pass under node and under Deno, as do @emberx/ssr's 11, which run there only, and
-the 14 code examples in the docs run as doctests. See #3 for what keeps the rest browser-only.
+357 tests pass in the browser (the full suite), and the same 357 pass under node and
+under Deno, as do @emberx/ssr's 11, which run there only. The 15 code examples in the docs
+run as doctests.
 
 ---
 
@@ -45,10 +45,10 @@ left is upstream's to change:
   its first render gets no handle and stays in Ember's renderer list, which only
   `_resetRenderers()` empties.
 - **Runtime templates need `'unsafe-eval'`.** `template()` always evaluates the JavaScript it
-  compiles to. An eval-free path exists in parts: `createTemplateFactory`
-  (`@ember/template-factory`, public) takes a wire-format block, but only the private
-  `precompile` of `ember-source/ember-template-compiler` produces one, in a format that is
-  not a public contract. Build-time compilation (#5) is the robust way out.
+  compiles to. A build that compiles templates ahead of time (#5) avoids it: the browser
+  then only calls `createTemplateFactory` (`@ember/template-factory`, public). What
+  `ember-template-compiler`'s `precompile` emits is not a public contract, so it is
+  compiled with the same ember-source the browser runs, from `@emberx/vendor`.
 
 Settled: install weight. `ember-source` lists 17 dependencies (Babel, broccoli, ember-cli
 packages) for its ember-cli hooks and blueprints, which its `dist/` never imports. emberx
@@ -83,22 +83,22 @@ running on a route whose `afterModel` redirected.
 
 ---
 
-## 3. Make the suite runnable in node
+## 3. Make the suite runnable in node ✅
 
-`@emberx/string`, `@emberx/helper` and `@emberx/component` run under node + jsdom, and
-under Deno. The router and test-helpers suites do not yet. Getting them there would let the whole suite
-run headless, and it is a prerequisite for real SSR.
+Done: every suite runs under node + jsdom and under Deno, as in the browser, so the whole
+suite runs headless. What it took:
 
-- **Router state outlives each test.** Starting a router stops the previous one following
-  the browser, but nothing tears the router down in `afterEach`. Transitions from a
-  finished test then render into a container the next test has already removed ("#app or
-  #ember-testing not found"). The browser tolerates this, but `node:test` reports it as a
-  failure. The fix left is a router teardown in `setupTest`. The router itself runs without
-  a browser already: `Router.start(…, { location: 'none' })`, the default without a
-  `window`, keeps the URL in memory as Ember's NoneLocation does, and @emberx/ssr's suite
-  routes under node and Deno with it.
-- **The test-helpers suite hangs under node** for the same reason, plus event helpers that
-  lean on real layout. Revisit once the router tears down cleanly.
+- **A router knows it is under test from `Router.testing`**, which @emberx/test-helpers'
+  `setupTest` turns on, as Ember's test setup sets `Ember.testing`. It used to look for a
+  global `QUnit`, which only qunitx's browser build defines, so under node the router
+  rendered into `#app` and wrote its URLs to the address bar.
+- **A test's teardown destroys what it rendered.** `resetRendering()` destroys each owner it
+  rendered through, and Ember destroys every root rendered with one along with it, so a
+  page's `willDestroy` runs and its timers stop instead of keeping node alive.
+- **jsdom's gaps, filled in `test/setup-dom.js`**: `document.hasFocus()` agrees with the
+  focus events jsdom fires, and `isContentEditable` exists. `pauseTest()` turns the
+  timeout off with the longest one there is, since qunitx outside a browser takes no
+  "off" value.
 
 ---
 
@@ -125,7 +125,7 @@ What is left:
 
 ---
 
-## 5. Build-time template compilation (opt-in)
+## 5. Build-time template compilation (opt-in) ✅
 
 emberx compiles templates in the browser on first render. That is the project's central
 bet and what makes "no build system" true, but the benchmarks put a typical component at
@@ -133,12 +133,15 @@ bet and what makes "no build system" true, but the benchmarks put a typical comp
 Ember's compiler runs its AST plugins, which makes this about 2.5× what glimmer.js's
 compiler took (~0.35ms and ~11ms in v0.1.0).
 
-The bet is worth keeping as the _default_. But a production build that precompiles `hbs`
-templates to wire format ahead of time — while leaving the runtime path intact for
-development and for consumers with no build step — would remove that cost without
-compromising the premise, and with it the `'unsafe-eval'` a strict CSP needs for runtime
-templates (#1). `benches/template-compilation.bench.ts` already measures exactly what such
-a change would eliminate.
+Done, with the runtime path kept as the default: `@emberx/component/precompile`'s
+`precompileTemplates` rewrites a module's `hbs` templates to Ember's wire format at build
+time, and a component's `static template` may be that instead of a string. The browser then
+compiles nothing and evaluates no code, so a strict CSP needs no `'unsafe-eval'` (#1).
+Each template compiles in strict mode against what it has in scope at runtime, the built-in
+helpers and its module's `static includes`, so a name it lacks fails the build. The
+packages' own templates (`<LinkTo>`, `Route`'s fallback) ship compiled. What is left: the
+page still ships Ember's compiler for the templates a build leaves alone; loading it only
+when one is met would take that weight off a fully precompiled app.
 
 ---
 
@@ -153,9 +156,8 @@ a change would eliminate.
   through this repo's workspace link on every platform except Windows, where esbuild
   cannot follow the junction — so the Windows CI leg runs the node suite only. Declaring
   the dependency upstream, or replacing memserver, restores the full Windows matrix.
-- **TypeScript 7** is current; this repo is on 5.9 because the codebase leans on legacy
-  (`experimentalDecorators`) decorators. Worth evaluating, together with a move to standard
-  decorators.
+- **TypeScript 7** is current; this repo is on 5.9. Its decorators are standard ones now,
+  which the native TypeScript 7 compiler supports, so the move is worth evaluating.
 - **`Router.visit` rejects when a transition fails** and no `error` handler or error
   substate deals with it, where it used to swallow every error. A caller that relied on
   that needs an error path: a handler, a substate, or a `catch`.

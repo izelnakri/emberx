@@ -33,7 +33,7 @@ class BrokenRoute extends Route {
 }
 
 class SaveButton extends Component {
-  @tracked status = 'idle';
+  @tracked accessor status = 'idle';
 
   static template = hbs`<button type="button" data-test-save {{on "click" this.save}}>{{this.status}}</button>`;
 

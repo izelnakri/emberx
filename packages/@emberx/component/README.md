@@ -3,12 +3,13 @@
 This fully tested library allows you to build advanced and very fast browser UI components:
 
 ```ts
+import assert from 'node:assert/strict';
 import Component, { hbs, renderComponent, action, tracked } from '@emberx/component';
 
 class UserDisplay extends Component {
-  @tracked count = 55;
-  @tracked loadingMessage: string | null;
-  @tracked user: object | null;
+  @tracked accessor count = 55;
+  @tracked accessor loadingMessage: string | null;
+  @tracked accessor user: object | null;
 
   static template = hbs`
     <h1>This is basic route</h1>
@@ -51,12 +52,13 @@ class UserDisplay extends Component {
 
 await renderComponent(UserDisplay, { element: document.getElementById('app') });
 
-document.querySelector('#counter').textContent; // => Counter: 55
+assert.equal(document.querySelector('#counter').textContent, 'Counter: 55');
 ```
 
 EmberX Components are composable, they allow embedding other EmberX components, helpers and modifiers:
 
 ```ts
+import assert from 'node:assert/strict';
 import Component, { hbs, renderComponent, action, tracked } from '@emberx/component';
 
 interface User {
@@ -99,8 +101,8 @@ class UserTable extends Component<{ users: User[] }> {
     </Table>
   `;
 
-  @tracked sortDirection = 'desc';
-  @tracked sortedUsers: User[] | null = null;
+  @tracked accessor sortDirection = 'desc';
+  @tracked accessor sortedUsers: User[] | null = null;
 
   get users() {
     return this.sortedUsers ?? this.args.users;
@@ -126,5 +128,58 @@ await renderComponent(UserTable, {
   args: { users: [{ firstName: 'Izel', lastName: 'Nakri', createdAt: '2021-05-01' }] },
 });
 
-document.querySelector('.my-table tbody td').textContent; // => Izel
+assert.equal(document.querySelector('.my-table tbody td').textContent, 'Izel');
 ```
+
+## Compiling templates at build time
+
+A template compiles in the browser on its component's first render: that is what lets emberx
+run with no build step. A production build can compile them ahead of time instead, so the
+browser only builds each template from Ember's wire format, which saves the compile on every
+cold load and evaluates no code, so a Content Security Policy needs no `'unsafe-eval'`.
+`precompileTemplates` rewrites a module's `hbs` templates, against the helpers every template
+has and the module's `static includes`:
+
+```ts
+import assert from 'node:assert/strict';
+import { precompileTemplates } from '@emberx/component/precompile';
+
+const code = precompileTemplates(`
+  class Greeting extends Component {
+    static includes = { Badge };
+    static template = hbs\`<p {{on "click" this.wave}}>Hello <Badge @name={{@name}} /></p>\`;
+  }
+`);
+
+assert.ok(code.includes('static template = (({ on, Badge }) => ({'));
+```
+
+In a build, run it over each module, for instance with an esbuild plugin:
+
+```ts ignore
+import * as esbuild from 'esbuild';
+import { readFile } from 'node:fs/promises';
+import { precompileTemplates } from '@emberx/component/precompile';
+
+await esbuild.build({
+  entryPoints: ['src/app.ts'],
+  bundle: true,
+  outdir: 'dist',
+  plugins: [
+    {
+      name: 'emberx-precompile',
+      setup(build) {
+        build.onLoad({ filter: /\/src\/.*\.ts$/ }, async ({ path }) => ({
+          contents: precompileTemplates(await readFile(path, 'utf8'), { moduleName: path }),
+          loader: 'ts',
+        }));
+      },
+    },
+  ],
+});
+```
+
+A template that names something neither the helpers nor the module's `includes` have fails
+the build, naming it. Any template left alone still compiles at runtime, so the build can
+cover some modules and not others. The @emberx packages' own templates, `<LinkTo>`'s and
+`Route`'s, are compiled when they are published.

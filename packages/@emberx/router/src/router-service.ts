@@ -28,17 +28,6 @@ interface FreeObject {
   [propName: string]: any;
 }
 
-/**
- * QUnit installs itself as a global while the test suite runs, and its mere
- * presence is how emberx detects that it is running under test. `QUnit` is typed
- * as `unknown` because only its existence is ever checked.
- *
- * This is a cast at the use site rather than a `declare global`, which would be
- * published in this package's .d.ts and then clash with `@types/qunit` in any
- * consumer that has it installed.
- */
-export type GlobalWithQUnit = typeof globalThis & { QUnit?: unknown };
-
 /** The events the router service emits through on() and off(). */
 export type RouterEventName = 'routeWillChange' | 'routeDidChange';
 
@@ -50,20 +39,21 @@ export type RouterEventListener = (this: RouterJSRouter, transition: any) => voi
 export default class RouterJSRouter extends Router<RouterJSRoute> {
   // @ts-ignore
   activeTransition: FreeObject;
-  testing: boolean = !!(globalThis as GlobalWithQUnit).QUnit;
+  /** Under test: the page renders into `#ember-testing`, and the address bar is left alone. See Router.testing. */
+  testing = false;
   locationBar: any;
 
   Resolver = DefaultResolver;
 
   /** The query params in the URL, cast to the values they denote. Declared defaults are not in here. */
-  @tracked queryParams: FreeObject = {};
-  @tracked currentRoute: string | undefined;
-  @tracked currentRouteName: string | undefined;
-  @tracked currentURL: string | undefined;
+  @tracked accessor queryParams: FreeObject = {};
+  @tracked accessor currentRoute: string | undefined;
+  @tracked accessor currentRouteName: string | undefined;
+  @tracked accessor currentURL: string | undefined;
   /** Whether a transition is under way. currentURL is already its destination by then. */
-  @tracked isTransitioning = false;
+  @tracked accessor isTransitioning = false;
   /** The URL the transition under way is leaving. */
-  @tracked transitionFromURL: string | undefined;
+  @tracked accessor transitionFromURL: string | undefined;
 
   /**
    * The page on screen: the route instance whose template the router rendered

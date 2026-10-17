@@ -1,7 +1,7 @@
 import { module, test } from 'qunitx';
 import { hbs } from '@emberx/component';
 import { render, click, currentURL, visit, waitFor } from '@emberx/test-helpers';
-import startRouter from '@examples/blog/start-router';
+import startRouter from '@examples/blog/start-router.ts';
 import { LinkTo } from '@emberx/router';
 import setupTest from './helpers/index.ts';
 import setupMemserver from './helpers/setup-memserver.ts';

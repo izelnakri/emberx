@@ -9,7 +9,7 @@ module('@emberx/component | Render tests', function (hooks) {
   test('full state complex component with empty scope gets rendered correctly', async function (assert) {
     class FirstComponent extends Component {
       message = 'hello world';
-      @tracked count = 55;
+      @tracked accessor count = 55;
 
       static template = hbs`
         <div id="first-component">
@@ -35,7 +35,7 @@ module('@emberx/component | Render tests', function (hooks) {
 
   test('complex full state complex components with embeded components inside, services, modifiers render correctly', async function (assert) {
     class LocaleService {
-      @tracked currentLocale: string;
+      @tracked accessor currentLocale: string;
 
       constructor(currentLocale: string) {
         this.currentLocale = currentLocale;
@@ -51,7 +51,7 @@ module('@emberx/component | Render tests', function (hooks) {
       @service locale;
 
       message = 'hello world';
-      @tracked count = 55;
+      @tracked accessor count = 55;
 
       static template = hbs`
         <div id="another-component">
@@ -78,7 +78,7 @@ module('@emberx/component | Render tests', function (hooks) {
 
     class MainComponent extends Component {
       @service locale;
-      @tracked mainMessage = 'hello world';
+      @tracked accessor mainMessage = 'hello world';
 
       get formattedMessage() {
         return this.mainMessage.toUpperCase();

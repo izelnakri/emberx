@@ -6,10 +6,20 @@
  * browser suite this file is not used at all.
  */
 if (!globalThis.window) {
-  const setupDom = await import('@memserver/server/dist/setup-dom.js');
-  await setupDom.default();
+  // qunitx first, while there is no window: its Deno build carries QUnit twice,
+  // and with a window present the second copy throws "QUnit has already been
+  // defined". Every later `import 'qunitx'` reuses this instance.
+  await import('qunitx');
 
-  const { window } = globalThis;
+  const { JSDOM } = await import('jsdom');
+  const { window } = new JSDOM('<!doctype html><html><body><div id="app"></div></body></html>', {
+    url: 'http://localhost',
+  });
+
+  globalThis.window = window;
+  globalThis.document = window.document;
+  globalThis.location = window.location;
+  globalThis.self ??= globalThis;
 
   // Every DOM class jsdom provides that node does not (Element, HTMLElement,
   // KeyboardEvent, ...), plus `navigator`, which node defines itself since 21
@@ -35,6 +45,17 @@ if (!globalThis.window) {
   // jsdom implements no layout. QUnit's HTML reporter scrolls on completion,
   // which would otherwise print a "Not implemented" stack trace on every run.
   window.scrollTo = () => {};
+  // jsdom fires focus and blur events as a focused browser window does, but its
+  // hasFocus() is false until something has focus. Input helpers that see an
+  // unfocused window fire those events themselves, so each would fire twice.
+  document.hasFocus = () => true;
+  // Nor does jsdom implement isContentEditable, which fillIn and typeIn check.
+  Object.defineProperty(window.HTMLElement.prototype, 'isContentEditable', {
+    get() {
+      const editable = this.closest('[contenteditable]');
+      return editable !== null && editable.getAttribute('contenteditable') !== 'false';
+    },
+  });
 
   const qunitFixture = document.createElement('div');
   qunitFixture.id = 'qunit-fixture';

@@ -151,7 +151,7 @@ In the repo, each package's `exports` point at its source:
 
 So every tool resolves `@emberx/router` to `packages/@emberx/router/src/` as it is: esbuild
 (the browser suite, `npm run dev`, the benchmarks, the Deno suite, the doctests),
-TypeScript, and node, where `scripts/register.ts` compiles the legacy decorators that node's
+TypeScript, and node, where `scripts/register.ts` compiles the decorators that node's
 type stripping rejects. That holds for imports from inside `node_modules` too:
 `@memserver/model` imports `@emberx/string`, and gets its source. Nothing is built but a
 release, and CI's test jobs run with no `dist/`, so a change that needs one fails there.
@@ -161,22 +161,26 @@ declarations, the README and LICENSE, and a `package.json` whose `exports` point
 `npm publish` and `npm pack` are given that directory (`make release`, `make test-release`),
 and `@emberx/vendor` as it is, so a consumer installs `dist/` and never `src/`.
 
-Deno still runs a bundle (`scripts/test-deno.ts`): it compiles a decorated field such as
-`@tracked count = 0` with standard class-field semantics whatever `deno.json` says, so the
-field's initializer overwrites the tracked accessor. That ends with standard decorators
-(TODO).
+Deno runs the sources as they are, decorators included, since emberx's decorators are
+standard ones: `npm run test:deno` is `deno test` on the same entry the node suite runs.
 
 ## Tests
 
-| Suite   | Command              | Covers                                          |
-| ------- | -------------------- | ----------------------------------------------- |
-| node    | `make test-node`     | string, helper and component under node + jsdom |
-| deno    | `make test-deno`     | the same suite under Deno                       |
-| browser | `make test-browser`  | everything: routing, rendering, the examples    |
-| docs    | `make test-doctests` | the code examples in the READMEs and JSDoc      |
+| Suite   | Command              | Covers                                              |
+| ------- | -------------------- | --------------------------------------------------- |
+| node    | `make test-node`     | the full suite under node + jsdom, plus @emberx/ssr |
+| deno    | `make test-deno`     | the same under Deno                                 |
+| browser | `make test-browser`  | the full suite in a real browser                    |
+| docs    | `make test-doctests` | the code examples in the READMEs and JSDoc          |
 
-The browser suite is the real one — the router, the renderer and `@emberx/test-helpers`
-only run there. Both must pass before a change lands.
+The same tests run in all three: `test/index.ts` is the browser's entry, and `test/node.ts`
+imports what it does, plus `@emberx/ssr`'s suite, which needs no browser. The browser has
+the final say on layout, focus and real events; jsdom stands in for it elsewhere, and
+`test/setup-dom.js` fills in what jsdom lacks. All of them must pass before a change lands.
+
+`assert.dom()` already looks inside `#ember-testing`, so write `assert.dom('p')`, not
+`assert.dom('#ember-testing p')`: jsdom's `element.querySelector` finds nothing for a
+selector that names the element it is called on, though browsers do.
 
 Tests use [qunitx](https://github.com/izelnakri/qunitx) for assertions and
 [qunitx-cli](https://github.com/izelnakri/qunitx-cli) as the runner; qunitx-cli bundles
@@ -194,15 +198,15 @@ browser, `qunitx <test file> --open`; `resumeTest()` in the browser console carr
 
 Every ` ```ts ` and ` ```js ` block in a README or in a JSDoc comment under
 `packages/@emberx/*/src` runs in `make test-doctests` (and `make check`), so examples cannot
-drift from the code. Write them self-contained: import what they use, and render into
-`document.getElementById('app')`, which each example gets fresh. End a statement with
-`// => value` to assert what it returns, as `String(statement)`. A multi-file sketch that
-imports files a reader would write themselves is marked ` ```ts ignore `.
+drift from the code. That is Deno's own `deno test --doc`, as in qunitx, with
+`test/setup-dom.js` preloaded for a DOM. Write examples self-contained: import what they
+use, and render into `document.getElementById('app')`, which the DOM has. Check a result
+with `assert.equal(...)`, from `import assert from 'node:assert/strict'`, so a reader sees
+both what runs and what it gives. A multi-file sketch that imports files a reader would write
+themselves is marked ` ```ts ignore `.
 
-This is qunitx's `deno test --doc` in spirit, and it runs under `deno test` too, but esbuild
-bundles the examples first: `deno test --doc` would compile them itself, with standard
-decorator semantics, under which a legacy `@tracked` field is overwritten by its
-initializer, and nearly every emberx example uses `@tracked`.
+Deno gives each file its own isolate, each loading jsdom and Ember again, so the examples run
+with `--parallel`.
 
 ## Benchmarks
 

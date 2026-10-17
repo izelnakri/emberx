@@ -38,7 +38,7 @@ class MyComponent extends Component {
   `;
 
   message = 'hello world';
-  @tracked count = 55;
+  @tracked accessor count = 55;
 
   @action
   increment(): void {

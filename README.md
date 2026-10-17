@@ -23,7 +23,7 @@ Everything runs through `make`; run `make` on its own for the full list.
 | -------------------- | ------------------------------------------------------- |
 | `make check`         | format + lint + typecheck + tests, the core CI checks   |
 | `make test`          | the node, Deno and browser suites, with no build        |
-| `make test-node`     | string, helper and component under node + jsdom         |
+| `make test-node`     | the full suite under node + jsdom, plus @emberx/ssr     |
 | `make test-deno`     | the same suite under Deno                               |
 | `make test-doctests` | the code examples in the docs, run and checked          |
 | `make test-browser`  | the full suite in a real browser (chromium)             |
@@ -37,7 +37,7 @@ a benchmark regression check and a package verification step.
 
 Linting is `deno lint` and formatting is prettier, the same pair qunitx-cli uses. `deno fmt` would
 be the natural partner, but it always moves a class-field decorator onto its own line, turning
-`@tracked count = 0;` into two lines, and no flag or `deno.json` option prevents it. emberx code is
+`@tracked accessor count = 0;` into two lines, and no flag or `deno.json` option prevents it. emberx code is
 full of one-line `@tracked`, `@service` and `@action` fields, so prettier stays. prettier comes
 from `npm ci`; Deno is installed once per machine (see CONTRIBUTING.md).
 
@@ -71,6 +71,7 @@ Although the project is not production-ready one can still experiment with it us
 - Ember Route hooks (`beforeModel`, `model`, `afterModel`, `redirect`) are static methods instead of instance methods. Actions are the routes' own `@action` methods, which do the work of Ember's controller and route actions; `this.send()` reaches the routes above a page (see Actions on a page).
 - No sticky queryParams, instead link building is explicit with `<LinkTo @query={{hash param=value}}/>` or with object helpers `<LinkTo @query={{assign (hash active=true) this.router.queryParams}}/>`.
 - No `{{outlet}}`: the router renders the page, the deepest route, and nothing around it. A layout pages share, such as a header, is a component each page's template includes. This keeps every route file compilable for the browser on its own, without a build step.
+- Decorators are standard (TC39) decorators, as Deno, TypeScript and esbuild run them, not Ember's legacy ones: tracked state is an accessor, `@tracked accessor count = 0`. `@action` and `@service` read as in Ember.
 - No need for initializers and instance initializers, all code runs in module file import and execution order.
 - Easily sharable/downloadable/distributable emberx components and routes with npm.
 
@@ -183,7 +184,7 @@ import Counter from '../components/Counter';
 export default class IndexRoute extends Route {
   @service intl;
 
-  @tracked dynamicObject;
+  @tracked accessor dynamicObject;
 
   constructor(owner, args) {
     super(owner, args);
@@ -403,8 +404,8 @@ import Router, { Route, hbs, action, service, tracked } from '@emberx/router';
 class PostRoute extends Route {
   @service sharing; // what several pages do the same way lives in a service
 
-  @tracked isLiked = false;
-  @tracked draft = '';
+  @tracked accessor isLiked = false;
+  @tracked accessor draft = '';
 
   static model({ post_id }) {
     return fetch(`/posts/${post_id}`).then((response) => response.json());
@@ -474,7 +475,7 @@ class BlogRoute extends Route {
 
 class PostsRoute extends Route {
   @service sharing;
-  @tracked archivedCount = 0;
+  @tracked accessor archivedCount = 0;
 
   static model() {
     return fetch('/posts').then((response) => response.json());
@@ -585,10 +586,11 @@ console warning naming the emberx way, once.
 #### Familiar @emberx/component:
 
 ```ts
+import assert from 'node:assert/strict';
 import Component, { service, tracked, action, hbs, renderComponent } from '@emberx/component';
 
 class LocaleService {
-  @tracked currentLocale: string;
+  @tracked accessor currentLocale: string;
 
   constructor(currentLocale: string) {
     this.currentLocale = currentLocale;
@@ -604,7 +606,7 @@ class AnotherComponent extends Component {
   @service locale;
 
   message = 'hello world';
-  @tracked count = 55;
+  @tracked accessor count = 55;
 
   static template = hbs`
     <div id="another-component">
@@ -631,7 +633,7 @@ class AnotherComponent extends Component {
 
 class MainComponent extends Component {
   @service locale;
-  @tracked mainMessage = 'hello world';
+  @tracked accessor mainMessage = 'hello world';
 
   get formattedMessage() {
     return this.mainMessage.toUpperCase();
@@ -661,8 +663,8 @@ await renderComponent(MainComponent, {
   owner: { services: { locale: new LocaleService('en') } },
 });
 
-document.querySelector('#main-component-formatted-message').textContent; // => HELLO WORLD
-document.querySelector('#locale-info').textContent; // => Component gets rendered. Current locale is en
+assert.equal(document.querySelector('#main-component-formatted-message').textContent, 'HELLO WORLD');
+assert.equal(document.querySelector('#locale-info').textContent, 'Component gets rendered. Current locale is en');
 ```
 
 Template/Component imports are respecting typescript standards, thus can be easily run node.js with npm, allowing
@@ -673,6 +675,7 @@ simple server side rendering.
 `@emberx/ssr` renders on a server, in node or Deno, with no browser DOM:
 
 ```ts
+import assert from 'node:assert/strict';
 import Component, { hbs } from '@emberx/component';
 import { renderToString } from '@emberx/ssr';
 
@@ -680,7 +683,7 @@ class Greeting extends Component {
   static template = hbs`<p>Hello {{@name}}</p>`;
 }
 
-await renderToString(Greeting, { args: { name: 'server' }, hydratable: false }); // => <p>Hello server</p>
+assert.equal(await renderToString(Greeting, { args: { name: 'server' }, hydratable: false }), '<p>Hello server</p>');
 ```
 
 Without `hydratable: false` the markup also carries the comments Glimmer's rehydration reads.
@@ -722,6 +725,13 @@ await startRouter().visit(`${location.pathname}${location.search}`);
 
 emberx's `Owner` holds one router per process, so `renderURLToString` renders one URL at a
 time: requests that arrive together wait their turn.
+
+#### Compiling templates at build time (optional):
+
+Templates compile in the browser on first render, which needs no build step. A production
+build can compile them ahead of time with `@emberx/component/precompile`, so the browser
+compiles nothing and evaluates no code: no `'unsafe-eval'` in a Content Security Policy. See
+[@emberx/component](packages/@emberx/component/README.md#compiling-templates-at-build-time).
 
 This also allows the ability to distribute every component, route, helper, module as an npm package without a need for a build/addon system.
 Parent components can use `static includes` to include the components they depend on.

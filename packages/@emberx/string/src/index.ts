@@ -68,12 +68,13 @@ const DECAMELIZE_CACHE = new Cache<string, string>(1000, (str) =>
   Converts a camelized string into all lower case separated by underscores.
 
   ```javascript
+  import assert from 'node:assert/strict';
   import { decamelize } from '@emberx/string';
 
-  decamelize('innerHTML'); // => inner_html
-  decamelize('action_name'); // => action_name
-  decamelize('css-class-name'); // => css-class-name
-  decamelize('my favorite items'); // => my favorite items
+  assert.equal(decamelize('innerHTML'), 'inner_html');
+  assert.equal(decamelize('action_name'), 'action_name');
+  assert.equal(decamelize('css-class-name'), 'css-class-name');
+  assert.equal(decamelize('my favorite items'), 'my favorite items');
   ```
 
   @method decamelize
@@ -89,13 +90,14 @@ export function decamelize(str: string): string {
   Replaces underscores, spaces, or camelCase with dashes.
 
   ```javascript
+  import assert from 'node:assert/strict';
   import { dasherize } from '@emberx/string';
 
-  dasherize('innerHTML'); // => inner-html
-  dasherize('action_name'); // => action-name
-  dasherize('css-class-name'); // => css-class-name
-  dasherize('my favorite items'); // => my-favorite-items
-  dasherize('privateDocs/ownerInvoice'); // => private-docs/owner-invoice
+  assert.equal(dasherize('innerHTML'), 'inner-html');
+  assert.equal(dasherize('action_name'), 'action-name');
+  assert.equal(dasherize('css-class-name'), 'css-class-name');
+  assert.equal(dasherize('my favorite items'), 'my-favorite-items');
+  assert.equal(dasherize('privateDocs/ownerInvoice'), 'private-docs/owner-invoice');
   ```
 
   @method dasherize
@@ -111,14 +113,15 @@ export function dasherize(str: string): string {
   Returns the lowerCamelCase form of a string.
 
   ```javascript
+  import assert from 'node:assert/strict';
   import { camelize } from '@emberx/string';
 
-  camelize('innerHTML'); // => innerHTML
-  camelize('action_name'); // => actionName
-  camelize('css-class-name'); // => cssClassName
-  camelize('my favorite items'); // => myFavoriteItems
-  camelize('My Favorite Items'); // => myFavoriteItems
-  camelize('private-docs/owner-invoice'); // => privateDocs/ownerInvoice
+  assert.equal(camelize('innerHTML'), 'innerHTML');
+  assert.equal(camelize('action_name'), 'actionName');
+  assert.equal(camelize('css-class-name'), 'cssClassName');
+  assert.equal(camelize('my favorite items'), 'myFavoriteItems');
+  assert.equal(camelize('My Favorite Items'), 'myFavoriteItems');
+  assert.equal(camelize('private-docs/owner-invoice'), 'privateDocs/ownerInvoice');
   ```
 
   @method camelize
@@ -134,13 +137,14 @@ export function camelize(str: string): string {
   Returns the UpperCamelCase form of a string.
 
   ```javascript
+  import assert from 'node:assert/strict';
   import { classify } from '@emberx/string';
 
-  classify('innerHTML'); // => InnerHTML
-  classify('action_name'); // => ActionName
-  classify('css-class-name'); // => CssClassName
-  classify('my favorite items'); // => MyFavoriteItems
-  classify('private-docs/owner-invoice'); // => PrivateDocs/OwnerInvoice
+  assert.equal(classify('innerHTML'), 'InnerHTML');
+  assert.equal(classify('action_name'), 'ActionName');
+  assert.equal(classify('css-class-name'), 'CssClassName');
+  assert.equal(classify('my favorite items'), 'MyFavoriteItems');
+  assert.equal(classify('private-docs/owner-invoice'), 'PrivateDocs/OwnerInvoice');
   ```
 
   @method classify
@@ -157,13 +161,14 @@ export function classify(str: string): string {
   form of a string.
 
   ```javascript
+  import assert from 'node:assert/strict';
   import { underscore } from '@emberx/string';
 
-  underscore('innerHTML'); // => inner_html
-  underscore('action_name'); // => action_name
-  underscore('css-class-name'); // => css_class_name
-  underscore('my favorite items'); // => my_favorite_items
-  underscore('privateDocs/ownerInvoice'); // => private_docs/owner_invoice
+  assert.equal(underscore('innerHTML'), 'inner_html');
+  assert.equal(underscore('action_name'), 'action_name');
+  assert.equal(underscore('css-class-name'), 'css_class_name');
+  assert.equal(underscore('my favorite items'), 'my_favorite_items');
+  assert.equal(underscore('privateDocs/ownerInvoice'), 'private_docs/owner_invoice');
   ```
 
   @method underscore
@@ -179,13 +184,14 @@ export function underscore(str: string): string {
   Returns the Capitalized form of a string
 
   ```javascript
+  import assert from 'node:assert/strict';
   import { capitalize } from '@emberx/string';
 
-  capitalize('innerHTML'); // => InnerHTML
-  capitalize('action_name'); // => Action_name
-  capitalize('css-class-name'); // => Css-class-name
-  capitalize('my favorite items'); // => My favorite items
-  capitalize('privateDocs/ownerInvoice'); // => PrivateDocs/OwnerInvoice
+  assert.equal(capitalize('innerHTML'), 'InnerHTML');
+  assert.equal(capitalize('action_name'), 'Action_name');
+  assert.equal(capitalize('css-class-name'), 'Css-class-name');
+  assert.equal(capitalize('my favorite items'), 'My favorite items');
+  assert.equal(capitalize('privateDocs/ownerInvoice'), 'PrivateDocs/OwnerInvoice');
   ```
 
   @method capitalize

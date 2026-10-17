@@ -7,16 +7,16 @@ import Counter from '../components/Counter.ts';
 export default class PublicIndexRoute extends Route {
   @service intl;
 
-  @tracked dynamicObject;
+  @tracked accessor dynamicObject;
 
-  constructor(owner, args) {
-    super(owner, args);
+  clock = setInterval(() => {
+    this.dynamicObject = {
+      dynamicDate: new Date().toString(),
+    };
+  }, 200);
 
-    window.setInterval(() => {
-      this.dynamicObject = {
-        dynamicDate: new Date().toString(),
-      };
-    }, 200);
+  willDestroy(): void {
+    clearInterval(this.clock);
   }
 
   static includes = {
@@ -27,7 +27,6 @@ export default class PublicIndexRoute extends Route {
   };
 
   static model(): object {
-    console.log('index route model called');
     // this.flashMessages.danger('Invalid verification link');
     // return this.transitionTo('application');
 

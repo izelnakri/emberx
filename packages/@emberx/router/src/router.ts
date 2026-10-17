@@ -64,6 +64,13 @@ export default class Router {
   static Resolver = DefaultResolver;
   static LOG_ROUTES = true;
   static LOG_MODELS = true;
+  /**
+   * Whether the routers started from now on run under test, as `Ember.testing`
+   * says for Ember: @emberx/test-helpers' setupTest() turns it on for each test.
+   * Such a router renders into `#ember-testing` instead of `#app`, and keeps
+   * its URL off the address bar.
+   */
+  static testing = false;
 
   static get owner() {
     return Owner;
@@ -103,7 +110,10 @@ export default class Router {
       resolveByConvention(resolve);
     }
     const routerJSRouteArray = this.convertToRouterJSRouteArray(Owner.routes);
-    const routerService = Owner.register('service:router', new RouterService({ Resolver: this.Resolver, location }));
+    const routerService = Owner.register(
+      'service:router',
+      new RouterService({ Resolver: this.Resolver, location, testing: this.testing }),
+    );
     // Every route is under the application route, as in Ember: it has no URL of
     // its own, and the names of the routes under it are not prefixed with it.
     routerService.map(function (match: any) {

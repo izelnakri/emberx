@@ -15,7 +15,7 @@ class List extends Component {
 }
 
 class Counter extends Component {
-  @tracked count = 0;
+  @tracked accessor count = 0;
 
   @action
   increment() {

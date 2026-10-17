@@ -5,7 +5,7 @@ import { ROUTE_ABOVE_PAGE } from './route-above-page.ts';
 import Router from './index.ts';
 import Owner from './owner.ts';
 import { buildQueryParams, type QueryParamDeclarations } from './query-params.ts';
-import EmberXComponent, { action, service } from '@emberx/component';
+import EmberXComponent, { action, hbs, service } from '@emberx/component';
 import { QUERY_PARAMS_SYMBOL } from 'router_js';
 
 interface FreeObject {
@@ -31,7 +31,7 @@ export default class Route extends EmberXComponent<FreeObject> {
   @service router: RouterService;
 
   static includes = {};
-  static template = `
+  static template = hbs`
     <div id="intro">
       <h1 data-test-route-title>Route: {{this.routeName}}. This route is missing a template!</h1>
       <h5>Route params: {{debug @params}}</h5>

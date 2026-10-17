@@ -9,6 +9,13 @@ declare global {
 let resume: (() => void) | undefined;
 
 /**
+ * The longest a timer waits, about 24 days: a timeout that never comes. QUnit
+ * turns the timeout off for 0 or less, but qunitx under node and Deno takes
+ * only a positive duration.
+ */
+const NO_TIMEOUT = 2 ** 31 - 1;
+
+/**
   Stops the running test where it is, so the page it rendered can be inspected
   and clicked around in, until `resumeTest()` is called. The test timeout is
   turned off meanwhile. While paused, `resumeTest` is also on `window`, to call
@@ -29,7 +36,7 @@ let resume: (() => void) | undefined;
   ```
 */
 export function pauseTest(): Promise<void> {
-  getAssert()?.timeout(-1);
+  getAssert()?.timeout(NO_TIMEOUT);
   console.info('Testing paused. Use `resumeTest()` to continue.');
 
   return new Promise((resolve) => {

@@ -2,9 +2,9 @@
 /**
  * Version-bumps and publishes every @emberx package.
  *
- *   deno run -A scripts/release.ts patch            # or minor / major
- *   deno run -A scripts/release.ts 0.1.0
- *   deno run -A scripts/release.ts patch --dry-run
+ *   deno run -A scripts/publish-emberx-packages.ts patch            # or minor / major
+ *   deno run -A scripts/publish-emberx-packages.ts 0.1.0
+ *   deno run -A scripts/publish-emberx-packages.ts patch --dry-run
  *
  * Replaces release-it plus the old scripts/release-libraries.js. Driven by
  * `make release LEVEL=<patch|minor|major|x.y.z>`, which runs the checks first,
@@ -43,8 +43,8 @@ function nextVersion(current: string, level: string | undefined): string {
   if (/^\d+\.\d+\.\d+(-[\w.]+)?$/.test(level ?? '')) return level;
 
   process.stderr.write(
-    'Usage: deno run -A scripts/release.ts <patch|minor|major|x.y.z> [--dry-run]\n' +
-      'Example: deno run -A scripts/release.ts patch\n',
+    'Usage: deno run -A scripts/publish-emberx-packages.ts <patch|minor|major|x.y.z> [--dry-run]\n' +
+      'Example: deno run -A scripts/publish-emberx-packages.ts patch\n',
   );
   process.exit(1);
 }

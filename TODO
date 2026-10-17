@@ -172,8 +172,8 @@ replaces it wherever one can:
 - dev.ts: done, gone: `npm run dev` is one esbuild command (--serve, --serve-fallback=public/index.html),
   now that nothing needs a plugin: Ember's modules come from @emberx/vendor, and exports point at src/.
 - build-emberx-vendor.ts: new, writes @emberx/vendor from pinned devDependencies; register.ts: new, node's loader (step 5).
-- release.ts: kept. `npm version --workspaces --include-workspace-root` bumps all seven package.json files but
-  leaves the exact @emberx/* dependency pins at the old version (checked with npm 11.19), and the packages must
-  be published leaf-first.
-- Now: build-emberx-vendor.ts, check-benchmarks.ts, register.ts, release.ts, release-consumer-test.ts and
-  test-release.sh, plus lib/chrome-bench.js.
+- release.ts: kept, renamed publish-emberx-packages.ts to say what it does. `npm version --workspaces
+  --include-workspace-root` bumps all seven package.json files but leaves the exact @emberx/* dependency pins at
+  the old version (checked with npm 11.19), and the packages must be published leaf-first.
+- Now: build-emberx-vendor.ts, check-benchmarks.ts, publish-emberx-packages.ts, register.ts,
+  release-consumer-test.ts and test-release.sh, plus lib/chrome-bench.js.

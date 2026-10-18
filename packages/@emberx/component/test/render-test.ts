@@ -139,4 +139,21 @@ module('@emberx/component | Render tests', function (hooks) {
     assert.dom('#main-component-formatted-message').hasText('MESSAGE CHANGED');
     assert.dom('#another #another-component #received-arg').hasText('Received argument is message changed');
   });
+
+  test('a subclass renders its own template, after its parent rendered', async function (assert) {
+    class Parent extends Component {
+      static template = hbs`<b>parent</b>`;
+    }
+    class Child extends Parent {
+      static template = hbs`<i>child</i>`;
+    }
+    const element = document.getElementById('ember-testing') as HTMLElement;
+
+    await renderComponent(Parent, { element, owner: {} });
+    assert.dom('b').hasText('parent');
+
+    await renderComponent(Child, { element, owner: {} });
+    assert.dom('i').hasText('child');
+    assert.dom('b').doesNotExist();
+  });
 });

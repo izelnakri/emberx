@@ -149,9 +149,8 @@ Running emberx without a build. Where each step stands after the cleanup PR:
 3. Done: only TypeScript node can strip (erasableSyntaxOnly, verbatimModuleSyntax).
 4. Done: emberx's decorators are standard ones (`@tracked accessor count = 0`), which Deno runs as they are, so
    `npm run test:deno` is `deno test` and `npm run test:doctests` is `deno test --doc`. Found on the way:
-   qunitx's Deno build loads QUnit twice (dist/deno/index.js inlines it, and imports ../shared/assert.js, which
-   imports vendor/qunit.js again); with a DOM present the second copy throws "QUnit has already been defined".
-   test/setup-dom.js imports qunitx before it makes the DOM; worth fixing in qunitx itself.
+   qunitx's Deno build loaded QUnit twice, and with a DOM present the second copy threw "QUnit has already been
+   defined"; fixed in qunitx 1.4.0 (izelnakri/qunitx#107), so test/setup-dom.js no longer works around it.
 5. Done: scripts/register.ts. `npm run test:node` runs test/node.ts as it is.
 6. No compile step at all (long term, not ours alone): once JS engines run decorators (node 26 does not, even
    behind V8's --js-decorators), register.ts goes.

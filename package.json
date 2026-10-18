@@ -58,8 +58,8 @@
     "location-bar": "3.0.1",
     "prettier": "^3.9.9",
     "qunit-dom": "^3.6.0",
-    "qunitx": "^1.3.1",
-    "qunitx-cli": "^0.38.0",
+    "qunitx": "^1.4.0",
+    "qunitx-cli": "^0.39.0",
     "rsvp": "^4.8.5",
     "typescript": "^5.9.3"
   },

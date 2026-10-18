@@ -6,11 +6,6 @@
  * browser suite this file is not used at all.
  */
 if (!globalThis.window) {
-  // qunitx first, while there is no window: its Deno build carries QUnit twice,
-  // and with a window present the second copy throws "QUnit has already been
-  // defined". Every later `import 'qunitx'` reuses this instance.
-  await import('qunitx');
-
   const { JSDOM } = await import('jsdom');
   const { window } = new JSDOM('<!doctype html><html><body><div id="app"></div></body></html>', {
     url: 'http://localhost',

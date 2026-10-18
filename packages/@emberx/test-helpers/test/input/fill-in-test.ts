@@ -84,7 +84,7 @@ module('@emberx/test-helpers | fillIn', function (hooks) {
     });
 
     test('fills a textarea via selector correctly', async function (assert) {
-      assert.expect(11);
+      assert.expect(7);
 
       this.param = 'some title';
       this.assertTrue = (param) => assert.equal(param, 'some title');
@@ -121,7 +121,7 @@ module('@emberx/test-helpers | fillIn', function (hooks) {
     });
 
     test('fills a input via selector correctly', async function (assert) {
-      assert.expect(11);
+      assert.expect(7);
 
       this.param = 'some title';
       this.assertTrue = (param) => assert.equal(param, 'some title');

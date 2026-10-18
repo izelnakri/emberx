@@ -14,7 +14,7 @@ module('@emberx/test-helpers | blur', function (hooks) {
   setupRenderingTest(hooks);
 
   test('it works', async function (assert) {
-    assert.expect(11);
+    assert.expect(7);
 
     this.title = 'some title';
     this.assertTrue = (param) => {

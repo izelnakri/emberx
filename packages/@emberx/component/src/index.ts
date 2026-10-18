@@ -30,6 +30,13 @@ interface FreeObject {
 }
 
 /**
+ * The component classes whose templates are set. Kept here rather than as a
+ * static flag, which a subclass would inherit: a subclass rendered after its
+ * parent would then skip its own template and render the parent's.
+ */
+const COMPILED = new WeakSet<EmberXComponentClass>();
+
+/**
  * The static side of an emberx component class: the whole surface that
  * `renderComponent` and `traverseAndCompileAllComponents` touch.
  *
@@ -40,7 +47,6 @@ interface FreeObject {
  * assignable to. Only the statics matter here, so only the statics are asked for.
  */
 export interface EmberXComponentClass {
-  compiled: boolean;
   includes: FreeObject;
   template: string | PrecompiledTemplate;
   setTemplate(template: string | PrecompiledTemplate): unknown;
@@ -61,7 +67,6 @@ export default class EmberXComponent<Args extends FreeObject = FreeObject> exten
     super(owner as EmberOwner, args);
   }
 
-  static compiled = false;
   static includes = {};
   static template: string | PrecompiledTemplate;
   /** Compiles the template, unless the build already did (@emberx/component/precompile). */
@@ -233,16 +238,17 @@ function hbs(sourceCode: TemplateStringsArray): string {
 }
 
 function traverseAndCompileAllComponents(ComponentClass: EmberXComponentClass) {
-  if ('compiled' in ComponentClass && !ComponentClass.compiled) {
-    if (ComponentClass.template) {
-      ComponentClass.setTemplate(ComponentClass.template);
-    }
-    ComponentClass.compiled = true;
+  // `includes` also holds helpers and modifiers, which have no template.
+  if (typeof ComponentClass?.setTemplate !== 'function' || COMPILED.has(ComponentClass)) return;
 
-    Object.entries(ComponentClass.includes).forEach(([_key, value]: [string, any]) =>
-      traverseAndCompileAllComponents(value),
-    );
+  if (ComponentClass.template) {
+    ComponentClass.setTemplate(ComponentClass.template);
   }
+  // Marked once it compiled, so a broken template fails again on the next render,
+  // and before its includes, which may include it back.
+  COMPILED.add(ComponentClass);
+
+  Object.values(ComponentClass.includes).forEach(traverseAndCompileAllComponents);
 }
 
 export {

@@ -18,7 +18,7 @@ Ordered by what unblocks the most downstream work, not by size.
 | `@emberx/router`       | ✅    | Complete (see #2).                                                    |
 | `@emberx/ssr`          | ✅    | Components and URLs to hydratable HTML, under node and Deno (see #4). |
 
-357 tests pass in the browser (the full suite), and the same 357 pass under node and
+359 tests pass in the browser (the full suite), and the same 359 pass under node and
 under Deno, as do @emberx/ssr's 11, which run there only. The 15 code examples in the docs
 run as doctests.
 

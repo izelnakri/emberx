@@ -71,7 +71,8 @@ export default class EmberXComponent<Args extends FreeObject = FreeObject> exten
   static template: string | PrecompiledTemplate;
   /** Compiles the template, unless the build already did (@emberx/component/precompile). */
   static setTemplate(template: string | PrecompiledTemplate) {
-    const scope = Object.assign(this.includes, BUILTINS);
+    // A new object: `includes` may be a parent class's, or the one the caller passed to render().
+    const scope = { ...BUILTINS, ...this.includes };
     const templateFactory: any =
       typeof template === 'function'
         ? createTemplateFactory(template(scope) as any)

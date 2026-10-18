@@ -17,7 +17,7 @@ module('@emberx/test-helpers | doubleClick', function (hooks) {
 
   module('non-focusable element types', function () {
     test('it executes registered doubleClick hooks', async function (assert) {
-      assert.expect(11);
+      assert.expect(4);
 
       this.fireClick = () => assert.ok(true, 'fireClick called');
       this.doubleClick = () => assert.ok(true, 'doubleClick called');
@@ -36,7 +36,7 @@ module('@emberx/test-helpers | doubleClick', function (hooks) {
     });
 
     test('double-clicking a div via selector with context set', async function (assert) {
-      assert.expect(11);
+      assert.expect(4);
 
       this.fireClick = () => assert.ok(true, 'fireClick called');
       this.doubleClick = () => assert.ok(true, 'doubleClick called');

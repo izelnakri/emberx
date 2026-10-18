@@ -156,4 +156,17 @@ module('@emberx/component | Render tests', function (hooks) {
     assert.dom('i').hasText('child');
     assert.dom('b').doesNotExist();
   });
+
+  test("a component's includes replace a built-in of the same name, and are left as they were", async function (assert) {
+    const includes = { eq: () => 'my eq' };
+    class Mine extends Component {
+      static includes = includes;
+      static template = hbs`<p>{{eq 1 2}}</p>`;
+    }
+
+    await renderComponent(Mine, { element: document.getElementById('ember-testing') as HTMLElement, owner: {} });
+
+    assert.dom('p').hasText('my eq');
+    assert.deepEqual(Object.keys(includes), ['eq'], 'no built-in was written into it');
+  });
 });

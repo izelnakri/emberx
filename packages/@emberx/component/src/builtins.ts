@@ -5,7 +5,8 @@ import { and, or, not, eq, neq, gt, gte, lt, lte, assign, debug, drop, take } fr
 /**
  * What every template has in scope without `includes`: Ember's built-in helpers
  * and `on`, and @emberx/helper's. A component's `includes` add to these, and
- * @emberx/component/precompile compiles against the same names.
+ * replace one of the same name. @emberx/component/precompile compiles against
+ * the same names.
  */
 export default {
   fn,

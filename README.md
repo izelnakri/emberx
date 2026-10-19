@@ -691,41 +691,13 @@ A browser render into an element holding it then adopts it: `renderComponent` re
 server's nodes, attaches their event handlers, and updates them in place from then on,
 instead of building the page again.
 
-For a whole app, `renderURLToString(url)` renders the page a URL shows: the router goes to it
-as it would in a browser, model hooks, redirects and loading or error substates included,
-and the page it ends on renders to a string. Start the same router on both sides; in the
-browser, its first render hydrates the server's page:
-
-```ts ignore
-// start-router.ts, shared
-import Router from '@emberx/router';
-import routes from './routes.ts';
-
-export default () => Router.start(routes);
-
-// server.ts: without a `window`, the router keeps the URL in memory (`location: 'none'`)
-import { renderURLToString } from '@emberx/ssr';
-import startRouter from './start-router.ts';
-
-startRouter();
-
-Deno.serve(async (request) => {
-  const { pathname, search } = new URL(request.url);
-  const page = await renderURLToString(pathname + search);
-  const html = `<!doctype html><body><div id="app">${page}</div><script type="module" src="/app.js"></script>`;
-
-  return new Response(html, { headers: { 'content-type': 'text/html' } });
-});
-
-// app.ts, in the browser
-import startRouter from './start-router.ts';
-
-await startRouter().visit(`${location.pathname}${location.search}`);
-```
-
-Each call renders with a router of its own, so requests that arrive together render at once,
-each with the `services` it is given (`renderURLToString(url, { services: { session } })`). See
-[@emberx/ssr](packages/@emberx/ssr/README.md).
+For a whole app, `renderURL(url)` renders the page a URL shows: the router goes to it as it
+would in a browser, model hooks, redirects and loading or error substates included, and the page
+it ends on renders to HTML. It returns the page's `title` and the routes' `models` with it: the
+browser's `Router.start({ models })` takes those on its first transition instead of fetching
+them again, and its first render hydrates the server's page. Each call renders with a router of
+its own, so requests that arrive together render at once, each with the `services` it is given.
+See [@emberx/ssr](packages/@emberx/ssr/README.md) for a server.
 
 #### Compiling templates at build time (optional):
 

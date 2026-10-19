@@ -40,6 +40,16 @@ export default class Route extends EmberXComponent<FreeObject> {
   `;
 
   /**
+   * The page's title, or a function of its model that returns it: the
+   * deepest active route that has one names the page. The router puts it in
+   * `document.title` after each transition, which a screen reader announces,
+   * and @emberx/ssr's renderURL returns it for the document a server sends.
+   *
+   *   static title = (post) => `${post.title} | Blog`;
+   */
+  static title?: string | ((model: any) => string);
+
+  /**
    * The query params this route reads, and how a change to each is handled.
    * See ./query-params.ts for the shape.
    */
@@ -117,6 +127,13 @@ export default class Route extends EmberXComponent<FreeObject> {
    * defaults, rather than the raw strings off the URL.
    */
   static deserialize(params: FreeObject, transition: any) {
+    // The model a server rendered the page with, which the first transition takes instead.
+    const resolving = transition.routeInfos.find((routeInfo: any) => !routeInfo.isResolved && routeInfo.route === this);
+    const preloaded = resolving && this.router.takePreloadedModel(resolving.name);
+    if (preloaded) {
+      return preloaded.model;
+    }
+
     const { queryParams, ...segmentParams } = params;
 
     return this.model(

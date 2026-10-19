@@ -51,6 +51,13 @@ export interface StartOptions {
    * default without a `window`).
    */
   location?: 'history' | 'none';
+  /**
+   * The models a server rendered the page with, by route name, as
+   * @emberx/ssr's renderURL returns them: the first transition's routes take
+   * these instead of running their model hooks, so the browser does not fetch
+   * again what the page it hydrates already shows. Their other hooks run.
+   */
+  models?: Record<string, unknown>;
 }
 
 export interface InstanceOptions {
@@ -116,7 +123,7 @@ export default class Router {
     startOptions: StartOptions = {},
   ): Router {
     const routeMap = typeof routeMapOrOptions === 'function' ? routeMapOrOptions : undefined;
-    const { resolve, location } = typeof routeMapOrOptions === 'object' ? routeMapOrOptions : startOptions;
+    const { resolve, location, models } = typeof routeMapOrOptions === 'object' ? routeMapOrOptions : startOptions;
     stopPreviousRouter();
     Owner.clear('routes');
 
@@ -129,7 +136,10 @@ export default class Router {
     this.#routerJSRoutes = this.convertToRouterJSRouteArray(Owner.routes);
     Owner.register(
       'service:router',
-      mapRoutes(new RouterService({ Resolver: this.Resolver, location, testing: this.testing }), this.#routerJSRoutes),
+      mapRoutes(
+        new RouterService({ Resolver: this.Resolver, location, models, testing: this.testing }),
+        this.#routerJSRoutes,
+      ),
     );
 
     return this;

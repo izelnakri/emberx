@@ -64,6 +64,8 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
   @tracked accessor currentRoute: string | undefined;
   @tracked accessor currentRouteName: string | undefined;
   @tracked accessor currentURL: string | undefined;
+  /** The page's title: see Route.title. */
+  @tracked accessor currentTitle: string | undefined;
   /** Whether a transition is under way. currentURL is already its destination by then. */
   @tracked accessor isTransitioning = false;
   /** The URL the transition under way is leaving. */
@@ -92,6 +94,13 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
    */
   #pivotIndexes = new WeakMap<object, number>();
 
+  /**
+   * The models a server rendered the page with, by route name (Router.start's
+   * `models`), which the first transition's routes take instead of running
+   * their model hooks. Dropped once it ends.
+   */
+  #preloadedModels = new Map<string, unknown>();
+
   /** Errors an error substate dealt with; visit() resolves for these instead of rejecting. */
   #handledErrors = new Set<unknown>();
   #loadingTimer: ReturnType<typeof setTimeout> | undefined;
@@ -110,11 +119,11 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
   constructor(options: FreeObject | undefined) {
     super();
 
-    if (options) {
-      Object.entries(options).forEach(([key, value]) => {
-        if (value !== undefined) (this as FreeObject)[key] = value;
-      });
-    }
+    const { models, ...fields } = options ?? {};
+    Object.entries(fields).forEach(([key, value]) => {
+      if (value !== undefined) (this as FreeObject)[key] = value;
+    });
+    this.#preloadedModels = new Map(Object.entries(models ?? {}));
 
     if (this.location === 'history') {
       this.locationBar = new LocationBar();
@@ -263,6 +272,17 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
     return this.generate(routeName, ...models, { queryParams: visibleQueryParams });
   }
 
+  /** The model a server rendered `routeName` with, once: see Router.start's `models`. */
+  takePreloadedModel(routeName: string): { model: unknown } | undefined {
+    if (!this.#preloadedModels.has(routeName)) {
+      return;
+    }
+
+    const model = this.#preloadedModels.get(routeName);
+    this.#preloadedModels.delete(routeName);
+    return { model };
+  }
+
   /** Whether an `error` handler or substate dealt with `error`. Each error is reported once. */
   isErrorHandled(error: unknown): boolean {
     return this.#handledErrors.delete(error);
@@ -275,6 +295,7 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
 
     this.currentRoute = targetRouteInfo.route as any;
     this.currentRouteName = targetRouteInfo.name;
+    this.#showTitle(routeInfos);
 
     return transition;
   }
@@ -344,6 +365,7 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
 
     this.currentRoute = targetRouteInfo._route;
     this.currentRouteName = targetRouteInfo.name;
+    this.#showTitle(routeInfos);
     this.#endTransition();
   }
 
@@ -471,6 +493,18 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
   #endTransition() {
     this.isTransitioning = false;
     this.transitionFromURL = undefined;
+    this.#preloadedModels.clear();
+  }
+
+  /** Names the page by the deepest route that has a title, in `document.title` too for a browser's router. */
+  #showTitle(routeInfos: any[]) {
+    const routeInfo = routeInfos.findLast((routeInfo) => routeInfo.route?.title !== undefined);
+    const title = routeInfo?.route.title;
+
+    this.currentTitle = typeof title === 'function' ? title.call(routeInfo.route, routeInfo.context) : title;
+    if (this.currentTitle !== undefined && this.location === 'history' && !this.testing) {
+      document.title = this.currentTitle;
+    }
   }
 
   /**

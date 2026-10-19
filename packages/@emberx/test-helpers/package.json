@@ -18,7 +18,6 @@
   },
   "dependencies": {
     "@emberx/component": "0.4.0",
-    "@emberx/router": "0.4.0",
-    "browser-inputs": "1.1.0"
+    "@emberx/router": "0.4.0"
   }
 }

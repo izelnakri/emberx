@@ -183,3 +183,10 @@ A template that names something neither the helpers nor the module's `includes` 
 the build, naming it. Any template left alone still compiles at runtime, so the build can
 cover some modules and not others. The @emberx packages' own templates, `<LinkTo>`'s and
 `Route`'s, are compiled when they are published.
+
+Ember's runtime compiler is imported only when a component about to render has a template as a
+string: `renderComponent` loads it then. A page whose templates are all compiled never loads it,
+and a bundler that splits code (esbuild's `--splitting`) keeps it out of the page's bundle, about
+half of what emberx ships minified. Code that compiles a template itself, with `createTemplate`
+or `setTemplate`, awaits `loadTemplateCompiler()` first; `isTemplateCompilerLoaded()` tells
+whether anything has.

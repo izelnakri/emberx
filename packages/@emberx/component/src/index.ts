@@ -12,7 +12,7 @@ import Component from '@emberx/vendor/@glimmer/component';
 import { fn, hash, array, get, concat } from '@emberx/vendor/@ember/helper';
 import { on } from '@emberx/vendor/@ember/modifier';
 import BUILTINS from './builtins.ts';
-import createTemplate from './create-template.ts';
+import createTemplate, { isTemplateCompilerLoaded, loadTemplateCompiler } from './create-template.ts';
 import {
   _resetRenderers,
   isServerRendered,
@@ -139,7 +139,9 @@ async function renderComponent(ComponentClass: EmberXComponentClass, optionsOrEl
   const { element, ...options }: any =
     optionsOrElement instanceof HTMLElement ? { element: optionsOrElement } : optionsOrElement;
 
-  traverseAndCompileAllComponents(ComponentClass);
+  // Awaited only when it loads the compiler: otherwise the render is synchronous, as Ember's is.
+  const compiling = compileTemplates(ComponentClass);
+  if (compiling) await compiling;
 
   // Always an owner: Ember defaults it to a new `{}` per call and keeps one
   // renderer per owner, so an ownerless render would build a whole renderer
@@ -230,6 +232,20 @@ function hbs(sourceCode: TemplateStringsArray): string {
   return sourceCode[0];
 }
 
+/**
+ * Sets the templates of `ComponentClass` and of the components it includes,
+ * loading the template compiler first when one of them is a string to
+ * compile. Without a compiler to load, it sets them before it returns, so a
+ * render that follows it is as synchronous as Ember's.
+ */
+function compileTemplates(ComponentClass: EmberXComponentClass): Promise<void> | void {
+  if (isTemplateCompilerLoaded() || !hasRuntimeTemplate(ComponentClass, new Set())) {
+    return traverseAndCompileAllComponents(ComponentClass);
+  }
+
+  return loadTemplateCompiler().then(() => traverseAndCompileAllComponents(ComponentClass));
+}
+
 function traverseAndCompileAllComponents(ComponentClass: EmberXComponentClass) {
   // `includes` also holds helpers and modifiers, which have no template.
   if (typeof ComponentClass?.setTemplate !== 'function' || COMPILED.has(ComponentClass)) return;
@@ -253,6 +269,9 @@ export {
   getOwner,
   templateOnlyComponent,
   renderComponent,
+  compileTemplates,
+  loadTemplateCompiler,
+  isTemplateCompilerLoaded,
   hbs,
   fn,
   hash,
@@ -264,6 +283,19 @@ export {
   tracked,
   traverseAndCompileAllComponents,
 };
+
+/** Whether `ComponentClass`, or a component it includes, has a template to compile at runtime. */
+function hasRuntimeTemplate(ComponentClass: EmberXComponentClass, seen: Set<object>): boolean {
+  if (typeof ComponentClass?.setTemplate !== 'function' || COMPILED.has(ComponentClass) || seen.has(ComponentClass)) {
+    return false;
+  }
+
+  seen.add(ComponentClass);
+  return (
+    typeof ComponentClass.template === 'string' ||
+    Object.values(ComponentClass.includes).some((included) => hasRuntimeTemplate(included, seen))
+  );
+}
 
 function renderingOwnerFor(owner: object): object {
   let renderingOwner = renderingOwners.get(owner);

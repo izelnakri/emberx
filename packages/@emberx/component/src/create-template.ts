@@ -1,4 +1,3 @@
-import { template } from '@emberx/vendor/@ember/template-compiler/runtime';
 import { getComponentTemplate } from '@emberx/vendor/@glimmer/manager';
 
 interface ScopeValues {
@@ -8,6 +7,25 @@ interface ScopeValues {
 interface CreateTemplateOptions {
   strictMode?: boolean;
   moduleName?: string;
+}
+
+/** Ember's runtime template compiler, once loadTemplateCompiler() loaded it. */
+let compiler: typeof import('@emberx/vendor/@ember/template-compiler/runtime') | undefined;
+
+/**
+ * Loads Ember's runtime template compiler, which createTemplate needs. It is
+ * imported only when a template is to be compiled at runtime, so a page whose
+ * templates a build compiled (@emberx/component/precompile) never loads it:
+ * renderComponent loads it when a component it renders has a template as a
+ * string. Code that calls createTemplate or setTemplate itself awaits this first.
+ */
+export async function loadTemplateCompiler(): Promise<void> {
+  compiler ??= await import('@emberx/vendor/@ember/template-compiler/runtime');
+}
+
+/** Whether loadTemplateCompiler() has loaded the compiler. */
+export function isTemplateCompilerLoaded(): boolean {
+  return compiler !== undefined;
 }
 
 /**
@@ -26,7 +44,13 @@ export default function createTemplate(
   options: CreateTemplateOptions = {},
   scopeValues: ScopeValues = {},
 ) {
-  const component = template(templateSource, {
+  if (!compiler) {
+    throw new Error(
+      'The template compiler is not loaded: `await loadTemplateCompiler()` from @emberx/component before compiling a template yourself. renderComponent loads it on its own.',
+    );
+  }
+
+  const component = compiler.template(templateSource, {
     strictMode: options.strictMode ?? true,
     moduleName: options.moduleName,
     scope: () => scopeValues,

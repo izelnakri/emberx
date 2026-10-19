@@ -1,4 +1,4 @@
-import Component, { renderComponent } from '@emberx/component';
+import Component, { loadTemplateCompiler, renderComponent } from '@emberx/component';
 import { module, test } from 'qunitx';
 import { setupRenderingTest } from './helpers/index.ts';
 
@@ -18,6 +18,7 @@ module('@emberx/component | Public API', function (hooks) {
   test('Component.setTemplate() works correctly', async function (assert) {
     class SomeComponent extends Component {}
 
+    await loadTemplateCompiler();
     SomeComponent.setTemplate(`<h1 id="some-component">This is from SomeComponent</h1>`);
 
     renderComponent(SomeComponent, {

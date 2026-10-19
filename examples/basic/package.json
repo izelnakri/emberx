@@ -1,17 +1,9 @@
 {
-  "name": "example-app",
+  "name": "@examples/basic",
   "type": "module",
   "version": "0.1.12",
-  "description": "Example application using @emberx packages",
-  "repository": "https://github.com/glimmerjs/glimmer.js/tree/master/packages/example-apps/basic",
-  "author": "Tom Dale <tom@tomdale.net>",
+  "description": "A component, a helper and a service, rendered with @emberx/component",
+  "author": "Izel Nakri",
   "license": "MIT",
-  "private": true,
-  "scripts": {
-    "build": "webpack"
-  },
-  "dependencies": {},
-  "volta": {
-    "node": "12.16.1"
-  }
+  "private": true
 }

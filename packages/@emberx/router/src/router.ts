@@ -6,6 +6,9 @@ import RouteMapContext from './route-map-context.ts';
 import DefaultResolver from './resolvers/default.ts';
 import { isSubstateName, getSubstatePath } from './substates.ts';
 
+/** The name of the route above every route. */
+const APPLICATION = 'application';
+
 export interface FreeObject {
   [propName: string]: any;
 }
@@ -257,31 +260,6 @@ export default class Router {
 }
 
 /**
- * A router that is replaced, by starting another or resetting, must stop
- * following the browser's history, or back and forward would drive both.
- */
-function stopPreviousRouter() {
-  (Owner.lookup('service:router') as RouterService | undefined)?.stopListening();
-}
-
-function checkInRouteRegistryOrCreateRoute(registry: RouteRegistry, targetRoute: routerJSRouteDefinition) {
-  const routeName = targetRoute.name;
-  const foundRoute = registry[routeName];
-
-  if (!foundRoute) {
-    registry[routeName] = targetRoute;
-
-    return registry[routeName];
-  }
-
-  if (targetRoute.route) {
-    registry[routeName] = Object.assign(foundRoute, { route: targetRoute.route });
-  }
-
-  return registry[routeName];
-}
-
-/**
  * The name a route gets from its path when its definition has none: each path
  * segment is a name segment, and the routes of the leading segments are its
  * parents.
@@ -310,6 +288,27 @@ export function routeNameFromPath(path: string): string {
       return segment;
     })
     .join('.');
+}
+
+/**
+ * A router that is replaced, by starting another or resetting, must stop
+ * following the browser's history, or back and forward would drive both.
+ */
+function stopPreviousRouter() {
+  (Owner.lookup('service:router') as RouterService | undefined)?.stopListening();
+}
+
+function checkInRouteRegistryOrCreateRoute(registry: RouteRegistry, targetRoute: routerJSRouteDefinition) {
+  const routeName = targetRoute.name;
+  const foundRoute = registry[routeName];
+
+  if (!foundRoute) {
+    registry[routeName] = targetRoute;
+  } else if (targetRoute.route) {
+    foundRoute.route = targetRoute.route;
+  }
+
+  return registry[routeName];
 }
 
 /**
@@ -347,9 +346,6 @@ function reportDeclaredTwice(
 function reportDeclarationError(message: string) {
   console.error(`@emberx/router: ${message}`);
 }
-
-/** The name of the route above every route. */
-const APPLICATION = 'application';
 
 /**
  * The application route is declared without a path: it is above every route, at

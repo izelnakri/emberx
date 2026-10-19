@@ -80,10 +80,6 @@ module('@emberx/component | Render tests', function (hooks) {
       @service locale;
       @tracked accessor mainMessage = 'hello world';
 
-      get formattedMessage() {
-        return this.mainMessage.toUpperCase();
-      }
-
       static includes = {
         AnotherComponent,
       };
@@ -95,6 +91,10 @@ module('@emberx/component | Render tests', function (hooks) {
         </div>
         <button {{on "click" this.changeMessage}} id="message-button">Change main message</button>
       `;
+
+      get formattedMessage() {
+        return this.mainMessage.toUpperCase();
+      }
 
       @action
       changeMessage(): void {

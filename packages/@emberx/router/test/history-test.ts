@@ -19,26 +19,6 @@ class PostRoute extends Route {
   static template = hbs`<h1 data-test-title>{{this.model.title}}</h1>`;
 }
 
-function startRouter() {
-  return Router.start([
-    { path: '/', name: 'home', route: HomeRoute },
-    { path: '/posts', name: 'posts', route: PostsRoute },
-    { path: '/posts/:post_id', name: 'posts.post', route: PostRoute },
-  ]);
-}
-
-/**
- * What the browser does on back or forward: the URL changes first, then
- * popstate fires. Tests never push history entries, so the URL is set by hand.
- */
-async function goThroughHistoryTo(url: string) {
-  window.history.replaceState(null, '', url);
-  window.dispatchEvent(new PopStateEvent('popstate'));
-
-  await Router.owner.lookup('service:router').activeTransition?.followRedirects();
-  await settled();
-}
-
 module('@emberx/router | Back and forward buttons', function (hooks) {
   let pageURL: string;
 
@@ -120,3 +100,23 @@ module('@emberx/router | Back and forward buttons', function (hooks) {
     assert.verifySteps([], 'the router it replaced stopped listening');
   });
 });
+
+function startRouter() {
+  return Router.start([
+    { path: '/', name: 'home', route: HomeRoute },
+    { path: '/posts', name: 'posts', route: PostsRoute },
+    { path: '/posts/:post_id', name: 'posts.post', route: PostRoute },
+  ]);
+}
+
+/**
+ * What the browser does on back or forward: the URL changes first, then
+ * popstate fires. Tests never push history entries, so the URL is set by hand.
+ */
+async function goThroughHistoryTo(url: string) {
+  window.history.replaceState(null, '', url);
+  window.dispatchEvent(new PopStateEvent('popstate'));
+
+  await Router.owner.lookup('service:router').activeTransition?.followRedirects();
+  await settled();
+}

@@ -1,17 +1,5 @@
 import { Route, hbs, action, tracked } from '@emberx/router';
 
-/** GET a JSON document over XMLHttpRequest, so the XHR path stays covered. */
-function getJSONWithXHR(url: string): Promise<any> {
-  return new Promise((resolve, reject) => {
-    const request = new XMLHttpRequest();
-
-    request.open('GET', url);
-    request.onload = () => resolve(JSON.parse(request.responseText));
-    request.onerror = () => reject(new Error(`XHR failed for ${url}`));
-    request.send();
-  });
-}
-
 export default class BasicRoute extends Route {
   @tracked accessor count = 55;
   @tracked accessor secretMessage: string | null;
@@ -94,6 +82,18 @@ export default class BasicRoute extends Route {
       this.loadingMessage = null;
     }
   }
+}
+
+/** GET a JSON document over XMLHttpRequest, so the XHR path stays covered. */
+function getJSONWithXHR(url: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const request = new XMLHttpRequest();
+
+    request.open('GET', url);
+    request.onload = () => resolve(JSON.parse(request.responseText));
+    request.onerror = () => reject(new Error(`XHR failed for ${url}`));
+    request.send();
+  });
 }
 
 async function wait(timeout: number = 500) {

@@ -24,6 +24,13 @@ const routerModule = router as RouterJSConstructor & { default?: RouterJSConstru
 
 const Router = routerModule.default ? routerModule.default : routerModule;
 
+/** Ember route methods emberx routes do not have, with what to use instead. */
+const EMBER_ROUTE_METHODS: Record<string, string> = {
+  error: 'catch the error in its model hooks, or declare an errorRoute',
+  loading: "declare a loadingRoute, or time transitions with router.on('routeWillChange')",
+  didTransition: "use router.on('routeDidChange'), or the page's constructor",
+};
+
 interface FreeObject {
   [propName: string]: any;
 }
@@ -534,13 +541,6 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
     }
   }
 }
-
-/** Ember route methods emberx routes do not have, with what to use instead. */
-const EMBER_ROUTE_METHODS: Record<string, string> = {
-  error: 'catch the error in its model hooks, or declare an errorRoute',
-  loading: "declare a loadingRoute, or time transitions with router.on('routeWillChange')",
-  didTransition: "use router.on('routeDidChange'), or the page's constructor",
-};
 
 /** Route classes already checked for Ember route methods, so each is warned about once. */
 const checkedRoutes = new WeakSet<object>();

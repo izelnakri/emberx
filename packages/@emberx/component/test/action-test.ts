@@ -4,18 +4,6 @@ import { click, wait, waitFor } from '@emberx/test-helpers';
 import { setupRenderingTest } from './helpers/index.ts';
 import setupMemserver from './helpers/setup-memserver.ts';
 
-/** GET a JSON document over XMLHttpRequest, so the XHR path stays covered. */
-function getJSONWithXHR(url: string): Promise<any> {
-  return new Promise((resolve, reject) => {
-    const request = new XMLHttpRequest();
-
-    request.open('GET', url);
-    request.onload = () => resolve(JSON.parse(request.responseText));
-    request.onerror = () => reject(new Error(`XHR failed for ${url}`));
-    request.send();
-  });
-}
-
 module('@emberx/component | Action tests', function (hooks) {
   setupRenderingTest(hooks);
   setupMemserver(hooks);
@@ -183,3 +171,15 @@ module('@emberx/component | Action tests', function (hooks) {
     assert.dom('#user-details').hasText('Testing it: Izel Nakri');
   });
 });
+
+/** GET a JSON document over XMLHttpRequest, so the XHR path stays covered. */
+function getJSONWithXHR(url: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const request = new XMLHttpRequest();
+
+    request.open('GET', url);
+    request.onload = () => resolve(JSON.parse(request.responseText));
+    request.onerror = () => reject(new Error(`XHR failed for ${url}`));
+    request.send();
+  });
+}

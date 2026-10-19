@@ -68,6 +68,33 @@ const BASELINE_FILE = `${ROOT}benches/results.json`;
 const BUNDLE_DIR = `${ROOT}tmp/benches`;
 const BASE_WORKTREE = `${ROOT}tmp/bench-base`;
 
+// Two-tier model: the *gate* (whether a regression fails the build) and the *colouring*
+// (whether a row prints in red/yellow). Benches below the gate floor are observational:
+// GC pauses and scheduler interference swing them 100–300% on commodity hardware. They
+// still print and are coloured, but only fail when the regression is so large it cannot
+// plausibly be noise (HARD_CEILING_MULTIPLIER).
+//
+// emberx: the floor is 10µs, where qunitx-cli's is 1ms. emberx's headline cost is
+// runtime template compilation, CPU-bound work of 40µs–10ms per template, which a 1ms
+// floor would leave ungated. Below 10µs sit the string transforms and helpers, measured
+// in nanoseconds, which stay observational as they are in qunitx-cli.
+const GATE_FLOOR_NS = 10_000; //  10 µs — below this, regressions are non-gating except at the hard ceiling
+const SPAWN_NS = 100_000_000; // 100 ms — at or above this, work involves a process spawn
+
+// Even non-gated benches fail when their regression exceeds the effective threshold by
+// this multiple: an accidental O(n²) or a 10× hot-path slowdown still fires.
+const HARD_CEILING_MULTIPLIER = 10;
+
+/**
+ * emberx: Chrome benches are observational, gated only at the hard ceiling like
+ * sub-10µs ones. A browser's GC and scheduling still move a render benchmark
+ * by 30% between runs now and then, past the threshold with no code change.
+ */
+const observational = new Set<string>();
+
+/** The commit --base measured, whose descendants' Benchmark-Regression trailers count. */
+let comparedBase: string | null = null;
+
 interface BenchResult {
   name: string;
   avg: number; // nanoseconds
@@ -87,6 +114,50 @@ interface Baseline {
   results: Record<string, number>; // bench name → avg nanoseconds
 }
 
+// ─── main ────────────────────────────────────────────────────────────────────
+
+const args = Deno.args;
+const isSave = args.includes('--save');
+const isPrint = args.includes('--print');
+const baseIndex = args.indexOf('--base');
+const filesIndex = args.indexOf('--files');
+const minAbsDeltaNs = Number(Deno.env.get('MIN_ABS_DELTA_NS') ?? '1000');
+const thresholdPct = parseFloat(Deno.env.get('REGRESSION_THRESHOLD') ?? '26');
+
+const requested =
+  filesIndex !== -1
+    ? args.slice(filesIndex + 1).filter((a) => !a.startsWith('--'))
+    : [...Deno.readDirSync(`${ROOT}benches`)]
+        .map((entry) => `benches/${entry.name}`)
+        .filter((file) => file.endsWith('.bench.ts'))
+        .sort();
+const files = applySkipBenchmark(requested.map((file) => (file.startsWith('/') ? file : `${ROOT}${file}`)));
+if (files.length === 0) {
+  console.log(yellow('All bench files skipped via SKIP_BENCHMARK; nothing to do.'));
+  Deno.exit(0);
+}
+
+const baseRef =
+  baseIndex !== -1 && args[baseIndex + 1] && !args[baseIndex + 1].startsWith('--') ? args[baseIndex + 1] : undefined;
+const baseline = isPrint ? null : baseIndex !== -1 ? await measureBase(baseRef) : await loadBaseline();
+
+await bundle(files);
+
+// Checking against a baseline → adaptive (1 run, retry only on regression).
+// --save, --print or no baseline → best-of-2 so the numbers aren't biased by a single spike.
+const results =
+  !isSave && baseline
+    ? await collectAdaptive(files, baseline, thresholdPct, minAbsDeltaNs)
+    : await collectBestOf2(files);
+
+if (isPrint) {
+  printTable(results, null, thresholdPct / 100, minAbsDeltaNs);
+} else if (isSave) {
+  await save(results, await loadBaseline(), minAbsDeltaNs);
+} else if (!(await check(results, baseline, thresholdPct, minAbsDeltaNs))) {
+  Deno.exit(1);
+}
+
 // ─── I/O helpers ─────────────────────────────────────────────────────────────
 
 async function run(command: string, args: string[], cwd = ROOT, quiet = false): Promise<string> {
@@ -101,7 +172,9 @@ async function run(command: string, args: string[], cwd = ROOT, quiet = false): 
 }
 
 /** emberx: `*.chrome.bench.ts` files run in Chrome, through scripts/lib/chrome-bench.js. */
-const isChromeBench = (file: string): boolean => file.endsWith('.chrome.bench.ts');
+function isChromeBench(file: string): boolean {
+  return file.endsWith('.chrome.bench.ts');
+}
 
 /** emberx: bundles every bench file once into tmp/benches/. */
 async function bundle(files: string[]): Promise<void> {
@@ -124,13 +197,6 @@ async function bundle(files: string[]): Promise<void> {
   }
   esbuild.stop();
 }
-
-/**
- * emberx: Chrome benches are observational, gated only at the hard ceiling like
- * sub-10µs ones. A browser's GC and scheduling still move a render benchmark
- * by 30% between runs now and then, past the threshold with no code change.
- */
-const observational = new Set<string>();
 
 /** Runs a single bundled bench file in an isolated subprocess and returns its parsed results. */
 async function runBenchFile(file: string): Promise<BenchResult[]> {
@@ -257,23 +323,6 @@ function parseResults(raw: string): BenchResult[] {
 
 // ─── Threshold logic ─────────────────────────────────────────────────────────
 
-// Two-tier model: the *gate* (whether a regression fails the build) and the *colouring*
-// (whether a row prints in red/yellow). Benches below the gate floor are observational:
-// GC pauses and scheduler interference swing them 100–300% on commodity hardware. They
-// still print and are coloured, but only fail when the regression is so large it cannot
-// plausibly be noise (HARD_CEILING_MULTIPLIER).
-//
-// emberx: the floor is 10µs, where qunitx-cli's is 1ms. emberx's headline cost is
-// runtime template compilation, CPU-bound work of 40µs–10ms per template, which a 1ms
-// floor would leave ungated. Below 10µs sit the string transforms and helpers, measured
-// in nanoseconds, which stay observational as they are in qunitx-cli.
-const GATE_FLOOR_NS = 10_000; //  10 µs — below this, regressions are non-gating except at the hard ceiling
-const SPAWN_NS = 100_000_000; // 100 ms — at or above this, work involves a process spawn
-
-// Even non-gated benches fail when their regression exceeds the effective threshold by
-// this multiple: an accidental O(n²) or a 10× hot-path slowdown still fires.
-const HARD_CEILING_MULTIPLIER = 10;
-
 function isGated(saved: number, name: string): boolean {
   return saved >= GATE_FLOOR_NS && !observational.has(name);
 }
@@ -365,9 +414,6 @@ async function removeBaseWorktree(): Promise<void> {
   await Deno.remove(BASE_WORKTREE, { recursive: true }).catch(() => {});
   await run('git', ['worktree', 'prune'], ROOT, true).catch(() => {});
 }
-
-/** The commit --base measured, whose descendants' Benchmark-Regression trailers count. */
-let comparedBase: string | null = null;
 
 /**
  * Benchmark-Regression trailers of the commits after `base`: each a benchmark
@@ -501,48 +547,4 @@ async function check(
     ),
   );
   return true;
-}
-
-// ─── main ────────────────────────────────────────────────────────────────────
-
-const args = Deno.args;
-const isSave = args.includes('--save');
-const isPrint = args.includes('--print');
-const baseIndex = args.indexOf('--base');
-const filesIndex = args.indexOf('--files');
-const minAbsDeltaNs = Number(Deno.env.get('MIN_ABS_DELTA_NS') ?? '1000');
-const thresholdPct = parseFloat(Deno.env.get('REGRESSION_THRESHOLD') ?? '26');
-
-const requested =
-  filesIndex !== -1
-    ? args.slice(filesIndex + 1).filter((a) => !a.startsWith('--'))
-    : [...Deno.readDirSync(`${ROOT}benches`)]
-        .map((entry) => `benches/${entry.name}`)
-        .filter((file) => file.endsWith('.bench.ts'))
-        .sort();
-const files = applySkipBenchmark(requested.map((file) => (file.startsWith('/') ? file : `${ROOT}${file}`)));
-if (files.length === 0) {
-  console.log(yellow('All bench files skipped via SKIP_BENCHMARK; nothing to do.'));
-  Deno.exit(0);
-}
-
-const baseRef =
-  baseIndex !== -1 && args[baseIndex + 1] && !args[baseIndex + 1].startsWith('--') ? args[baseIndex + 1] : undefined;
-const baseline = isPrint ? null : baseIndex !== -1 ? await measureBase(baseRef) : await loadBaseline();
-
-await bundle(files);
-
-// Checking against a baseline → adaptive (1 run, retry only on regression).
-// --save, --print or no baseline → best-of-2 so the numbers aren't biased by a single spike.
-const results =
-  !isSave && baseline
-    ? await collectAdaptive(files, baseline, thresholdPct, minAbsDeltaNs)
-    : await collectBestOf2(files);
-
-if (isPrint) {
-  printTable(results, null, thresholdPct / 100, minAbsDeltaNs);
-} else if (isSave) {
-  await save(results, await loadBaseline(), minAbsDeltaNs);
-} else if (!(await check(results, baseline, thresholdPct, minAbsDeltaNs))) {
-  Deno.exit(1);
 }

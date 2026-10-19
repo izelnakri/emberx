@@ -13,15 +13,6 @@ export default class IndexRoute extends Route {
     };
   }, 200);
 
-  willDestroy(): void {
-    clearInterval(this.clock);
-  }
-
-  static includes = {
-    LinkTo,
-    Counter,
-  };
-
   static model(): object {
     // this.flashMessages.danger('Invalid verification link');
     // return this.transitionTo('application');
@@ -32,6 +23,11 @@ export default class IndexRoute extends Route {
       dynamicObject: { dynamicDate: new Date() },
     };
   }
+
+  static includes = {
+    LinkTo,
+    Counter,
+  };
 
   static template = `
     <nav class="navbar navbar-light bg-light">
@@ -58,6 +54,10 @@ export default class IndexRoute extends Route {
 
     <Counter/>
   `;
+
+  willDestroy(): void {
+    clearInterval(this.clock);
+  }
 
   @action changeLocale(): void {
     this.intl.currentLocale = this.intl.currentLocale === 'en' ? 'es' : 'en';

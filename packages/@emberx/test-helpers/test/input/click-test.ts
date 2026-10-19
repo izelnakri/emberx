@@ -3,12 +3,6 @@ import { module, test } from 'qunitx';
 import { click, render } from '@emberx/test-helpers';
 import { setupRenderingTest } from '../helpers/index.ts';
 
-function setupEventStepListeners(assert, element) {
-  ['mousedown', 'focus', 'mouseup', 'click'].forEach((eventName) => {
-    element.addEventListener(eventName, () => assert.step(eventName));
-  });
-}
-
 module('@emberx/test-helpers | click', function (hooks) {
   setupRenderingTest(hooks);
 
@@ -118,3 +112,9 @@ module('@emberx/test-helpers | click', function (hooks) {
       });
   });
 });
+
+function setupEventStepListeners(assert, element) {
+  ['mousedown', 'focus', 'mouseup', 'click'].forEach((eventName) => {
+    element.addEventListener(eventName, () => assert.step(eventName));
+  });
+}

@@ -67,8 +67,6 @@ const MODULES = {
   './routes/error.ts': { default: ErrorRoute },
 };
 
-const resolve = (name: string) => MODULES[`./routes/${name.replaceAll('.', '/')}.ts`];
-
 module('@emberx/router | Routes found by name, with resolve', function (hooks) {
   hooks.beforeEach(function () {
     release = null;
@@ -186,3 +184,7 @@ module('@emberx/router | Routes found by name, with resolve', function (hooks) {
     });
   });
 });
+
+function resolve(name: string) {
+  return MODULES[`./routes/${name.replaceAll('.', '/')}.ts`];
+}

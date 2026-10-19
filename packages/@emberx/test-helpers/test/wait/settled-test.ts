@@ -6,9 +6,6 @@ import { setupRenderingTest } from '../helpers/index.ts';
 
 // Settled by the test, so it can look at what is pending meanwhile.
 let release: (() => void) | null = null;
-function untilReleased(): Promise<void> {
-  return new Promise((resolve) => (release = resolve));
-}
 
 class SlowRoute extends Route {
   static model() {
@@ -138,3 +135,7 @@ module('@emberx/test-helpers | settled, isSettled and getSettledState', function
     await assert.rejects(transition, /Server is down/);
   });
 });
+
+function untilReleased(): Promise<void> {
+  return new Promise((resolve) => (release = resolve));
+}

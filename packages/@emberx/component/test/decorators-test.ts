@@ -19,12 +19,12 @@ module('@emberx/component | Decorators', function (hooks) {
       @tracked accessor title = 'Groceries';
       @tracked accessor items = ['milk'];
 
+      static template = hbs`<h1>{{this.title}}</h1><p>{{this.items.length}}</p>`;
+
       constructor(owner: object, args: Record<string, unknown>) {
         super(owner, args);
         list = this;
       }
-
-      static template = hbs`<h1>{{this.title}}</h1><p>{{this.items.length}}</p>`;
     }
 
     await renderComponent(List, { element: document.getElementById('ember-testing') as HTMLElement, owner: {} });

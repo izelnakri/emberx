@@ -36,6 +36,12 @@ interface FreeObject {
  */
 const COMPILED = new WeakSet<EmberXComponentClass>();
 
+const AsyncFunction = (async () => {}).constructor;
+const ASYNC_ACTIONS_PROMISE_QUEUE = new Set();
+
+/** The owner a render that names none renders with: see renderingOwnerFor. */
+const DEFAULT_OWNER = {};
+
 /**
  * The static side of an emberx component class: the whole surface that
  * `renderComponent` and `traverseAndCompileAllComponents` touch.
@@ -83,9 +89,6 @@ export default class EmberXComponent<Args extends FreeObject = FreeObject> exten
     return templateFactory;
   }
 }
-
-const AsyncFunction = (async () => {}).constructor;
-const ASYNC_ACTIONS_PROMISE_QUEUE = new Set();
 
 export function getAsyncActionsQueue() {
   return ASYNC_ACTIONS_PROMISE_QUEUE;
@@ -184,18 +187,7 @@ const hydratedRenderers = new Map<Element, { destroy(): void }>();
  * the stand-ins, and with them everything rendered through them, then drops
  * Ember's global renderer list, giving the next render a fresh renderer.
  */
-const DEFAULT_OWNER = {};
-
 let renderingOwners = new Map<object, object>();
-
-function renderingOwnerFor(owner: object): object {
-  let renderingOwner = renderingOwners.get(owner);
-  if (!renderingOwner) {
-    renderingOwner = Object.create(owner) as object;
-    renderingOwners.set(owner, renderingOwner);
-  }
-  return renderingOwner;
-}
 
 /**
  * Destroys everything rendered so far, so none of it keeps running, and forgets
@@ -272,3 +264,12 @@ export {
   tracked,
   traverseAndCompileAllComponents,
 };
+
+function renderingOwnerFor(owner: object): object {
+  let renderingOwner = renderingOwners.get(owner);
+  if (!renderingOwner) {
+    renderingOwner = Object.create(owner) as object;
+    renderingOwners.set(owner, renderingOwner);
+  }
+  return renderingOwner;
+}

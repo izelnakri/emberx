@@ -31,21 +31,6 @@ class NotFoundRoute extends Route {
   static template = hbs`<h1 data-test-title>Nothing here</h1>`;
 }
 
-/** Runs `callback` and returns what it logged with console.error. */
-function consoleErrorsOf(callback: () => void): string[] {
-  const errors: string[] = [];
-  const error = console.error;
-  console.error = (message) => errors.push(message);
-
-  try {
-    callback();
-  } finally {
-    console.error = error;
-  }
-
-  return errors;
-}
-
 module('@emberx/router | Route definitions', function () {
   module('a name from the path', function (hooks) {
     setupTest(hooks, () => {
@@ -191,3 +176,18 @@ module('@emberx/router | Route definitions', function () {
     });
   });
 });
+
+/** Runs `callback` and returns what it logged with console.error. */
+function consoleErrorsOf(callback: () => void): string[] {
+  const errors: string[] = [];
+  const error = console.error;
+  console.error = (message) => errors.push(message);
+
+  try {
+    callback();
+  } finally {
+    console.error = error;
+  }
+
+  return errors;
+}

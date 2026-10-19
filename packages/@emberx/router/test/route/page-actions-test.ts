@@ -67,10 +67,6 @@ class PostsIndexRoute extends Route {
     return this.modelFor('blog.posts');
   }
 
-  get firstPost() {
-    return this.model[0];
-  }
-
   static template = hbs`
     <h1 data-test-title>Posts</h1>
 
@@ -78,6 +74,10 @@ class PostsIndexRoute extends Route {
     <button type="button" data-test-email {{on "click" (fn this.send "share" this.firstPost "email")}}>Email</button>
     <button type="button" data-test-subscribe {{on "click" (fn this.send "subscribe" "reader@example.com")}}>Subscribe</button>
   `;
+
+  get firstPost() {
+    return this.model[0];
+  }
 }
 
 // A page made of its own template only: no components.
@@ -90,6 +90,16 @@ class PostRoute extends Route {
   static model({ post_id }) {
     return POSTS.find((post) => post.id === Number(post_id));
   }
+
+  static template = hbs`
+    <h1 data-test-title>{{this.model.title}}</h1>
+
+    <button type="button" data-test-like {{on "click" this.toggleLike}}>{{if this.isLiked "Liked" "Like"}}</button>
+    <textarea data-test-draft value={{this.draft}} {{on "input" this.updateDraft}}></textarea>
+    <button type="button" data-test-save {{on "click" this.saveComment}}>Comment</button>
+    <button type="button" data-test-share {{on "click" (fn this.shareWith "mastodon")}}>Share</button>
+    <button type="button" data-test-subscribe {{on "click" (fn this.send "subscribe" "reader@example.com")}}>Subscribe</button>
+  `;
 
   @action
   toggleLike() {
@@ -121,27 +131,17 @@ class PostRoute extends Route {
       transition.abort();
     }
   }
-
-  static template = hbs`
-    <h1 data-test-title>{{this.model.title}}</h1>
-
-    <button type="button" data-test-like {{on "click" this.toggleLike}}>{{if this.isLiked "Liked" "Like"}}</button>
-    <textarea data-test-draft value={{this.draft}} {{on "input" this.updateDraft}}></textarea>
-    <button type="button" data-test-save {{on "click" this.saveComment}}>Comment</button>
-    <button type="button" data-test-share {{on "click" (fn this.shareWith "mastodon")}}>Share</button>
-    <button type="button" data-test-subscribe {{on "click" (fn this.send "subscribe" "reader@example.com")}}>Subscribe</button>
-  `;
 }
 
 // Written the Ember way: none of these methods is called by the emberx router.
 class EmberStyleRoute extends Route {
+  didTransition() {}
+
   @action
   error() {}
 
   @action
   loading() {}
-
-  didTransition() {}
 }
 
 module('@emberx/router | Actions on a page', function (hooks) {

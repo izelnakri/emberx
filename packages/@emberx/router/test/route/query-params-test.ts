@@ -10,29 +10,6 @@ class HomeRoute extends Route {
   static template = hbs`<h1 data-test-title>Home</h1>`;
 }
 
-/** The step QueryParamParentRoute's model hook records for these query params. */
-function postsModel(queryParams) {
-  return `posts model: ${JSON.stringify(queryParams)}`;
-}
-
-/** The step QueryParamChildRoute's model hook records for these query params. */
-function postModel(queryParams) {
-  return `posts.post model: ${JSON.stringify(queryParams)}`;
-}
-
-/** Steps "<updateURL|replaceURL> <url>" for every URL change, to tell a push from a replace. */
-function recordURLChanges(assert, router) {
-  for (const method of ['updateURL', 'replaceURL']) {
-    const original = router[method];
-
-    router[method] = function (url) {
-      assert.step(`${method} ${url}`);
-
-      return original.call(this, url);
-    };
-  }
-}
-
 const DEFAULTS = { page: 1, sort: 'oldest', category: 'all' };
 const WITH_CHILD_DEFAULTS = { ...DEFAULTS, comments: false };
 
@@ -208,3 +185,26 @@ module('@emberx/router | Query params', function (hooks) {
     });
   });
 });
+
+/** The step QueryParamParentRoute's model hook records for these query params. */
+function postsModel(queryParams) {
+  return `posts model: ${JSON.stringify(queryParams)}`;
+}
+
+/** The step QueryParamChildRoute's model hook records for these query params. */
+function postModel(queryParams) {
+  return `posts.post model: ${JSON.stringify(queryParams)}`;
+}
+
+/** Steps "<updateURL|replaceURL> <url>" for every URL change, to tell a push from a replace. */
+function recordURLChanges(assert, router) {
+  for (const method of ['updateURL', 'replaceURL']) {
+    const original = router[method];
+
+    router[method] = function (url) {
+      assert.step(`${method} ${url}`);
+
+      return original.call(this, url);
+    };
+  }
+}

@@ -5,16 +5,6 @@ import targetFlatRegistry from './helpers/outputs/target-flat-registry.ts';
 import targetRouterJSArray from './helpers/outputs/target-router-js-array.ts';
 import setupTest from './helpers/index.ts';
 
-function removeRoute(routeRegistry, targetKey) {
-  return Object.keys(routeRegistry).reduce((result, routeKey) => {
-    if (routeKey !== targetKey) {
-      result[routeKey] = routeRegistry[routeKey];
-    }
-
-    return result;
-  }, {});
-}
-
 module('@emberx/router | Logging', function () {
   test('the router logs the routes and models it enters by default', function (assert) {
     assert.true(Router.LOG_ROUTES);
@@ -114,3 +104,13 @@ module('@emberx/router | Public API', function (hooks) {
     assert.ok(router);
   });
 });
+
+function removeRoute(routeRegistry, targetKey) {
+  return Object.keys(routeRegistry).reduce((result, routeKey) => {
+    if (routeKey !== targetKey) {
+      result[routeKey] = routeRegistry[routeKey];
+    }
+
+    return result;
+  }, {});
+}

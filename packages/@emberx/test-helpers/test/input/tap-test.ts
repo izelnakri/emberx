@@ -3,28 +3,6 @@ import { module, test } from 'qunitx';
 import { render, tap } from '@emberx/test-helpers';
 import { setupRenderingTest } from '../helpers/index.ts';
 
-function setupEventStepListeners(assert, element, options?) {
-  ['touchstart', 'touchend', 'mousedown', 'mouseup', 'click'].forEach((eventName) => {
-    element.addEventListener(eventName, () => {
-      if (options) {
-        return assert.step(
-          `${eventName} ${Object.keys(options)
-            .map((key) => options[key])
-            .join(' ')}`,
-        );
-      }
-
-      return assert.step(eventName);
-    });
-  });
-}
-
-function setupFocusEventStepListeners(assert, element) {
-  ['focus', 'focusin'].forEach((eventName) => {
-    element.addEventListener(eventName, () => assert.step(eventName));
-  });
-}
-
 module('@emberx/test-helpers | tap', function (hooks) {
   setupRenderingTest(hooks);
 
@@ -127,3 +105,25 @@ module('@emberx/test-helpers | tap', function (hooks) {
     });
   });
 });
+
+function setupEventStepListeners(assert, element, options?) {
+  ['touchstart', 'touchend', 'mousedown', 'mouseup', 'click'].forEach((eventName) => {
+    element.addEventListener(eventName, () => {
+      if (options) {
+        return assert.step(
+          `${eventName} ${Object.keys(options)
+            .map((key) => options[key])
+            .join(' ')}`,
+        );
+      }
+
+      return assert.step(eventName);
+    });
+  });
+}
+
+function setupFocusEventStepListeners(assert, element) {
+  ['focus', 'focusin'].forEach((eventName) => {
+    element.addEventListener(eventName, () => assert.step(eventName));
+  });
+}

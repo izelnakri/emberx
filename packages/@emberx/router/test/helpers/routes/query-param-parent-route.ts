@@ -13,6 +13,8 @@ const PAGE_SIZE = 2;
 
 // NOTE: used for /posts
 export default class QueryParamParentRoute extends Route {
+  @tracked accessor bookmarks = 0;
+
   static queryParams = {
     page: { defaultValue: 1, refreshModel: true }, // the model hook loads one page at a time
     sort: { defaultValue: 'oldest', replace: true }, // sorted on the page, and kept out of the history
@@ -27,7 +29,15 @@ export default class QueryParamParentRoute extends Route {
     return { posts: POSTS.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE) };
   }
 
-  @tracked accessor bookmarks = 0;
+  static template = hbs`
+    <h1 data-test-title>Page {{@queryParams.page}} of {{this.queryParams.category}} posts, {{@queryParams.sort}} first</h1>
+
+    {{#each this.visiblePosts as |post|}}
+      <p data-test-post={{post.id}}>{{post.title}}</p>
+    {{/each}}
+
+    <button type="button" data-test-bookmark {{on "click" this.bookmark}}>Bookmarked {{this.bookmarks}}</button>
+  `;
 
   get visiblePosts() {
     const { category, sort } = this.queryParams;
@@ -40,14 +50,4 @@ export default class QueryParamParentRoute extends Route {
   bookmark() {
     this.bookmarks++;
   }
-
-  static template = hbs`
-    <h1 data-test-title>Page {{@queryParams.page}} of {{this.queryParams.category}} posts, {{@queryParams.sort}} first</h1>
-
-    {{#each this.visiblePosts as |post|}}
-      <p data-test-post={{post.id}}>{{post.title}}</p>
-    {{/each}}
-
-    <button type="button" data-test-bookmark {{on "click" this.bookmark}}>Bookmarked {{this.bookmarks}}</button>
-  `;
 }

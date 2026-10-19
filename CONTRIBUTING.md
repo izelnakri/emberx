@@ -221,7 +221,8 @@ Timings only compare on one machine, so no baseline is committed. `make bench-ch
 the base commit out into a temporary worktree, installs and measures it, then measures your
 tree (uncommitted changes included), and fails on a regression beyond
 `REGRESSION_THRESHOLD` (default 26%). CI's `bench` job does the same against the PR's base,
-and `make release` compares against the previous release tag. For a quick manual
+and fails the run like any other check, and `make release` compares against the previous
+release tag. For a quick manual
 before/after, `make bench-update` saves this machine's numbers to `benches/results.json`,
 which is gitignored, and `npm run bench:check` compares against it.
 

@@ -90,6 +90,9 @@
       "types": "./@glimmer/component/index.d.ts",
       "default": "./@glimmer/component/index.js"
     },
-    "./location-bar": "./location-bar/location-bar.js"
+    "./location-bar": {
+      "types": "./location-bar/location-bar.d.ts",
+      "default": "./location-bar/location-bar.js"
+    }
   }
 }

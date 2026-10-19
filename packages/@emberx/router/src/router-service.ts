@@ -48,7 +48,7 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
   activeTransition: FreeObject;
   /** Under test: the page renders into `#ember-testing`, and the address bar is left alone. See Router.testing. */
   testing = false;
-  locationBar: any;
+  locationBar?: LocationBar;
 
   Resolver = DefaultResolver;
 

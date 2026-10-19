@@ -56,8 +56,8 @@ into. The helpers in `scripts/lib/` are plain JavaScript modules that both runti
 
 `build.ts` bundles each package to a single ESM file with esbuild, leaving every
 bare specifier external — so `@emberx/router` still _imports_ `@emberx/component` at
-runtime instead of inlining a copy. The TypeScript compiler API then emits the `.d.ts`
-files, in the same process, which is the only thing esbuild cannot do.
+runtime instead of inlining a copy. TypeScript 7's `tsc`, a native binary, then emits the
+`.d.ts` files in one run, which is the only thing esbuild cannot do.
 
 There is no Babel and no webpack. Relative imports name the file they import, `.ts`
 included (`import Route from './route.ts'`), as in qunitx and qunitx-cli, so node and

@@ -9,6 +9,12 @@ module('@emberx/component | Public API', function (hooks) {
     assert.ok(typeof Component.includes === 'object');
   });
 
+  test('the suites run with EMBERX_DEBUG on: a component built outside a render is reported', function (assert) {
+    class Hand extends Component {}
+
+    assert.throws(() => new Hand({}, {}), /You must pass both the owner and args to super\(\) in your component: Hand/);
+  });
+
   test('Component.setTemplate() works correctly', async function (assert) {
     class SomeComponent extends Component {}
 

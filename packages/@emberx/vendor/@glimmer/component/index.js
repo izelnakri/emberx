@@ -204,7 +204,7 @@ class GlimmerComponent {
    * @param args
    */
   constructor(owner, args) {
-    if (DEBUG && !(owner !== null && (typeof owner === 'object' || typeof owner === 'function') /* emberx: a static Owner class */ && ARGS_SET.has(args))) {
+    if (DEBUG && !(owner !== null && (typeof owner === 'object' || typeof owner === 'function') /* emberx: a static Owner class */ && (ARGS_SET.has(args) || args?.[Symbol.for('emberx.route-above-page')]) /* emberx: args @emberx/router made */)) {
       throw new Error(`You must pass both the owner and args to super() in your component: ${this.constructor.name}. You can pass them directly, or use ...arguments to pass all arguments through.`);
     }
     this.args = args;

@@ -24,8 +24,9 @@
  *     imports point at the ember-source modules above. Two changes, each marked
  *     `emberx:` in the file: its development checks follow EMBERX_DEBUG
  *     (CONTRIBUTING.md), since @glimmer/env's DEBUG is false in every
- *     ember-source build, and an owner may be a function, as @emberx/router's
- *     static Owner is.
+ *     ember-source build; an owner may be a function, as @emberx/router's
+ *     static Owner is; and the args @emberx/router makes for a route above the
+ *     page, outside a render, pass for Glimmer's.
  *   location-bar        -> location-bar/location-bar.js
  *     Backbone's history handling, last published in 2016 as a UMD script, as
  *     an ES module, with a declaration of the API it has: location-bar ships
@@ -221,6 +222,13 @@ async function glimmerComponent(): Promise<{ vendored: Map<string, string>; impo
         "owner !== null && typeof owner === 'object'",
         "owner !== null && (typeof owner === 'object' || typeof owner === 'function') /* emberx: a static Owner class */",
         2,
+        where,
+      );
+      source = patch(
+        source,
+        '&& ARGS_SET.has(args))',
+        "&& (ARGS_SET.has(args) || args?.[Symbol.for('emberx.route-above-page')]) /* emberx: args @emberx/router made */)",
+        1,
         where,
       );
       source = source.replace(/^(import .* from ')(@ember\/[^']+)(';)$/gm, (_line, start, name, end) => {

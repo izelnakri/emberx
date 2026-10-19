@@ -76,9 +76,15 @@ module('@emberx/test-helpers | url helpers', function (hooks) {
 
 // Waiters and Query methods:
 import { wait, waitFor, waitUntil, settled, isSettled, getSettledState, find, findAll } from '@emberx/test-helpers';
-// async settled();    pending @action promises, router transitions and the renders they cause
+// async settled();    pending @action promises, router transitions, test waiters' work
+//                     (@waitFor, waitForPromise and buildWaiter, from @emberx/component) and the renders they cause
 // isSettled();        nothing settled() waits for is under way
-// getSettledState();  { hasPendingActions, pendingActionCount, hasPendingTransitions }
+// getSettledState();  { hasPendingActions, pendingActionCount, hasPendingTransitions, hasPendingWaiters }
+
+// Errors: what an @action throws, or an async one rejects with, fails the helper that ran it.
+import { setupOnerror, resetOnerror } from '@emberx/test-helpers';
+// setupOnerror((error) => assert.equal(error.message, 'Not allowed'));  the test takes them instead
+// resetOnerror();     each test's teardown calls it
 
 // Debugging: stop a test to look at the page, and carry on with resumeTest(),
 // which is also on window while paused. Run with `qunitx <test file> --open`.

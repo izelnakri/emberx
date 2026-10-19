@@ -2,6 +2,7 @@ import Router, { Owner } from '@emberx/router';
 import { resetRendering } from '@emberx/component';
 import { setContext } from './context.ts';
 import { pauseTest, resumeTest } from './pause.ts';
+import { catchActionErrors, resetOnerror, stopCatchingActionErrors } from './onerror.ts';
 
 /**
  * The per-test object QUnit constructs and applies every hook against. emberx
@@ -52,10 +53,13 @@ export function setupTest(hooks: QUnitHooks, _startRouter?: () => unknown): void
     this.element = containerPage;
     this.owner = Owner;
     Router.testing = true;
+    catchActionErrors();
   });
 
   hooks.afterEach(function () {
     Router.testing = false;
+    resetOnerror();
+    stopCatchingActionErrors();
     // NOTE: created by the `beforeEach` above, so it is present by construction.
     document.getElementById('ember-testing-container')!.remove();
     // Each test starts with a fresh renderer, so a render that threw in one test

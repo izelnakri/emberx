@@ -1,4 +1,5 @@
-import { didRender, getAsyncActionsQueue } from '@emberx/component';
+import { didRender, getAsyncActionsQueue, hasPendingWaiters, waitersSettled } from '@emberx/component';
+import { reportError, reportThrownErrors } from './onerror.ts';
 import { Owner } from '@emberx/router';
 import { find, findAll } from './query.ts';
 
@@ -124,11 +125,13 @@ export interface SettledState {
   pendingActionCount: number;
   /** A router transition, including its redirects, is under way. */
   hasPendingTransitions: boolean;
+  /** Work a test waiter marked is under way: getPendingWaiterState(), from @emberx/component, says which. */
+  hasPendingWaiters: boolean;
 }
 
 /**
   What async work is still under way, as settled() sees it: pending `@action`
-  promises and router transitions. For finding out what a test that hangs on
+  promises, router transitions and test waiters' work. For finding out what a test that hangs on
   `await settled()` is waiting for.
 
   Rendering is not in it: emberx cannot tell from outside the renderer whether
@@ -141,23 +144,28 @@ export function getSettledState(): SettledState {
     hasPendingActions: pendingActionCount > 0,
     pendingActionCount,
     hasPendingTransitions: !!routerService()?.activeTransition,
+    hasPendingWaiters: hasPendingWaiters(),
   };
 }
 
 /** Whether nothing settled() waits for is under way. Rendering aside, see getSettledState(). */
 export function isSettled(): boolean {
-  const { hasPendingActions, hasPendingTransitions } = getSettledState();
+  const { hasPendingActions, hasPendingTransitions, hasPendingWaiters } = getSettledState();
 
-  return !hasPendingActions && !hasPendingTransitions;
+  return !hasPendingActions && !hasPendingTransitions && !hasPendingWaiters;
 }
 
 /**
-  Resolves once every pending `@action` promise and router transition has
-  finished, and the renders they caused are done. Work that starts more work,
-  an action that transitions for example, is waited for too.
+  Resolves once every pending `@action` promise, router transition and test
+  waiter's work has finished, and the renders they caused are done. Work that
+  starts more work, an action that transitions for example, is waited for too.
+  An action that failed fails it, unless setupOnerror() takes the error.
 */
 export async function settled(): Promise<void> {
-  await Promise.all(getAsyncActionsQueue());
+  reportThrownErrors();
+  const actions = await Promise.allSettled(getAsyncActionsQueue());
+  actions.forEach((action) => action.status === 'rejected' && reportError(action.reason));
+  await waitersSettled();
   // Only waits: whether the transition succeeded is for the test to check.
   await routerService()
     ?.activeTransition?.followRedirects()

@@ -1,5 +1,5 @@
 import { Owner } from '@emberx/router';
-import Component, { didRender, renderComponent } from '@emberx/component';
+import Component, { didRender, loadTemplateCompiler, renderComponent } from '@emberx/component';
 import { getContext } from './context.ts';
 
 interface FreeObject {
@@ -24,6 +24,7 @@ export default async function render(templateString: string, includes: object = 
     }
   }
 
+  await loadTemplateCompiler();
   TemplateOnlyComponent.setTemplate(templateString);
 
   const container = document.getElementById('ember-testing') as HTMLElement;

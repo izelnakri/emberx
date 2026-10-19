@@ -10,7 +10,9 @@
  * compiler's cost from evaluating its output and building the template.
  */
 import { precompile } from '@emberx/vendor/ember-template-compiler';
-import { createTemplate } from '@emberx/component';
+import { createTemplate, loadTemplateCompiler } from '@emberx/component';
+
+await loadTemplateCompiler();
 
 const TRIVIAL = `<span>{{@name}}</span>`;
 

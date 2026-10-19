@@ -4,7 +4,7 @@ import { clientBuilder } from '@emberx/vendor/@glimmer/runtime';
 import createDocument from '@simple-dom/document';
 import HTMLSerializer from '@simple-dom/serializer';
 import voidMap from '@simple-dom/void-map';
-import { renderWithBuilder, traverseAndCompileAllComponents, type EmberXComponentClass } from '@emberx/component';
+import { compileTemplates, renderWithBuilder, type EmberXComponentClass } from '@emberx/component';
 import Router, { Owner } from '@emberx/router';
 
 interface RenderOptions {
@@ -28,7 +28,7 @@ interface RenderOptions {
  * component adopts the server's DOM instead of rebuilding it.
  */
 async function renderToString(component: EmberXComponentClass, options: RenderOptions = {}): Promise<string> {
-  traverseAndCompileAllComponents(component);
+  await compileTemplates(component);
 
   const document = createDocument();
   const into = document.createElement('div');

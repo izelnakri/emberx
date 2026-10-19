@@ -1,4 +1,4 @@
-import Component, { renderComponent, action, tracked, didRender } from '@emberx/component';
+import Component, { renderComponent, action, tracked, didRender, loadTemplateCompiler } from '@emberx/component';
 import { precompileTemplate, precompileTemplates } from '@emberx/component/precompile';
 import { module, test } from 'qunitx';
 import { setupRenderingTest } from './helpers/index.ts';
@@ -67,6 +67,8 @@ module('@emberx/component | Precompiled templates', function (hooks) {
       static template = '<b>runtime</b>';
     }
     const element = document.getElementById('ember-testing') as HTMLElement;
+    // Loaded first: renderComponent compiles once it has loaded it, after withoutEval returns.
+    await loadTemplateCompiler();
 
     await assert.rejects(
       withoutEval(() => renderComponent(Plain, { element, owner: {} })),

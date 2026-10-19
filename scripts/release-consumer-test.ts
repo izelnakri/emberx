@@ -38,6 +38,23 @@ test('@emberx/router keeps services on its Owner', async () => {
   assert.equal(Owner.lookup('service:locale'), locale);
 });
 
+test('@emberx/component renders a precompiled template without loading the template compiler', async () => {
+  installDOM();
+
+  const { default: Component, renderComponent, isTemplateCompilerLoaded } = await import('@emberx/component');
+  const { precompileTemplate } = await import('@emberx/component/precompile');
+
+  class Badge extends Component {
+    // What a bundler makes of the expression @emberx/component/precompile writes.
+    static template = new Function(`return ${precompileTemplate('<b>{{@count}}</b>')}`)();
+  }
+  const element = document.createElement('div');
+  await renderComponent(Badge, { element, args: { count: 3 } });
+
+  assert.equal(element.innerHTML, '<b>3</b>');
+  assert.equal(isTemplateCompilerLoaded(), false);
+});
+
 test('@emberx/component renders, and re-renders on a tracked change', async () => {
   installDOM();
 
@@ -68,6 +85,7 @@ test('@emberx/component renders, and re-renders on a tracked change', async () =
 
   await renderComponent(Counter, { element, args: { label: 'Clicks' } });
   assert.equal(element.querySelector('#label').textContent, 'Clicks: 1');
+  assert.equal((await import('@emberx/component')).isTemplateCompilerLoaded(), true, 'loaded for its string template');
 
   element.querySelector('#increment').click();
   await didRender();

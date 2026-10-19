@@ -1,8 +1,9 @@
-import Component, { createTemplate } from '@emberx/component';
+import Component, { createTemplate, loadTemplateCompiler } from '@emberx/component';
 import { module, test } from 'qunitx';
 
 module('@emberx/component | createTemplate', function (_hooks) {
-  test('it returns a correct templateFactory', function (assert) {
+  test('it returns a correct templateFactory', async function (assert) {
+    await loadTemplateCompiler();
     const templateFactory = createTemplate(`<h1>Hello world</h1>`, { strictMode: true }, {});
 
     assert.deepEqual(Object.keys(templateFactory), ['__id', '__meta']);

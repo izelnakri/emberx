@@ -7,8 +7,8 @@
  * `@emberx/component` and `@emberx/vendor` at runtime rather than inlining a
  * copy of them.
  *
- * Type declarations are emitted separately, through the TypeScript compiler
- * API with tsconfig.build.json, which is the only thing esbuild cannot do.
+ * Type declarations are emitted separately, by tsc with tsconfig.build.json,
+ * which is the only thing esbuild cannot do.
  *
  *   deno run -A build.ts
  *
@@ -24,15 +24,17 @@
  * resolvable. Bundling removes that problem entirely.
  */
 
+import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { cp, rm, mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, relative } from 'node:path';
 import * as esbuild from 'esbuild';
-import ts from 'typescript';
 import { precompileTemplates } from './packages/@emberx/component/src/precompile.ts';
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
+/** TypeScript 7's tsc, a native binary that this script starts, which node and Deno both run. */
+const TSC = `${ROOT}/node_modules/typescript/lib/tsc.js`;
 
 /** Build order is irrelevant (packages are external to each other) but kept stable for readable logs. */
 export const PACKAGES = ['string', 'helper', 'component', 'router', 'test-helpers', 'ssr'];
@@ -94,43 +96,32 @@ async function buildPackage(name: string) {
 }
 
 /**
- * Emits .d.ts files for every package in one compiler pass, then moves each
- * package's declarations next to its bundle.
+ * Emits .d.ts files for every package in one tsc run, then moves each
+ * package's declarations next to its bundle, once `bundled` resolves: the
+ * bundles start by emptying each dist/.
  *
- * The compiler runs once (not once per package) because six sequential
- * compiler startups dominate the build. It runs in this process, through the
- * compiler API, so it is the same on Deno and node and on every platform. It emits into `.tmp/types/@emberx/<pkg>/src/`,
- * mirroring `rootDir: packages`, and we relocate that into
- * `packages/@emberx/<pkg>/dist/` so `types: ./dist/index.d.ts` resolves.
-
+ * tsc runs once, not once per package, as six compiler startups would dominate
+ * the build, and while the bundles build, as it takes twice as long as they do.
+ * It emits into `.tmp/types/@emberx/<pkg>/src/`, mirroring `rootDir: packages`,
+ * which is moved into `packages/@emberx/<pkg>/dist/`, so
+ * `types: ./dist/index.d.ts` resolves. TypeScript 7 has no compiler API to run
+ * it in this process; it reports its own errors, and fails the build with them.
  */
-async function emitTypes() {
+async function emitTypes(bundled: Promise<unknown>) {
   const staging = `${ROOT}/.tmp/types`;
 
   await rm(staging, { recursive: true, force: true });
-
-  const { config, error } = ts.readConfigFile(`${ROOT}/tsconfig.build.json`, ts.sys.readFile);
-  const { options, fileNames, errors } = ts.parseJsonConfigFileContent(config, ts.sys, ROOT);
-  const program = ts.createProgram(fileNames, options);
-  const diagnostics = [
-    ...(error ? [error] : []),
-    ...errors,
-    ...ts.getPreEmitDiagnostics(program),
-    ...program.emit().diagnostics,
-  ];
-
-  if (diagnostics.length > 0) {
-    process.stderr.write(
-      ts.formatDiagnosticsWithColorAndContext(diagnostics, {
-        getCanonicalFileName: (fileName) => fileName,
-        getCurrentDirectory: () => ROOT,
-        getNewLine: () => '\n',
-      }),
-    );
-    throw new Error('Type declaration emit failed');
-  }
+  await new Promise<void>((resolve, reject) => {
+    spawn(process.execPath, [...('Deno' in globalThis ? ['run', '-A'] : []), TSC, '-p', 'tsconfig.build.json'], {
+      cwd: ROOT,
+      stdio: 'inherit',
+    })
+      .on('error', reject)
+      .on('exit', (code) => (code === 0 ? resolve() : reject(new Error(`tsc exited with code ${code}`))));
+  });
 
   await pointDeclarationsAtJavaScript(staging);
+  await bundled;
   await Promise.all(
     PACKAGES.map((name) =>
       cp(`${staging}/@emberx/${name}/src`, `${ROOT}/packages/@emberx/${name}/dist`, {
@@ -145,11 +136,9 @@ async function emitTypes() {
 async function main() {
   const started = Date.now();
 
-  const built = await Promise.all(PACKAGES.map(buildPackage));
-  process.stdout.write(`built ${built.length} packages: ${built.join(', ')}\n`);
-
-  await emitTypes();
-  process.stdout.write('emitted type declarations\n');
+  const bundled = Promise.all(PACKAGES.map(buildPackage));
+  const [built] = await Promise.all([bundled, emitTypes(bundled)]);
+  process.stdout.write(`built ${built.length} packages: ${built.join(', ')}, with their type declarations\n`);
 
   await Promise.all(PACKAGES.map(writeDistManifest));
   process.stdout.write('wrote each dist/package.json\n');

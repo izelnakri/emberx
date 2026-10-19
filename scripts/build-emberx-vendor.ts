@@ -28,7 +28,8 @@
  *     static Owner is.
  *   location-bar        -> location-bar/location-bar.js
  *     Backbone's history handling, last published in 2016 as a UMD script, as
- *     an ES module.
+ *     an ES module, with a declaration of the API it has: location-bar ships
+ *     none, and TypeScript 7 infers no class from its prototype assignments.
  *
  * Each transform checks the upstream shape it expects and fails loudly when an
  * update changes it, rather than writing a half-converted file.
@@ -46,6 +47,43 @@ const EMBER_PACKAGES = `${EMBER}/dist/prod/packages`;
 const EMBER_TYPES = `${EMBER}/types/stable`;
 /** What outlives a run: the README, and package.json, whose fields a run keeps and whose exports it rewrites. */
 const KEPT = new Set(['package.json', 'README.md']);
+/** location-bar's API, which it declares nowhere: Backbone.History's, plus its own update, onChange and hasPushState. */
+const LOCATION_BAR_TYPES = `export interface StartOptions {
+  /** Use the History API rather than the URL's hash: false by default. */
+  pushState?: boolean;
+  /** Fall back to the hash where pushState is missing: true by default. */
+  hashChange?: boolean;
+  /** The path the app lives under: \`/\` by default. */
+  root?: string;
+  /** Whether the URL the app starts on is not reported to the onChange callbacks. */
+  silent?: boolean;
+  location?: Location;
+  history?: History;
+}
+
+export interface NavigateOptions {
+  /** Report the new URL to the onChange callbacks too. */
+  trigger?: boolean;
+  /** Replace the current history entry rather than adding one. */
+  replace?: boolean;
+}
+
+/** Follows the browser's URL, through the History API or the URL's hash. */
+export default class LocationBar {
+  start(options?: StartOptions): boolean | undefined;
+  stop(): void;
+  /** Calls \`callback\` with the URL's path, its fragment, each time the browser changes it. */
+  onChange(callback: (fragment: string) => void): void;
+  route(route: RegExp, callback: (fragment: string) => void): void;
+  /** Changes the URL to \`fragment\`. */
+  update(fragment: string, options?: NavigateOptions | boolean): boolean | undefined;
+  navigate(fragment: string, options?: NavigateOptions | boolean): boolean | undefined;
+  checkUrl(): boolean | undefined;
+  loadUrl(fragment?: string): boolean;
+  getFragment(fragment?: string, forcePushState?: boolean): string;
+  hasPushState(): boolean;
+}
+`;
 const isCheck = process.argv.includes('--check');
 
 const { vendored: component, imports: componentImports } = await glimmerComponent();
@@ -56,7 +94,7 @@ const packageJSON = JSON.parse(await readFile(`${ROOT}/${VENDOR}/package.json`, 
 packageJSON.exports = {
   ...ember.exports,
   './@glimmer/component': { types: './@glimmer/component/index.d.ts', default: './@glimmer/component/index.js' },
-  './location-bar': './location-bar/location-bar.js',
+  './location-bar': { types: './location-bar/location-bar.d.ts', default: './location-bar/location-bar.js' },
 };
 vendored.set('package.json', `${JSON.stringify(packageJSON, null, 2)}\n`);
 vendored.set('LICENSE', await licenses());
@@ -144,7 +182,10 @@ async function locationBar(): Promise<Map<string, string>> {
   while (body.at(-1)?.trim() === '' || body.at(-1)?.trim() === '// export') body.pop();
 
   const file = [header('location-bar', version, license), ...comment, ...body, '', 'export default History;', ''];
-  return new Map([['location-bar/location-bar.js', file.join('\n')]]);
+  return new Map([
+    ['location-bar/location-bar.js', file.join('\n')],
+    ['location-bar/location-bar.d.ts', `${header('location-bar', version, license)}\n${LOCATION_BAR_TYPES}`],
+  ]);
 }
 
 /**

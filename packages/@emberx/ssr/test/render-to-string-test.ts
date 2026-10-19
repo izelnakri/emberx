@@ -82,6 +82,31 @@ module('@emberx/ssr | renderToString', function (hooks) {
     element.remove();
   });
 
+  test('markup the server rendered with other args is repaired to what the browser renders', async function (assert) {
+    const element = serverRendered(await renderToString(List, { args: { names: ['first', 'second'] } }));
+    const first = element.querySelector('li');
+
+    await renderComponent(List, { element, args: { names: ['first', 'third', 'fourth'] } });
+
+    assert.equal(element.innerHTML, '<ul><li>first</li><li>third</li><li>fourth</li></ul><input disabled="">');
+    assert.strictEqual(element.querySelector('li'), first, 'what agrees is adopted');
+    element.remove();
+  });
+
+  test('a branch the browser takes and the server did not is built in place of the other', async function (assert) {
+    class Notice extends Component {
+      static template = hbs`{{#if @signedIn}}<p data-welcome>Welcome back</p>{{else}}<a data-sign-in>Sign in</a>{{/if}}<footer>emberx</footer>`;
+    }
+    const element = serverRendered(await renderToString(Notice, { args: { signedIn: false } }));
+    const footer = element.querySelector('footer');
+
+    await renderComponent(Notice, { element, args: { signedIn: true } });
+
+    assert.equal(element.innerHTML, '<p data-welcome="">Welcome back</p><footer>emberx</footer>');
+    assert.strictEqual(element.querySelector('footer'), footer);
+    element.remove();
+  });
+
   test('a later render into the element replaces the hydrated one, and destroys it', async function (assert) {
     // The server's own render is destroyed once serialized: count from here.
     const element = serverRendered(await renderToString(Farewell));

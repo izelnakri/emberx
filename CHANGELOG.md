@@ -1,3 +1,19 @@
+## [0.4.0] - 2026-10-19
+[`v0.3.0...v0.4.0`](https://github.com/izelnakri/emberx/compare/v0.3.0...v0.4.0)
+
+### Bug Fixes
+- A subclass renders its own template, not its parent's — 2026-10-18 by [@izelnakri](https://github.com/izelnakri) ([`955511e`](https://github.com/izelnakri/emberx/commit/955511e74eb5e1cb1ef1629d30761f91c316c636))
+- Includes replace built-in helpers, and are not mutated — 2026-10-18 by [@izelnakri](https://github.com/izelnakri) ([`1f7a654`](https://github.com/izelnakri/emberx/commit/1f7a654a5bd151ba9c03c49bbc2dc88238662f70))
+
+### Dependencies
+- Qunitx 1.4.0 (QUnit 3) and qunitx-cli 0.39 — 2026-10-18 by [@izelnakri](https://github.com/izelnakri) ([`a5f8f94`](https://github.com/izelnakri/emberx/commit/a5f8f948676809aca8ecef504da9eb2d620e3815))
+
+### Features
+- Opt-in template compilation at build time — 2026-10-17 by [@izelnakri](https://github.com/izelnakri) ([`58e45a2`](https://github.com/izelnakri/emberx/commit/58e45a2e266af10628a926d1f31aa6e10cda87c4))
+
+### Refactoring
+- [**breaking**] Standard decorators: `@tracked accessor`, `@action`, `@service` — 2026-10-17 by [@izelnakri](https://github.com/izelnakri) ([`e743c31`](https://github.com/izelnakri/emberx/commit/e743c31935336b557379949a75e62350c64334e0))
+
 ## [0.3.0] - 2026-10-17
 [`v0.2.0...v0.3.0`](https://github.com/izelnakri/emberx/compare/v0.2.0...v0.3.0)
 

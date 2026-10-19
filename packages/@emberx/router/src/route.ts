@@ -159,7 +159,7 @@ export default class Route extends EmberXComponent<FreeObject> {
     const target = getRenderedRouteInfo(routeInfos);
     const router = this.router;
 
-    await router.renderPage(target.route as typeof Route, {
+    await router.renderPage(classOf(target.route), {
       model: (target === routeInfos[routeInfos.length - 1] ? model : target.context) || {},
       params: Object.assign({}, ...routeInfos.map((routeInfo) => routeInfo.params)),
       // A getter, so a query-param change that keeps the route updates it in
@@ -212,6 +212,11 @@ export default class Route extends EmberXComponent<FreeObject> {
   get queryParams(): FreeObject {
     return this.args.queryParams;
   }
+}
+
+/** The class of a route router_js resolved: the class itself, or the object a router with an owner of its own made of it. */
+export function classOf(route: any): any {
+  return route?.prototype?.constructor;
 }
 
 function currentRouteInfos(router: RouterService): RouteInfo[] {

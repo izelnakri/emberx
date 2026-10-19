@@ -53,6 +53,17 @@ export interface StartOptions {
   location?: 'history' | 'none';
 }
 
+export interface InstanceOptions {
+  /**
+   * Services of this instance's own, beside the ones Router.addServices()
+   * registered for every router, which they replace where they share a name:
+   * a request's cookies and headers on a server, for example.
+   */
+  services?: FreeObject;
+  /** Where the URL lives: `none`, only in the router, by default. */
+  location?: 'history' | 'none';
+}
+
 export interface routerJSRouteDefinition {
   path?: string;
   route: Route | undefined;
@@ -74,6 +85,9 @@ export default class Router {
    * its URL off the address bar.
    */
   static testing = false;
+
+  /** The routes Router.start() declared, as router_js maps them: each router it or createInstance() makes maps them. */
+  static #routerJSRoutes: Array<routerJSRouteDefinition> = [];
 
   static get owner() {
     return Owner;
@@ -112,20 +126,36 @@ export default class Router {
     if (resolve) {
       resolveByConvention(resolve);
     }
-    const routerJSRouteArray = this.convertToRouterJSRouteArray(Owner.routes);
-    const routerService = Owner.register(
+    this.#routerJSRoutes = this.convertToRouterJSRouteArray(Owner.routes);
+    Owner.register(
       'service:router',
-      new RouterService({ Resolver: this.Resolver, location, testing: this.testing }),
+      mapRoutes(new RouterService({ Resolver: this.Resolver, location, testing: this.testing }), this.#routerJSRoutes),
     );
-    // Every route is under the application route, as in Ember: it has no URL of
-    // its own, and the names of the routes under it are not prefixed with it.
-    routerService.map(function (match: any) {
-      match('/').to(APPLICATION, function (match: any) {
-        RouteMapContext.map(RouteMapContext.map, match, routerJSRouteArray);
-      });
-    });
 
     return this;
+  }
+
+  /**
+   * A router of its own for the routes Router.start() declared, with an owner
+   * of its own: its pages, the routes' static hooks and LinkTo find it and
+   * `services` as their services, where the router Router.start() started
+   * finds those Router.addServices() registered. What FastBoot's application
+   * instance per request is to Ember: @emberx/ssr renders each URL with one,
+   * so a server renders several at once.
+   *
+   *   const router = Router.createInstance({ services: { request } });
+   *   await router.visit('/posts/1');
+   */
+  static createInstance({ services = {}, location = 'none' }: InstanceOptions = {}): RouterService {
+    if (!Owner.lookup('service:router')) {
+      throw new Error('Router.createInstance() was called before Router.start().');
+    }
+
+    const owner = Object.create(Owner);
+    const router = new RouterService({ Resolver: this.Resolver, location, testing: this.testing, owner });
+    owner.services = { ...Owner.services, ...services, router };
+
+    return mapRoutes(router, this.#routerJSRoutes);
   }
 
   static map(routerDefinition: () => void): RouteRegistry {
@@ -288,6 +318,21 @@ export function routeNameFromPath(path: string): string {
       return segment;
     })
     .join('.');
+}
+
+/**
+ * Maps `routes` on `router`. Every route is under the application route, as in
+ * Ember: it has no URL of its own, and the names of the routes under it are not
+ * prefixed with it.
+ */
+function mapRoutes(router: RouterService, routes: Array<routerJSRouteDefinition>): RouterService {
+  router.map(function (match: any) {
+    match('/').to(APPLICATION, function (match: any) {
+      RouteMapContext.map(RouteMapContext.map, match, routes);
+    });
+  });
+
+  return router;
 }
 
 /**

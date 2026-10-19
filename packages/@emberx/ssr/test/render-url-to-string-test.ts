@@ -1,5 +1,5 @@
 import { resetRendering } from '@emberx/component';
-import Router, { Route, hbs } from '@emberx/router';
+import Router, { Route, hbs, service } from '@emberx/router';
 import { renderURLToString } from '@emberx/ssr';
 import { module, test } from 'qunitx';
 
@@ -27,6 +27,19 @@ class OldPostRoute extends Route {
   static beforeModel() {
     return this.router.transitionTo('/posts/1');
   }
+}
+
+// Reads the session of the request it renders for, in its model hook and in its template.
+class AccountRoute extends Route {
+  @service session;
+
+  static async model() {
+    await new Promise((resolve) => setTimeout(resolve, this.session.delay));
+
+    return { greeting: `Hello ${this.session.user}` };
+  }
+
+  static template = hbs`<h1>{{this.model.greeting}}</h1><p>{{this.session.user}}'s account</p>`;
 }
 
 class PostErrorRoute extends Route {
@@ -64,18 +77,41 @@ module('@emberx/ssr | renderURLToString', function (hooks) {
     );
   });
 
-  test('renders URLs requested at once one after another, each to its own page', async function (assert) {
-    const pages = await Promise.all([
-      renderURLToString('/posts/1', { hydratable: false }),
-      renderURLToString('/', { hydratable: false }),
-      renderURLToString('/posts/2', { hydratable: false }),
-    ]);
+  test('renders URLs requested at once together, each to its own page', async function (assert) {
+    const finished: string[] = [];
+    const render = (url: string) =>
+      renderURLToString(url, { hydratable: false }).then((html) => {
+        finished.push(url);
+        return html;
+      });
+    const pages = await Promise.all([render('/posts/1'), render('/'), render('/posts/2')]);
 
     assert.deepEqual(pages, [
       '<h1>Compilers are the New Frameworks</h1><p>Post 1</p>',
       '<h1>Home</h1>',
       '<h1>Adventures in Microbenchmarking</h1><p>Post 2</p>',
     ]);
+    assert.equal(finished[0], '/', 'the page with no model to wait for is not held up by the ones before it');
+  });
+
+  test("each render's routes and pages find the services it was given", async function (assert) {
+    const pages = await Promise.all([
+      renderURLToString('/account', { hydratable: false, services: { session: { user: 'Ada', delay: 10 } } }),
+      renderURLToString('/account', { hydratable: false, services: { session: { user: 'Grace', delay: 0 } } }),
+    ]);
+
+    assert.deepEqual(pages, ["<h1>Hello Ada</h1><p>Ada's account</p>", "<h1>Hello Grace</h1><p>Grace's account</p>"]);
+  });
+
+  test("the router Router.start() started is left as it was, the app's services with it", async function (assert) {
+    const router = Router.owner.lookup('service:router');
+    Router.addServices({ session: { user: 'Visitor', delay: 0 } });
+
+    await renderURLToString('/account', { services: { session: { user: 'Ada', delay: 0 } } });
+
+    assert.strictEqual(Router.owner.lookup('service:router'), router);
+    assert.equal(Router.owner.lookup('service:session').user, 'Visitor');
+    assert.equal(router.currentURL, undefined, 'it went nowhere');
   });
 
   test("the router's first render in a browser hydrates the page it rendered", async function (assert) {
@@ -115,6 +151,7 @@ function startRouter() {
       { path: '/', route: HomeRoute },
       { path: '/posts/:post_id', route: PostRoute, errorRoute: PostErrorRoute },
       { path: '/old-post', route: OldPostRoute },
+      { path: '/account', route: AccountRoute },
     ],
     { location: 'none' },
   );

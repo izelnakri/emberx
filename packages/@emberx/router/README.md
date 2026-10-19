@@ -3,8 +3,8 @@
 This is a futuristic take on the router of ember.js, which is the most advanced and mature
 routing solution I've seen so far in frontend development. It supports named routes, dynamic link
 segments, promise-aware model hooks, parent-children route relationships, query params, and
-loading and error substates. SSR is in progress, see [ROADMAP.md](../../../ROADMAP.md). The router is fully testable with `visit`
-and `currentURL` helpers for `@emberx/test-helpers`.
+loading and error substates. It renders on a server too, with [@emberx/ssr](../ssr/README.md). The router is fully
+testable with `visit` and `currentURL` helpers for `@emberx/test-helpers`.
 
 ```ts ignore
 // in index.ts:

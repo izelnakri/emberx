@@ -2,11 +2,11 @@ import Component, { hbs, renderComponent, action, tracked } from '@emberx/compon
 import { module, test } from 'qunitx';
 import { click, wait, waitFor } from '@emberx/test-helpers';
 import { setupRenderingTest } from './helpers/index.ts';
-import setupMemserver from './helpers/setup-memserver.ts';
+import setupMockServer from './helpers/setup-mock-server.ts';
 
 module('@emberx/component | Action tests', function (hooks) {
   setupRenderingTest(hooks);
-  setupMemserver(hooks);
+  setupMockServer(hooks);
 
   class SomeComponent extends Component {
     @tracked accessor count = 55;

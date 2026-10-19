@@ -1,7 +1,5 @@
-import Memserver from './memserver/index.ts';
+import './mock-server/index.ts';
 import startRouter from './start-router.ts';
-
-window.Memserver = Memserver;
 
 const Router = startRouter();
 

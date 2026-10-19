@@ -11,3 +11,4 @@ import './router-service-test.ts';
 import './route/page-actions-test.ts';
 import './route/application-route-test.ts';
 import './route/resolve-test.ts';
+import './route/title-test.ts';

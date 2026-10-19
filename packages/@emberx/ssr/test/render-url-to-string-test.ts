@@ -1,6 +1,6 @@
 import { resetRendering } from '@emberx/component';
 import Router, { Route, hbs, service } from '@emberx/router';
-import { renderURLToString } from '@emberx/ssr';
+import { embedToShoeboxScriptTag, renderURL, renderURLToString } from '@emberx/ssr';
 import { module, test } from 'qunitx';
 
 const POSTS = {
@@ -9,11 +9,18 @@ const POSTS = {
 };
 
 class HomeRoute extends Route {
+  static title = 'Blog';
   static template = hbs`<h1>Home</h1>`;
 }
 
+// How many times a post was fetched.
+let fetches = 0;
+
 class PostRoute extends Route {
+  static title = (post) => `${post.title} | Blog`;
+
   static async model({ post_id }) {
+    fetches++;
     await new Promise((resolve) => setTimeout(resolve, 5));
     if (!POSTS[post_id]) throw new Error(`No post ${post_id}`);
 
@@ -50,6 +57,7 @@ module('@emberx/ssr | renderURLToString', function (hooks) {
   hooks.beforeEach(function () {
     Router.LOG_ROUTES = false;
     Router.LOG_MODELS = false;
+    fetches = 0;
     startRouter();
   });
   hooks.afterEach(function () {
@@ -137,6 +145,43 @@ module('@emberx/ssr | renderURLToString', function (hooks) {
     if (!existing) element.remove();
   });
 
+  test('renderURL gives the document what it needs: the title, the URL redirects ended on, and the models', async function (assert) {
+    const page = await renderURL('/old-post', { hydratable: false });
+
+    assert.deepEqual(page, {
+      html: '<h1>Compilers are the New Frameworks</h1><p>Post 1</p>',
+      title: 'Compilers are the New Frameworks | Blog',
+      url: '/posts/1',
+      models: { application: {}, posts: {}, 'posts.post': POSTS[1] },
+    });
+    assert.deepEqual((await renderURL('/')).title, 'Blog');
+  });
+
+  test('an error substate gives no models, which the browser would take for the page it failed to show', async function (assert) {
+    assert.deepEqual((await renderURL('/posts/9')).models, {});
+  });
+
+  test("the browser's first transition takes the models the server rendered with, and only that one", async function (assert) {
+    const { models } = await renderURL('/posts/2');
+    assert.equal(fetches, 1);
+
+    startRouter({ models: JSON.parse(embedToShoeboxScriptTag(models)) });
+    await Router.visit('/posts/2');
+    assert.equal(fetches, 1, 'the browser did not fetch the post again');
+    assert.equal(Router.owner.lookup('service:router').currentTitle, 'Adventures in Microbenchmarking | Blog');
+
+    await Router.visit('/posts/1');
+    await Router.visit('/posts/2');
+    assert.equal(fetches, 3, 'later transitions run the model hook');
+  });
+
+  test('embedToShoeboxScriptTag keeps a script element whole', function (assert) {
+    const json = embedToShoeboxScriptTag({ bio: '</script><script>alert(1)</script><!--\u2028' });
+
+    assert.notOk(/<|\u2028/.test(json));
+    assert.deepEqual(JSON.parse(json), { bio: '</script><script>alert(1)</script><!--\u2028' });
+  });
+
   test('needs a started router', async function (assert) {
     Router.reset();
 
@@ -145,7 +190,7 @@ module('@emberx/ssr | renderURLToString', function (hooks) {
 });
 
 /** The app's router, started the same way on the server and in the browser. */
-function startRouter() {
+function startRouter(options = {}) {
   return Router.start(
     [
       { path: '/', route: HomeRoute },
@@ -153,6 +198,6 @@ function startRouter() {
       { path: '/old-post', route: OldPostRoute },
       { path: '/account', route: AccountRoute },
     ],
-    { location: 'none' },
+    { location: 'none', ...options },
   );
 }

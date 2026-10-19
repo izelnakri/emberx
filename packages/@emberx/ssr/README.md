@@ -24,39 +24,57 @@ nodes, attaches their event handlers and updates them in place from then on.
 
 ## The page a URL shows
 
-`renderURLToString(url)` renders a whole app's page: a router of its own goes to the URL as it
-would in a browser, model hooks, redirects and loading or error substates included, and the page
-it ends on renders to a string. Start the same router on both sides; in the browser, its first
-render hydrates the server's page.
+`renderURL(url)` renders a whole app's page: a router of its own goes to the URL as it would in a
+browser, model hooks, redirects and loading or error substates included, and the page it ends on
+renders to HTML. It returns what the document around the page needs too:
+
+- `html`: the page, for the element the browser's router renders into, `#app`;
+- `title`: the page's title, from the deepest route with a `static title`;
+- `url`: where the page is, after its redirects, for a redirect response;
+- `models`: the routes' models, by route name. Given to the browser's `Router.start({ models })`,
+  its first transition takes them instead of running the model hooks again, so the browser does
+  not fetch what the page it hydrates already shows. They travel as JSON, so a model is its data,
+  not a class instance; `embedToShoeboxScriptTag()` writes them so a `<script>` element holds them safely.
+
+`renderURLToString(url)` returns the HTML alone. Start the same router on both sides; in the
+browser, its first render hydrates the server's page.
 
 ```ts ignore
 // start-router.ts, shared by the server and the browser
 import Router from '@emberx/router';
 import routes from './routes.ts';
 
-export default () => Router.start(routes);
+export default (options = {}) => Router.start(routes, options);
 
 // server.ts
-import { renderURLToString } from '@emberx/ssr';
+import { embedToShoeboxScriptTag, renderURL } from '@emberx/ssr';
 import startRouter from './start-router.ts';
 
 startRouter();
 
 Deno.serve(async (request) => {
   const { pathname, search } = new URL(request.url);
-  const page = await renderURLToString(pathname + search, {
-    services: { session: await sessionFrom(request) },
-  });
+  const page = await renderURL(pathname + search, { services: { session: await sessionFrom(request) } });
+  if (page.url !== pathname + search) {
+    return Response.redirect(new URL(page.url, request.url), 302);
+  }
 
-  return new Response(`<!doctype html><body><div id="app">${page}</div><script type="module" src="/app.js"></script>`, {
-    headers: { 'content-type': 'text/html' },
-  });
+  return new Response(
+    `<!doctype html>
+    <title>${escapeHTML(page.title ?? 'Blog')}</title>
+    <div id="app">${page.html}</div>
+    <script type="application/json" id="models">${embedToShoeboxScriptTag(page.models)}</script>
+    <script type="module" src="/app.js"></script>`,
+    { headers: { 'content-type': 'text/html' } },
+  );
 });
 
 // app.ts, in the browser
 import startRouter from './start-router.ts';
 
-await startRouter().visit(`${location.pathname}${location.search}`);
+const models = JSON.parse(document.getElementById('models').textContent);
+
+await startRouter({ models }).visit(`${location.pathname}${location.search}`);
 ```
 
 Each call renders with a router and an owner of its own, from `Router.createInstance()`, so a

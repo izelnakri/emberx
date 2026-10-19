@@ -59,19 +59,36 @@ interface URLRenderOptions extends Pick<RenderOptions, 'hydratable'> {
   services?: Record<string, unknown>;
 }
 
+/** A page renderURL rendered, with what the document around it needs. */
+export interface RenderedPage {
+  /** The page's markup, for the element the browser's router renders into (`#app`). */
+  html: string;
+  /** The page's title, for `<title>`: see Route.title. */
+  title: string | undefined;
+  /** The URL the page is at: `url`, or where its redirects ended. */
+  url: string;
+  /**
+   * The models of the routes the page is under, by route name, for the
+   * browser's Router.start({ models }): its first transition takes them instead
+   * of running the model hooks again. Empty for an error or loading substate.
+   * Put in the document with embedToShoeboxScriptTag().
+   */
+  models: Record<string, unknown>;
+}
+
 /**
- * Renders the page a URL shows to an HTML string: a router of its own, from
+ * Renders the page a URL shows: a router of its own, from
  * Router.createInstance(), goes to `url`, model hooks, redirects and loading or
  * error substates included, and the page it ends on renders as renderToString()
- * renders it.
+ * renders it. Returns its HTML, with its title, its URL and its models.
  *
  * The router keeps the URL in memory, its `none` location. Each render has its
  * own router and owner, so a server renders the URLs it is asked for at once,
  * each with its own `services`.
  */
-async function renderURLToString(url: string, options: URLRenderOptions = {}): Promise<string> {
+async function renderURL(url: string, options: URLRenderOptions = {}): Promise<RenderedPage> {
   if (!Owner.lookup('service:router')) {
-    throw new Error('renderURLToString() needs Router.start() to have started a router first.');
+    throw new Error('renderURL() needs Router.start() to have started a router first.');
   }
 
   const router = Router.createInstance({ services: options.services });
@@ -84,7 +101,33 @@ async function renderURLToString(url: string, options: URLRenderOptions = {}): P
     throw new Error(`${url} rendered no page.`);
   }
 
-  return renderToString(page.Page, { args: page.args, owner: router.owner, hydratable: options.hydratable });
+  const routeInfos: Array<{ name: string; context?: unknown }> = router.state?.routeInfos ?? [];
+  const isSubstate = !!Owner.routes[router.currentRouteName!]?.options?.substate;
+
+  return {
+    html: await renderToString(page.Page, { args: page.args, owner: router.owner, hydratable: options.hydratable }),
+    title: router.currentTitle,
+    url: router.currentURL ?? url,
+    models: isSubstate ? {} : Object.fromEntries(routeInfos.map((routeInfo) => [routeInfo.name, routeInfo.context])),
+  };
 }
 
-export { renderToString, renderURLToString };
+/** The HTML of the page a URL shows: renderURL()'s `html`. */
+async function renderURLToString(url: string, options: URLRenderOptions = {}): Promise<string> {
+  return (await renderURL(url, options)).html;
+}
+
+/**
+ * `value` as JSON that is safe inside a `<script>` element: no `</script>` or
+ * `<!--` in it ends the element early, and no line separator breaks it.
+ *
+ *   `<script type="application/json" id="models">${embedToShoeboxScriptTag(page.models)}</script>`
+ */
+function embedToShoeboxScriptTag(value: unknown): string {
+  return JSON.stringify(value).replace(
+    /[<\u2028\u2029]/g,
+    (character) => `\\u${character.charCodeAt(0).toString(16).padStart(4, '0')}`,
+  );
+}
+
+export { embedToShoeboxScriptTag, renderToString, renderURL, renderURLToString };

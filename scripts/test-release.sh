@@ -32,11 +32,14 @@ cd "$ROOT"
 npm run build
 # What a release publishes: each package's dist/, which the build gives its own
 # package.json, and @emberx/vendor as it is (build.ts, publishedDirectory).
+# One npm pack for all of them: npm's startup is most of what each pack costs.
+DIRECTORIES=()
 for package in "${PACKAGES[@]}"; do
   directory="$ROOT/packages/@emberx/$package/dist"
   [ "$package" = vendor ] && directory="$ROOT/packages/@emberx/vendor"
-  npm pack "$directory" --pack-destination "$CONSUMER" --quiet > /dev/null
+  DIRECTORIES+=("$directory")
 done
+npm pack "${DIRECTORIES[@]}" --pack-destination "$CONSUMER" --quiet > /dev/null
 
 # ── Install into a clean consumer ───────────────────────────────────────────
 # All six tarballs in one install, so their exact @emberx/* ranges resolve to

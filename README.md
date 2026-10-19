@@ -1,14 +1,23 @@
 # EmberX: Explicitly resolvable & node.js friendly Ember.js
 
-[Working example/E2E Test](http://emberx-router.surge.sh/tests/tests.html?testId=906afba6)
+Ember's components, router and test helpers as npm packages you import, with no Ember-specific
+build system: the same modules run in the browser, under node and under Deno, rendered by
+ember-source 7. Routes, components and helpers are imported where they are used, so they can be
+published and shared as plain npm packages too. Tests run with
+[QUnitX](https://github.com/izelnakri/qunitx) and `@emberx/test-helpers`.
 
-Experimental router for glimmer, published on npm as `@emberx/router`, `@emberx/component`, `@emberx/helper`,
-`@emberx/test-helpers`, `@emberx/string` and `@emberx/ssr`.
+| Package                                                           | What it is                                                                     |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| [`@emberx/component`](packages/@emberx/component/README.md)       | Glimmer components, `@tracked`/`@action`/`@service`/`@cached`, rendering       |
+| [`@emberx/router`](packages/@emberx/router/README.md)             | Ember's router: route hooks, query params, substates, actions, `<LinkTo>`      |
+| [`@emberx/helper`](packages/@emberx/helper/README.md)             | template helpers (`eq`, `and`, `take`...), and `helper()` for your own         |
+| [`@emberx/test-helpers`](packages/@emberx/test-helpers/README.md) | `render`, `visit`, `click` and the rest, which wait for what they start        |
+| [`@emberx/ssr`](packages/@emberx/ssr/README.md)                   | components and whole pages rendered to HTML on a server, hydrated in a browser |
+| [`@emberx/string`](packages/@emberx/string/README.md)             | Ember's string utilities: `camelize`, `dasherize`...                           |
 
-This project allows you to import your routes, components and helpers in node.js. Thus removes need for any ember
-specific build system. You can run your tests by using [QunitX](https://github.com/izelnakri/qunitx) and `@emberx/test-helpers`.
-
-When stable, check examples folder for the documentation.
+This README and each package's are the documentation; every code example in them that is not
+marked `ignore` runs as a test. `examples/` holds two apps: `basic`, and `blog`, which the
+end-to-end tests drive.
 
 ```sh
 npm ci          # or: make install
@@ -49,17 +58,11 @@ export CHROME_BIN=$(which google-chrome-stable)
 make test-browser
 ```
 
-### Current Status
+### Status
 
-- @emberx/component - Test coverage: ✔️
-- @emberx/string - Test coverage: ✔️
-- @emberx/helper - Test coverage: ✔️
-- @emberx/test-helpers - Test coverage: ✔️
-- @emberx/router - Test coverage: ✔️
-- @emberx/ssr - Test coverage: ✔️
-
-Although the project is not production-ready one can still experiment with it using the blog example as a guide.
-`@emberx` packages are distributed on npm
+Every package is tested in the browser (Chrome, Firefox and WebKit), under node and under Deno.
+emberx is below 1.0: each package's public API, and what a release may change about it, is in
+[CONTRIBUTING.md](CONTRIBUTING.md#public-api-and-versions).
 
 ### Differences between ember and emberx:
 
@@ -392,6 +395,30 @@ router.urlFor('posts.post', post, { queryParams: { page: 2 } }); // '/posts/1?pa
 PostsRoute.refresh(); // its model hooks again, and its children's; {{on "click" this.refresh}} in a template
 ```
 
+#### Page titles:
+
+A route's `static title`, a string or a function of its model, names the page: the deepest
+active route that has one wins. The router keeps it as `router.currentTitle`, and in a browser
+puts it in `document.title` after each transition, which a screen reader announces.
+
+```ts ignore
+class ApplicationRoute extends Route {
+  static title = 'Blog';
+}
+
+class PostRoute extends Route {
+  static title = (post) => `${post.title} | Blog`;
+}
+```
+
+#### When a transition fails:
+
+A model hook that throws or rejects shows the nearest error route (see Index, loading and error
+routes). With none to show, `Router.visit()` and `router.transitionTo()` reject with the error,
+and the page stays as it was: an app with no error routes catches it, or declares one on the
+application route for everything. An aborted transition, one `willTransition` stopped for
+example, is no failure.
+
 #### Actions on a page:
 
 In emberx a page is a route: one class holds the page's hooks, its template and everything the
@@ -706,12 +733,34 @@ build can compile them ahead of time with `@emberx/component/precompile`, so the
 compiles nothing and evaluates no code: no `'unsafe-eval'` in a Content Security Policy. See
 [@emberx/component](packages/@emberx/component/README.md#compiling-templates-at-build-time).
 
-This also allows the ability to distribute every component, route, helper, module as an npm package without a need for a build/addon system.
-Parent components can use `static includes` to include the components they depend on.
+#### Testing:
 
-This experiment is also a sketch/request for a new ember edition.
-Deprecates ember controllers and makes ember-specific CLI systems an option rather than requirement.
-Allows "npm your way to ember", from a React alternative(glimmer) to a full-fledged ember application without ember-cli.
+Tests use QUnit through [QUnitX](https://github.com/izelnakri/qunitx), which runs the same test
+files in the browser, under node and under Deno, and `@emberx/test-helpers`, Ember's test helpers
+without a runloop: `click()` and the rest wait for the actions, transitions, test waiters and
+renders they start. See [@emberx/test-helpers](packages/@emberx/test-helpers/README.md).
+
+#### Configuration:
+
+An app with no build has no build-time environment: configuration is a module it imports, which a
+server or a deploy can write. A build that bundles the app can replace values in it instead, as
+esbuild's `--define` does:
+
+```ts ignore
+// config.ts
+export default { apiHost: globalThis.API_HOST ?? 'http://localhost:3000' };
+
+// esbuild app.ts --bundle --define:globalThis.API_HOST='"https://api.example.com"'
+```
+
+Development checks, such as the component base class reporting a component built outside a
+render, are off unless `EMBERX_DEBUG` is defined as `true` the same way, or set on `globalThis`
+before `@emberx/component` is imported. Every emberx test suite runs with them on.
+
+emberx distributes every component, route and helper as a module of its own, which a parent
+component includes with `static includes`, so any of them can be an npm package with no addon
+system. It is also a sketch for an Ember edition without controllers, in which Ember's CLI is an
+option rather than a requirement: "npm your way to Ember".
 
 ## Prerequisites
 
@@ -721,8 +770,7 @@ Allows "npm your way to ember", from a React alternative(glimmer) to a full-fled
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the development workflow, and
-[ROADMAP.md](ROADMAP.md) for what is planned on the way to v1.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the development workflow.
 
 ## Further Reading / Useful Links
 

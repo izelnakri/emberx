@@ -51,3 +51,13 @@ await didRender();
 
 assert.equal(document.querySelector('#save').textContent, 'Guardar modelo');
 ```
+
+## Built-in helpers
+
+Every template has `and`, `or`, `not`, `eq`, `neq`, `gt`, `gte`, `lt`, `lte`, `assign`, `debug`,
+`drop` and `take` in scope, beside Ember's `fn`, `hash`, `array`, `get`, `concat` and `on`. They
+are emberx's own rather than `@ember/helper`'s, which differ: those treat `[]` and an empty
+`htmlSafe` string as false and follow proxies' `isTruthy`, throw on any argument count but their
+own, and Ember's `not` takes one argument where emberx's is true when every argument is falsy;
+Ember's comparisons have no `forceNumber`. From JavaScript, emberx's take their arguments as an
+array, `eq([a, b])`, as a template passes them.

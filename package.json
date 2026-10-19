@@ -61,7 +61,7 @@
     "qunitx": "^1.4.0",
     "qunitx-cli": "^0.39.0",
     "rsvp": "^4.8.5",
-    "typescript": "^5.9.3"
+    "typescript": "^7.0.2"
   },
   "overrides": {
     "pretender": "3.4.3"

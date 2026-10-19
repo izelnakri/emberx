@@ -101,3 +101,7 @@ export default class PostsPostRoute extends Route {
   }
 }
 ```
+
+The guide to everything the router does, route names, the application route, index, loading and
+error routes, hooks and query params, page titles, actions on a page, is the
+[emberx README](../../../README.md#api-design).

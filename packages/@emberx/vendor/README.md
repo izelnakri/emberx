@@ -10,14 +10,14 @@ emberx's `package.json` pins, so an emberx install needs nothing else:
 | `@emberx/vendor/location-bar`                          | `location-bar`       |
 
 ```ts ignore
-import { tracked } from '@emberx/vendor/@glimmer/tracking';
+import { renderComponent } from '@emberx/vendor/@ember/renderer';
 ```
 
 From `ember-source` it holds only the modules emberx imports and the files they reach, as
 `ember-source`'s `dist/prod/packages` has them, with their type declarations. None of
 `ember-source`'s own dependencies, which its ember-cli hooks and blueprints use, is needed.
 
-An app needs this package only through the others: import `tracked` and the rest from
+An app needs this package only through the others: import `renderComponent` and the rest from
 `@emberx/component`. Its contents are written by `scripts/build-emberx-vendor.ts` in the emberx
 repository and are not edited by hand; see CONTRIBUTING.md there. `LICENSE` holds the
 licenses of the code it redistributes.

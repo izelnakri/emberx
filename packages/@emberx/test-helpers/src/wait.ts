@@ -170,12 +170,12 @@ export async function settled(): Promise<void> {
   }
 }
 
-function routerService() {
-  return Owner.lookup('service:router') as { activeTransition?: any } | undefined;
-}
-
 export async function wait(timeout: number = 500): Promise<void> {
   await new Promise((resolve) => {
     setTimeout(() => resolve(null), timeout);
   });
+}
+
+function routerService() {
+  return Owner.lookup('service:router') as { activeTransition?: any } | undefined;
 }

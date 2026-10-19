@@ -26,53 +26,6 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const level = process.argv[2];
 const isDryRun = process.argv.includes('--dry-run');
 
-async function readJSON(path: string) {
-  return JSON.parse(await readFile(path, 'utf8'));
-}
-
-async function writeJSON(path: string, value: unknown) {
-  await writeFile(path, `${JSON.stringify(value, null, 2)}\n`);
-}
-
-/** `patch`/`minor`/`major` relative to `current`, or an explicit version passed through. */
-function nextVersion(current: string, level: string | undefined): string {
-  const [major, minor, patch] = current.split('.').map(Number);
-  if (level === 'major') return `${major + 1}.0.0`;
-  if (level === 'minor') return `${major}.${minor + 1}.0`;
-  if (level === 'patch') return `${major}.${minor}.${patch + 1}`;
-  if (/^\d+\.\d+\.\d+(-[\w.]+)?$/.test(level ?? '')) return level;
-
-  process.stderr.write(
-    'Usage: deno run -A scripts/publish-emberx-packages.ts <patch|minor|major|x.y.z> [--dry-run]\n' +
-      'Example: deno run -A scripts/publish-emberx-packages.ts patch\n',
-  );
-  process.exit(1);
-}
-
-/** Runs npm with the terminal attached, so publish output streams and an OTP prompt can be answered. */
-function npm(args: string[]) {
-  // npm is npm.cmd on Windows, which only resolves through a shell.
-  return spawnSync('npm', args, { cwd: ROOT, stdio: 'inherit', shell: process.platform === 'win32' });
-}
-
-/** Rewrites a package's own version and any @emberx dependency ranges to `version`. */
-async function stampPackage(name: string, version: string) {
-  const path = `${ROOT}/packages/@emberx/${name}/package.json`;
-  const manifest = await readJSON(path);
-
-  manifest.version = version;
-
-  for (const dependency of Object.keys(manifest.dependencies ?? {})) {
-    if (dependency.startsWith('@emberx/')) {
-      manifest.dependencies[dependency] = version;
-    }
-  }
-
-  await writeJSON(path, manifest);
-
-  return manifest.name;
-}
-
 const rootManifest = await readJSON(`${ROOT}/package.json`);
 const version = nextVersion(rootManifest.version, level);
 
@@ -118,4 +71,51 @@ for (const name of PUBLISHED) {
     process.exit(status ?? 1);
   }
   process.stdout.write(`published @emberx/${name}@${version}\n`);
+}
+
+async function readJSON(path: string) {
+  return JSON.parse(await readFile(path, 'utf8'));
+}
+
+async function writeJSON(path: string, value: unknown) {
+  await writeFile(path, `${JSON.stringify(value, null, 2)}\n`);
+}
+
+/** `patch`/`minor`/`major` relative to `current`, or an explicit version passed through. */
+function nextVersion(current: string, level: string | undefined): string {
+  const [major, minor, patch] = current.split('.').map(Number);
+  if (level === 'major') return `${major + 1}.0.0`;
+  if (level === 'minor') return `${major}.${minor + 1}.0`;
+  if (level === 'patch') return `${major}.${minor}.${patch + 1}`;
+  if (/^\d+\.\d+\.\d+(-[\w.]+)?$/.test(level ?? '')) return level;
+
+  process.stderr.write(
+    'Usage: deno run -A scripts/publish-emberx-packages.ts <patch|minor|major|x.y.z> [--dry-run]\n' +
+      'Example: deno run -A scripts/publish-emberx-packages.ts patch\n',
+  );
+  process.exit(1);
+}
+
+/** Runs npm with the terminal attached, so publish output streams and an OTP prompt can be answered. */
+function npm(args: string[]) {
+  // npm is npm.cmd on Windows, which only resolves through a shell.
+  return spawnSync('npm', args, { cwd: ROOT, stdio: 'inherit', shell: process.platform === 'win32' });
+}
+
+/** Rewrites a package's own version and any @emberx dependency ranges to `version`. */
+async function stampPackage(name: string, version: string) {
+  const path = `${ROOT}/packages/@emberx/${name}/package.json`;
+  const manifest = await readJSON(path);
+
+  manifest.version = version;
+
+  for (const dependency of Object.keys(manifest.dependencies ?? {})) {
+    if (dependency.startsWith('@emberx/')) {
+      manifest.dependencies[dependency] = version;
+    }
+  }
+
+  await writeJSON(path, manifest);
+
+  return manifest.name;
 }

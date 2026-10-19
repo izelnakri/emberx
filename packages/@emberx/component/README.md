@@ -85,6 +85,9 @@ class Table extends Component<{ headRows: object }> {
 }
 
 class UserTable extends Component<{ users: User[] }> {
+  @tracked accessor sortDirection = 'desc';
+  @tracked accessor sortedUsers: User[] | null = null;
+
   static includes = { Table };
 
   static template = hbs`
@@ -100,9 +103,6 @@ class UserTable extends Component<{ users: User[] }> {
       </tbody>
     </Table>
   `;
-
-  @tracked accessor sortDirection = 'desc';
-  @tracked accessor sortedUsers: User[] | null = null;
 
   get users() {
     return this.sortedUsers ?? this.args.users;

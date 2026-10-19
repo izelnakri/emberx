@@ -48,6 +48,47 @@ const EMBER_TYPES = `${EMBER}/types/stable`;
 const KEPT = new Set(['package.json', 'README.md']);
 const isCheck = process.argv.includes('--check');
 
+const { vendored: component, imports: componentImports } = await glimmerComponent();
+const ember = await emberSource([...new Set([...(await importedEmberModules()), ...componentImports])].sort());
+const vendored = new Map([...(await locationBar()), ...component, ...ember.vendored]);
+
+const packageJSON = JSON.parse(await readFile(`${ROOT}/${VENDOR}/package.json`, 'utf8'));
+packageJSON.exports = {
+  ...ember.exports,
+  './@glimmer/component': { types: './@glimmer/component/index.d.ts', default: './@glimmer/component/index.js' },
+  './location-bar': './location-bar/location-bar.js',
+};
+vendored.set('package.json', `${JSON.stringify(packageJSON, null, 2)}\n`);
+vendored.set('LICENSE', await licenses());
+
+const present = (await files(`${ROOT}/${VENDOR}`)).filter((path) => !KEPT.has(path));
+
+if (isCheck) {
+  const stale: string[] = [];
+  for (const [path, content] of vendored) {
+    if ((await readFile(`${ROOT}/${VENDOR}/${path}`, 'utf8').catch(() => null)) !== content) stale.push(path);
+  }
+  for (const path of present) {
+    if (!vendored.has(path)) stale.push(`${path} (from no vendored package)`);
+  }
+  if (stale.length > 0) {
+    process.stderr.write(`${VENDOR} differs from package.json's versions; run \`npm run vendor\`:\n`);
+    for (const path of stale) process.stderr.write(`  ${path}\n`);
+    process.exit(1);
+  }
+  process.stdout.write(`${VENDOR} matches package.json: ${vendored.size} files\n`);
+} else {
+  // Everything else goes first, directories included, so nothing a run wrote outlives the next.
+  for (const entry of await readdir(`${ROOT}/${VENDOR}`)) {
+    if (!KEPT.has(entry)) await rm(`${ROOT}/${VENDOR}/${entry}`, { recursive: true, force: true });
+  }
+  for (const [path, content] of vendored) {
+    await mkdir(dirname(`${ROOT}/${VENDOR}/${path}`), { recursive: true });
+    await writeFile(`${ROOT}/${VENDOR}/${path}`, content);
+  }
+  process.stdout.write(`vendored ${vendored.size} files into ${VENDOR}\n`);
+}
+
 async function manifest(
   name: string,
 ): Promise<{ version: string; license: string; repository?: string | { url: string } }> {
@@ -279,45 +320,4 @@ async function licenses(): Promise<string> {
     }),
   );
   return `@emberx/vendor redistributes code from these packages, under their licenses.\n\n${notices.join('\n---\n\n')}`;
-}
-
-const { vendored: component, imports: componentImports } = await glimmerComponent();
-const ember = await emberSource([...new Set([...(await importedEmberModules()), ...componentImports])].sort());
-const vendored = new Map([...(await locationBar()), ...component, ...ember.vendored]);
-
-const packageJSON = JSON.parse(await readFile(`${ROOT}/${VENDOR}/package.json`, 'utf8'));
-packageJSON.exports = {
-  ...ember.exports,
-  './@glimmer/component': { types: './@glimmer/component/index.d.ts', default: './@glimmer/component/index.js' },
-  './location-bar': './location-bar/location-bar.js',
-};
-vendored.set('package.json', `${JSON.stringify(packageJSON, null, 2)}\n`);
-vendored.set('LICENSE', await licenses());
-
-const present = (await files(`${ROOT}/${VENDOR}`)).filter((path) => !KEPT.has(path));
-
-if (isCheck) {
-  const stale: string[] = [];
-  for (const [path, content] of vendored) {
-    if ((await readFile(`${ROOT}/${VENDOR}/${path}`, 'utf8').catch(() => null)) !== content) stale.push(path);
-  }
-  for (const path of present) {
-    if (!vendored.has(path)) stale.push(`${path} (from no vendored package)`);
-  }
-  if (stale.length > 0) {
-    process.stderr.write(`${VENDOR} differs from package.json's versions; run \`npm run vendor\`:\n`);
-    for (const path of stale) process.stderr.write(`  ${path}\n`);
-    process.exit(1);
-  }
-  process.stdout.write(`${VENDOR} matches package.json: ${vendored.size} files\n`);
-} else {
-  // Everything else goes first, directories included, so nothing a run wrote outlives the next.
-  for (const entry of await readdir(`${ROOT}/${VENDOR}`)) {
-    if (!KEPT.has(entry)) await rm(`${ROOT}/${VENDOR}/${entry}`, { recursive: true, force: true });
-  }
-  for (const [path, content] of vendored) {
-    await mkdir(dirname(`${ROOT}/${VENDOR}/${path}`), { recursive: true });
-    await writeFile(`${ROOT}/${VENDOR}/${path}`, content);
-  }
-  process.stdout.write(`vendored ${vendored.size} files into ${VENDOR}\n`);
 }

@@ -15,17 +15,6 @@ export default class PublicIndexRoute extends Route {
     };
   }, 200);
 
-  willDestroy(): void {
-    clearInterval(this.clock);
-  }
-
-  static includes = {
-    BlogHeader,
-    LinkTo,
-    Counter,
-    t,
-  };
-
   static model(): object {
     // this.flashMessages.danger('Invalid verification link');
     // return this.transitionTo('application');
@@ -36,6 +25,13 @@ export default class PublicIndexRoute extends Route {
       dynamicObject: { dynamicDate: new Date() },
     };
   }
+
+  static includes = {
+    BlogHeader,
+    LinkTo,
+    Counter,
+    t,
+  };
 
   static template = hbs`
     <BlogHeader />
@@ -57,6 +53,10 @@ export default class PublicIndexRoute extends Route {
 
     <Counter/>
   `;
+
+  willDestroy(): void {
+    clearInterval(this.clock);
+  }
 
   @action changeLocale(): void {
     this.intl.currentLocale = this.intl.currentLocale === 'en' ? 'es' : 'en';

@@ -44,9 +44,9 @@ test('@emberx/component renders, and re-renders on a tracked change', async () =
   const { default: Component, renderComponent, tracked, hbs, didRender } = await import('@emberx/component');
 
   class Counter extends Component {
-    static template = hbs`<p id="label">{{@label}}: {{this.count}}</p><button id="increment" {{on "click" this.increment}}>+</button>`;
-
     increment = () => this.count++;
+
+    static template = hbs`<p id="label">{{@label}}: {{this.count}}</p><button id="increment" {{on "click" this.increment}}>+</button>`;
   }
   // What `@tracked accessor count = 1` does: the decorator wraps the accessor's own storage.
   const storage = new WeakMap();

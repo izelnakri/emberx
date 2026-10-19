@@ -33,18 +33,6 @@ class PostErrorRoute extends Route {
   static template = hbs`<h1>Something went wrong: {{this.model.message}}</h1>`;
 }
 
-/** The app's router, started the same way on the server and in the browser. */
-function startRouter() {
-  return Router.start(
-    [
-      { path: '/', route: HomeRoute },
-      { path: '/posts/:post_id', route: PostRoute, errorRoute: PostErrorRoute },
-      { path: '/old-post', route: OldPostRoute },
-    ],
-    { location: 'none' },
-  );
-}
-
 module('@emberx/ssr | renderURLToString', function (hooks) {
   hooks.beforeEach(function () {
     Router.LOG_ROUTES = false;
@@ -119,3 +107,15 @@ module('@emberx/ssr | renderURLToString', function (hooks) {
     await assert.rejects(renderURLToString('/'), /needs Router.start\(\) to have started a router first/);
   });
 });
+
+/** The app's router, started the same way on the server and in the browser. */
+function startRouter() {
+  return Router.start(
+    [
+      { path: '/', route: HomeRoute },
+      { path: '/posts/:post_id', route: PostRoute, errorRoute: PostErrorRoute },
+      { path: '/old-post', route: OldPostRoute },
+    ],
+    { location: 'none' },
+  );
+}

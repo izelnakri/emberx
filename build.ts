@@ -40,11 +40,6 @@ export const PACKAGES = ['string', 'helper', 'component', 'router', 'test-helper
 /** What a release publishes, leaf first: @emberx/vendor (scripts/build-emberx-vendor.ts), which has no build, then PACKAGES. */
 export const PUBLISHED = ['vendor', ...PACKAGES];
 
-/** The directory `npm publish` and `npm pack` are given: a built package's dist/, or @emberx/vendor itself. */
-export function publishedDirectory(name: string): string {
-  return name === 'vendor' ? `${ROOT}/packages/@emberx/vendor` : `${ROOT}/packages/@emberx/${name}/dist`;
-}
-
 /** Mark every bare specifier external; only relative/absolute imports get inlined. */
 const externalizeBareImports: esbuild.Plugin = {
   name: 'emberx:externalize-bare-imports',
@@ -71,20 +66,9 @@ const precompileOwnTemplates: esbuild.Plugin = {
   },
 };
 
-/**
- * A package's entry points, by the name of the file each builds to, from its
- * exports: `.` is `./src/index.ts`, built to index.js; `./precompile` is
- * `./src/precompile.ts`, built to precompile.js.
- */
-async function entryPoints(packageDir: string): Promise<Record<string, string>> {
-  const { exports } = JSON.parse(await readFile(`${packageDir}/package.json`, 'utf8'));
-
-  return Object.fromEntries(
-    Object.values(exports as Record<string, string>).map((source) => [
-      source.replace(/^\.\/src\//, '').replace(/\.ts$/, ''),
-      `${packageDir}/${source}`,
-    ]),
-  );
+/** The directory `npm publish` and `npm pack` are given: a built package's dist/, or @emberx/vendor itself. */
+export function publishedDirectory(name: string): string {
+  return name === 'vendor' ? `${ROOT}/packages/@emberx/vendor` : `${ROOT}/packages/@emberx/${name}/dist`;
 }
 
 async function buildPackage(name: string) {
@@ -158,6 +142,47 @@ async function emitTypes() {
   await rm(`${ROOT}/.tmp`, { recursive: true, force: true });
 }
 
+async function main() {
+  const started = Date.now();
+
+  const built = await Promise.all(PACKAGES.map(buildPackage));
+  process.stdout.write(`built ${built.length} packages: ${built.join(', ')}\n`);
+
+  await emitTypes();
+  process.stdout.write('emitted type declarations\n');
+
+  await Promise.all(PACKAGES.map(writeDistManifest));
+  process.stdout.write('wrote each dist/package.json\n');
+
+  process.stdout.write(`done in ${Date.now() - started}ms\n`);
+}
+
+// Run only when invoked directly: the other scripts import PACKAGES from here.
+// pathToFileURL, not a `file://` template — on Windows argv[1] is `C:\...`,
+// which a template never matches, and the build silently did nothing. argv[1]
+// is undefined under `node -e` and the REPL, where importing this must not throw.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  await main();
+}
+
+export { buildPackage, emitTypes, externalizeBareImports, ROOT };
+
+/**
+ * A package's entry points, by the name of the file each builds to, from its
+ * exports: `.` is `./src/index.ts`, built to index.js; `./precompile` is
+ * `./src/precompile.ts`, built to precompile.js.
+ */
+async function entryPoints(packageDir: string): Promise<Record<string, string>> {
+  const { exports } = JSON.parse(await readFile(`${packageDir}/package.json`, 'utf8'));
+
+  return Object.fromEntries(
+    Object.values(exports as Record<string, string>).map((source) => [
+      source.replace(/^\.\/src\//, '').replace(/\.ts$/, ''),
+      `${packageDir}/${source}`,
+    ]),
+  );
+}
+
 /**
  * Sources import each other as `./module.ts`, which is what node and Deno need
  * to run them unbundled. tsc copies those specifiers into the declarations
@@ -204,28 +229,3 @@ async function writeDistManifest(name: string) {
       .map((file) => cp(`${packageDir}/${file}`, `${packageDir}/dist/${file}`)),
   );
 }
-
-async function main() {
-  const started = Date.now();
-
-  const built = await Promise.all(PACKAGES.map(buildPackage));
-  process.stdout.write(`built ${built.length} packages: ${built.join(', ')}\n`);
-
-  await emitTypes();
-  process.stdout.write('emitted type declarations\n');
-
-  await Promise.all(PACKAGES.map(writeDistManifest));
-  process.stdout.write('wrote each dist/package.json\n');
-
-  process.stdout.write(`done in ${Date.now() - started}ms\n`);
-}
-
-// Run only when invoked directly: the other scripts import PACKAGES from here.
-// pathToFileURL, not a `file://` template — on Windows argv[1] is `C:\...`,
-// which a template never matches, and the build silently did nothing. argv[1]
-// is undefined under `node -e` and the REPL, where importing this must not throw.
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  await main();
-}
-
-export { buildPackage, emitTypes, externalizeBareImports, ROOT };

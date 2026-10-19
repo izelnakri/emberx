@@ -5,10 +5,6 @@ interface FreeObject {
   [propName: string]: any;
 }
 
-function isMissing<T>(value: T): boolean {
-  return value === null || value === undefined;
-}
-
 /**
  * The shape route-recognizer stores under `recognizer.names[routeName].handlers`.
  * Only the two fields <LinkTo /> reads are described here; everything else on it
@@ -30,6 +26,12 @@ export default class extends Component<{
   route: string;
 }> {
   @service router: any;
+
+  static template = hbs`
+    <a href="{{this.link}}" {{on "click" this.transition}} class="emberx-link {{this.class}}" ...attributes>
+      {{yield}}
+    </a>
+  `;
 
   get tagName() {
     return this.args.tagName || 'a';
@@ -141,12 +143,6 @@ export default class extends Component<{
     ].join(' ');
   }
 
-  static template = hbs`
-    <a href="{{this.link}}" {{on "click" this.transition}} class="emberx-link {{this.class}}" ...attributes>
-      {{yield}}
-    </a>
-  `;
-
   @action transition(event: any) {
     // @ts-ignore
     const element = event.target;
@@ -178,4 +174,8 @@ export default class extends Component<{
 
 function isObject(value: any) {
   return ['function', 'object'].includes(typeof value) && value !== null && !Array.isArray(value);
+}
+
+function isMissing<T>(value: T): boolean {
+  return value === null || value === undefined;
 }

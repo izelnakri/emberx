@@ -3,12 +3,6 @@ import { module, test } from 'qunitx';
 import { render, triggerEvent } from '@emberx/test-helpers';
 import { setupRenderingTest } from '../helpers/index.ts';
 
-function setupEventStepListeners(assert, element, arrayOfEvents) {
-  arrayOfEvents.forEach((eventName) => {
-    element.addEventListener(eventName, () => assert.step(eventName));
-  });
-}
-
 module('@emberx/test-helpers | triggerEvent', function (hooks) {
   setupRenderingTest(hooks);
 
@@ -124,3 +118,9 @@ module('@emberx/test-helpers | triggerEvent', function (hooks) {
     });
   });
 });
+
+function setupEventStepListeners(assert, element, arrayOfEvents) {
+  arrayOfEvents.forEach((eventName) => {
+    element.addEventListener(eventName, () => assert.step(eventName));
+  });
+}

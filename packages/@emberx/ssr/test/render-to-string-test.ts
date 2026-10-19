@@ -17,30 +17,21 @@ class List extends Component {
 class Counter extends Component {
   @tracked accessor count = 0;
 
+  static template = hbs`<p data-count>{{@label}}: {{this.count}}</p><button type="button" {{on "click" this.increment}}>+</button>`;
+
   @action
   increment() {
     this.count++;
   }
-
-  static template = hbs`<p data-count>{{@label}}: {{this.count}}</p><button type="button" {{on "click" this.increment}}>+</button>`;
 }
 
 class Farewell extends Component {
+  static template = hbs`<p data-farewell>Bye</p>`;
+
   willDestroy() {
     super.willDestroy();
     step('destroyed');
   }
-
-  static template = hbs`<p data-farewell>Bye</p>`;
-}
-
-/** An element in jsdom's document holding `html`, as a browser holds a server-rendered page. */
-function serverRendered(html: string): HTMLElement {
-  const element = document.createElement('div');
-  element.innerHTML = html;
-  document.body.appendChild(element);
-
-  return element;
 }
 
 module('@emberx/ssr | renderToString', function (hooks) {
@@ -107,3 +98,12 @@ module('@emberx/ssr | renderToString', function (hooks) {
     element.remove();
   });
 });
+
+/** An element in jsdom's document holding `html`, as a browser holds a server-rendered page. */
+function serverRendered(html: string): HTMLElement {
+  const element = document.createElement('div');
+  element.innerHTML = html;
+  document.body.appendChild(element);
+
+  return element;
+}

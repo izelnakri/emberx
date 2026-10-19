@@ -3,15 +3,6 @@ import { module, test } from 'qunitx';
 import { render, doubleClick, find } from '@emberx/test-helpers';
 import { setupRenderingTest } from '../helpers/index.ts';
 
-function setupEventStepListeners(assert, input) {
-  input.addEventListener('mousedown', () => assert.step('mousedown'));
-  input.addEventListener('mouseup', () => assert.step('mouseup'));
-  input.addEventListener('click', () => assert.step('click'));
-  input.addEventListener('focus', () => assert.step('focus'));
-  input.addEventListener('focusin', () => assert.step('focusin'));
-  input.addEventListener('dblclick', () => assert.step('dblclick'));
-}
-
 module('@emberx/test-helpers | doubleClick', function (hooks) {
   setupRenderingTest(hooks);
 
@@ -170,3 +161,12 @@ module('@emberx/test-helpers | doubleClick', function (hooks) {
     });
   });
 });
+
+function setupEventStepListeners(assert, input) {
+  input.addEventListener('mousedown', () => assert.step('mousedown'));
+  input.addEventListener('mouseup', () => assert.step('mouseup'));
+  input.addEventListener('click', () => assert.step('click'));
+  input.addEventListener('focus', () => assert.step('focus'));
+  input.addEventListener('focusin', () => assert.step('focusin'));
+  input.addEventListener('dblclick', () => assert.step('dblclick'));
+}

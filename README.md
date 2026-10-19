@@ -635,10 +635,6 @@ class MainComponent extends Component {
   @service locale;
   @tracked accessor mainMessage = 'hello world';
 
-  get formattedMessage() {
-    return this.mainMessage.toUpperCase();
-  }
-
   // This is how you can do template imports
   static includes = {
     AnotherComponent,
@@ -651,6 +647,10 @@ class MainComponent extends Component {
     </div>
     <button {{on "click" this.changeMessage}} id="message-button">Change main message</button>
   `;
+
+  get formattedMessage() {
+    return this.mainMessage.toUpperCase();
+  }
 
   @action
   changeMessage(): void {

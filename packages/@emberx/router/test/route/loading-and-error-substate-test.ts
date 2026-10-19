@@ -91,36 +91,6 @@ class DashboardRoute extends Route {
   }
 }
 
-/** Starts the router with the routes every module shares, plus `substates`. */
-function startRouter(...substates) {
-  return () => {
-    api = new API();
-    Router.addServices({ api });
-
-    return Router.start([
-      { path: '/', name: 'home', route: HomeRoute },
-      { path: '/login', name: 'login', route: LoginRoute },
-      { path: '/feed', name: 'feed', route: FeedRoute },
-      { path: '/posts', name: 'posts', route: PostsRoute },
-      { path: '/posts/:post_id', name: 'posts.post', route: PostRoute },
-      { path: '/posts/:post_id/comments', name: 'posts.post.comments', route: CommentsRoute },
-      { path: '/dashboard', name: 'dashboard', route: DashboardRoute },
-      ...substates,
-    ]);
-  };
-}
-
-/** Steps "substate <name>" for every loading or error substate the router enters. */
-function recordSubstates(assert, router) {
-  const intermediateTransitionTo = router.intermediateTransitionTo;
-
-  router.intermediateTransitionTo = function (name, ...args) {
-    assert.step(`substate ${name}`);
-
-    return intermediateTransitionTo.call(this, name, ...args);
-  };
-}
-
 module('@emberx/router | Loading and error substates', function () {
   module('loading substates', function (hooks) {
     setupTest(
@@ -514,3 +484,33 @@ module('@emberx/router | Loading and error substates', function () {
     });
   });
 });
+
+/** Starts the router with the routes every module shares, plus `substates`. */
+function startRouter(...substates) {
+  return () => {
+    api = new API();
+    Router.addServices({ api });
+
+    return Router.start([
+      { path: '/', name: 'home', route: HomeRoute },
+      { path: '/login', name: 'login', route: LoginRoute },
+      { path: '/feed', name: 'feed', route: FeedRoute },
+      { path: '/posts', name: 'posts', route: PostsRoute },
+      { path: '/posts/:post_id', name: 'posts.post', route: PostRoute },
+      { path: '/posts/:post_id/comments', name: 'posts.post.comments', route: CommentsRoute },
+      { path: '/dashboard', name: 'dashboard', route: DashboardRoute },
+      ...substates,
+    ]);
+  };
+}
+
+/** Steps "substate <name>" for every loading or error substate the router enters. */
+function recordSubstates(assert, router) {
+  const intermediateTransitionTo = router.intermediateTransitionTo;
+
+  router.intermediateTransitionTo = function (name, ...args) {
+    assert.step(`substate ${name}`);
+
+    return intermediateTransitionTo.call(this, name, ...args);
+  };
+}

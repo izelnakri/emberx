@@ -17,6 +17,9 @@ const localeIsEnUS = helper(function (_args, _hash, services) {
 class MyComponent extends Component {
   @service locale;
 
+  message = 'hello world';
+  @tracked accessor count = 55;
+
   static includes = {
     OtherComponent,
     myHelper,
@@ -36,9 +39,6 @@ class MyComponent extends Component {
     <button {{on "click" this.increment}}>Increment</button>
     <button {{on "click" this.changeLocale}}>Change Locale</button>
   `;
-
-  message = 'hello world';
-  @tracked accessor count = 55;
 
   @action
   increment(): void {

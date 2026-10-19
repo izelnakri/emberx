@@ -3,18 +3,6 @@ import { module, test } from 'qunitx';
 import { render, focus } from '@emberx/test-helpers';
 import { setupRenderingTest } from '../helpers/index.ts';
 
-function setupFocusEventStepListeners(assert, element) {
-  ['focus', 'focusin'].forEach((eventName) => {
-    element.addEventListener(eventName, () => assert.step(eventName));
-  });
-}
-
-function setupBlurEventStepListeners(assert, element) {
-  ['blur', 'focusout'].forEach((eventName) => {
-    element.addEventListener(eventName, () => assert.step(eventName));
-  });
-}
-
 module('@emberx/test-helpers | focus', function (hooks) {
   const FOCUS_STEPS = ['focus', 'focusin'];
   const BLUR_STEPS = ['blur', 'focusout'];
@@ -164,3 +152,15 @@ module('@emberx/test-helpers | focus', function (hooks) {
     });
   });
 });
+
+function setupFocusEventStepListeners(assert, element) {
+  ['focus', 'focusin'].forEach((eventName) => {
+    element.addEventListener(eventName, () => assert.step(eventName));
+  });
+}
+
+function setupBlurEventStepListeners(assert, element) {
+  ['blur', 'focusout'].forEach((eventName) => {
+    element.addEventListener(eventName, () => assert.step(eventName));
+  });
+}

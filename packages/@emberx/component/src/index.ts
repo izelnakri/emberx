@@ -1,7 +1,8 @@
 import { renderComponent as emberRenderComponent, renderSettled } from '@emberx/vendor/@ember/renderer';
 import { setComponentTemplate } from '@emberx/vendor/@glimmer/manager';
 import { createTemplateFactory } from '@emberx/vendor/@ember/template-factory';
-import { destroy } from '@emberx/vendor/@ember/destroyable';
+import { destroy, registerDestructor, unregisterDestructor } from '@emberx/vendor/@ember/destroyable';
+import { createCache, getValue } from '@emberx/vendor/@glimmer/tracking/primitives/cache';
 import { getOwner } from '@emberx/vendor/@glimmer/owner';
 import templateOnlyComponent from '@emberx/vendor/@ember/component/template-only';
 import type EmberOwner from '@emberx/vendor/@ember/owner';
@@ -13,6 +14,17 @@ import { fn, hash, array, get, concat } from '@emberx/vendor/@ember/helper';
 import { on } from '@emberx/vendor/@ember/modifier';
 import BUILTINS from './builtins.ts';
 import createTemplate, { isTemplateCompilerLoaded, loadTemplateCompiler } from './create-template.ts';
+import {
+  buildWaiter,
+  getPendingWaiterState,
+  hasPendingWaiters,
+  waitFor,
+  waitForPromise,
+  waitersSettled,
+  type PendingWaiterState,
+  type TestWaiter,
+  type TestWaiterDebugInfo,
+} from './waiters.ts';
 import {
   _resetRenderers,
   isServerRendered,
@@ -39,6 +51,9 @@ const COMPILED = new WeakSet<EmberXComponentClass>();
 const AsyncFunction = (async () => {}).constructor;
 const ASYNC_ACTIONS_PROMISE_QUEUE = new Set();
 
+/** Where an error an `@action` throws goes, instead of up the event that ran it: see setOnerror. */
+let onerror: ((error: unknown) => void) | undefined;
+
 /** The owner a render that names none renders with: see renderingOwnerFor. */
 const DEFAULT_OWNER = {};
 
@@ -63,6 +78,8 @@ export interface EmberXComponentClass {
  * template's scope, its wire format, for Ember's createTemplateFactory.
  */
 export type PrecompiledTemplate = (scope: FreeObject) => object;
+
+export type { PendingWaiterState, TestWaiter, TestWaiterDebugInfo };
 
 export default class EmberXComponent<Args extends FreeObject = FreeObject> extends Component<{
   Args: { Named: Args };
@@ -95,6 +112,17 @@ export function getAsyncActionsQueue() {
 }
 
 /**
+ * Sends what an `@action` throws to `handler` instead of up the event that ran
+ * it, where a browser only reports it, as `Ember.onerror` does. An async
+ * action's failure is in the promise it returns. @emberx/test-helpers sets one
+ * in every test, so a helper that fired the event fails with it; `undefined`
+ * removes it.
+ */
+export function setOnerror(handler: ((error: unknown) => void) | undefined): void {
+  onerror = handler;
+}
+
+/**
  * `@action`: binds a method to its instance, so `{{on "click" this.save}}`
  * calls it on the component it belongs to, and records the promise of an
  * async one, which @emberx/test-helpers' settled() waits for.
@@ -109,11 +137,21 @@ export function action<This, Args extends unknown[], Return>(
   const name = context.name;
 
   function settledAware(this: This, ...args: Args): Return {
-    const result = method.apply(this, args);
+    let result: Return;
+    try {
+      result = method.apply(this, args);
+    } catch (error) {
+      if (!onerror) throw error;
+
+      onerror(error);
+      return undefined as Return;
+    }
     if (method instanceof AsyncFunction) {
       const promise = result as Promise<unknown>;
+      const settle = () => ASYNC_ACTIONS_PROMISE_QUEUE.delete(promise);
       ASYNC_ACTIONS_PROMISE_QUEUE.add(promise);
-      promise.finally(() => ASYNC_ACTIONS_PROMISE_QUEUE.delete(promise));
+      // Not finally(), whose promise would reject unhandled with a failed action: settled() reports it.
+      promise.then(settle, settle);
     }
     return result;
   }
@@ -228,6 +266,30 @@ function service<This extends object, Value>(
   };
 }
 
+/**
+ * `@cached get total()`: the getter's value, kept until the tracked state it
+ * read changes, for a getter that is costly to run again on every render.
+ * Built on Ember's public cache primitives, as Ember's own @cached is.
+ */
+function cached<This extends object, Value>(
+  getter: (this: This) => Value,
+  context: ClassGetterDecoratorContext<This, Value>,
+): (this: This) => Value {
+  if (context.kind !== 'getter') {
+    throw new Error(`@cached decorates a getter, not ${String(context.name)}.`);
+  }
+  const caches = new WeakMap<This, ReturnType<typeof createCache<Value>>>();
+
+  return function (this: This): Value {
+    let cache = caches.get(this);
+    if (!cache) {
+      cache = createCache(() => getter.call(this));
+      caches.set(this, cache);
+    }
+    return getValue(cache) as Value;
+  };
+}
+
 function hbs(sourceCode: TemplateStringsArray): string {
   return sourceCode[0];
 }
@@ -281,6 +343,15 @@ export {
   on,
   service,
   tracked,
+  cached,
+  registerDestructor,
+  unregisterDestructor,
+  waitForPromise,
+  waitFor,
+  buildWaiter,
+  hasPendingWaiters,
+  getPendingWaiterState,
+  waitersSettled,
   traverseAndCompileAllComponents,
 };
 

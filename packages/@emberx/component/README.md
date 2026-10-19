@@ -131,6 +131,72 @@ await renderComponent(UserTable, {
 assert.equal(document.querySelector('.my-table tbody td').textContent, 'Izel');
 ```
 
+## Cached getters, cleanup, and async work tests wait for
+
+`@cached` keeps a getter's value until the tracked state it read changes, `registerDestructor`
+runs cleanup when a component goes away, and the test waiters of `@ember/test-waiters`, with its
+API, mark async work that is neither an `@action` nor a router transition, so `settled()` in
+@emberx/test-helpers waits for it:
+
+```ts
+import assert from 'node:assert/strict';
+import Component, {
+  cached,
+  didRender,
+  hbs,
+  registerDestructor,
+  renderComponent,
+  resetRendering,
+  tracked,
+  waitersSettled,
+  waitFor,
+} from '@emberx/component';
+
+class Inbox extends Component {
+  @tracked accessor messages: string[] = [];
+
+  static template = hbs`<p>{{this.unread}} unread</p>`;
+
+  constructor(owner: object, args: Record<string, unknown>) {
+    super(owner, args);
+    const poll = setInterval(() => this.load(), 60_000);
+    registerDestructor(this, () => clearInterval(poll));
+    this.load();
+  }
+
+  @cached
+  get unread(): number {
+    return this.messages.filter((message) => message.startsWith('*')).length;
+  }
+
+  @waitFor
+  async load() {
+    this.messages = await Promise.resolve(['*hello', 'seen']);
+  }
+}
+
+await renderComponent(Inbox, { element: document.getElementById('app') });
+await waitersSettled();
+await didRender();
+assert.equal(document.querySelector('#app p').textContent, '1 unread');
+
+resetRendering(); // destroys the Inbox: its destructor stops the polling
+```
+
+As in Ember:
+
+- `@waitFor` on an async method, or `waitFor(fn)` around a function, marks the promise it returns;
+  `waitForPromise(promise, label?)` marks one promise.
+- `buildWaiter(name)` marks work a promise does not stand for: `beginAsync(token?, label?)`
+  returns a token, `endAsync(token)` ends it, and `waitUntil()`, `debugInfo()` and `reset()` tell
+  and clear what it has under way. A token begun twice, or ended without a begin, throws.
+- `hasPendingWaiters()` and `getPendingWaiterState()`, `{ pending, waiters: { [name]: [{ label,
+stack }] } }`, say what is under way and where it began; the stack is taken with debug checks on
+  (`EMBERX_DEBUG`) only, as taking one costs.
+
+`waitersSettled()` is emberx's own: a promise that resolves as the last piece of work ends, which
+`settled()` awaits, where Ember's polls every 10ms.
+
 ## Compiling templates at build time
 
 A template compiles in the browser on its component's first render: that is what lets emberx

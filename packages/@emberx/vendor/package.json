@@ -78,6 +78,10 @@
       "types": "./@glimmer/runtime/index.d.ts",
       "default": "./@glimmer/runtime/index.js"
     },
+    "./@glimmer/tracking/primitives/cache": {
+      "types": "./@glimmer/tracking/primitives/cache/index.d.ts",
+      "default": "./@glimmer/tracking/primitives/cache/index.js"
+    },
     "./@glimmer/validator": {
       "types": "./@glimmer/validator/index.d.ts",
       "default": "./@glimmer/validator/index.js"

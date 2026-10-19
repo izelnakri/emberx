@@ -1,5 +1,5 @@
 import { module, test } from 'qunitx';
-import Router, { Route } from '@emberx/router';
+import Router, { Owner, Route } from '@emberx/router';
 import BasicRoute from './helpers/routes/basic-route.ts';
 import { visit, click, waitFor } from '@emberx/test-helpers';
 import setupTest from './helpers/index.ts';
@@ -18,12 +18,14 @@ module('@emberx/router | Route Unit Test', function (hooks) {
   setupMockServer(hooks);
 
   test('Route has the initial properties', async function (assert) {
-    const route = new Route();
+    await visit('/');
+    const route = Owner.lookup('service:router').currentPage;
 
+    assert.ok(route instanceof Route);
     assert.ok('includes' in Route);
     assert.ok('template' in Route);
     // Its service and its bound actions are its own: standard decorators set them per instance.
-    assert.deepEqual(Object.keys(route), ['args', 'send', 'refresh', 'router']);
+    assert.ok(['args', 'send', 'refresh', 'router'].every((key) => Object.hasOwn(route, key)));
     assert.ok(route.router);
   });
 

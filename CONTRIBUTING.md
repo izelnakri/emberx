@@ -106,8 +106,7 @@ its checks on either way, before `@emberx/component` is first imported:
 - or at runtime, `globalThis.EMBERX_DEBUG = true` in a module imported ahead of
   emberx. It has to be its own module: imports run before the importing file's body.
 
-This repo's build and dev scripts take no such flag. Expect failures when it is on, since
-`@emberx/router` constructs `new Route()` with no arguments.
+Every suite runs with it on: `test/debug.js` is the first thing its entry point imports.
 
 **Vendored code is written by a script.** `npm run vendor` (`scripts/build-emberx-vendor.ts`) writes
 `@emberx/vendor` (`packages/@emberx/vendor/`) from the versions `package.json` pins as exact

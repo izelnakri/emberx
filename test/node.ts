@@ -10,6 +10,7 @@
  * Everything test/index.ts runs in the browser runs here too, plus @emberx/ssr,
  * which runs here only: it renders to a string, without a browser DOM.
  */
+import './debug.js';
 import '../packages/@emberx/string/test/index.ts';
 import '../packages/@emberx/helper/test/index.ts';
 import '../packages/@emberx/component/test/index.ts';

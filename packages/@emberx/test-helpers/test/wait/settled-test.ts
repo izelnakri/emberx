@@ -73,6 +73,7 @@ module('@emberx/test-helpers | settled, isSettled and getSettledState', function
       hasPendingActions: false,
       pendingActionCount: 0,
       hasPendingTransitions: false,
+      hasPendingWaiters: false,
     });
   });
 
@@ -87,6 +88,7 @@ module('@emberx/test-helpers | settled, isSettled and getSettledState', function
       hasPendingActions: true,
       pendingActionCount: 1,
       hasPendingTransitions: false,
+      hasPendingWaiters: false,
     });
     assert.dom('[data-test-save]').hasText('saving');
 
@@ -106,6 +108,7 @@ module('@emberx/test-helpers | settled, isSettled and getSettledState', function
       hasPendingActions: false,
       pendingActionCount: 0,
       hasPendingTransitions: true,
+      hasPendingWaiters: false,
     });
 
     release();

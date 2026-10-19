@@ -18,3 +18,4 @@ import './url-test.ts';
 import './pause-test.ts';
 import './wait/settled-test.ts';
 import './render-test.ts';
+import './wait/waiters-and-onerror-test.ts';

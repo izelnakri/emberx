@@ -20,6 +20,7 @@ import { find, findAll } from './query.ts';
 import { currentRouteName, currentURL, visit } from './url.ts';
 import { wait, waitFor, waitUntil, settled, isSettled, getSettledState } from './wait.ts';
 import { pauseTest, resumeTest } from './pause.ts';
+import { setupOnerror, resetOnerror } from './onerror.ts';
 
 export {
   blur,
@@ -47,7 +48,9 @@ export {
   render,
   rerender,
   clearRender,
+  resetOnerror,
   settled,
+  setupOnerror,
   setupTest,
   setupRenderingTest,
   setupApplicationTest,
@@ -83,7 +86,9 @@ export default {
   render,
   rerender,
   clearRender,
+  resetOnerror,
   settled,
+  setupOnerror,
   setupTest,
   setupRenderingTest,
   setupApplicationTest,

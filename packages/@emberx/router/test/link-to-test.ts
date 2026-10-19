@@ -120,6 +120,46 @@ module('@emberx/router | <LinkTo> tests', function (hooks) {
     assert.equal(currentURL(), `/preview/${this.user.id}/posts/${this.post.id}`);
   });
 
+  test('a click on what the link holds follows the link', async function (assert) {
+    await render(hbs`<LinkTo @route="public.index"><span data-test-label>Home</span></LinkTo>`, { LinkTo });
+
+    await click('[data-test-label]');
+
+    assert.equal(currentURL(), '/');
+  });
+
+  test('a click with a modifier key, for a new tab or window, is left to the browser', async function (assert) {
+    await render(hbs`<LinkTo @route="public.index" data-test-link>Home</LinkTo>`, { LinkTo });
+    let prevented: boolean | undefined;
+    // After the link's own listener: notes what it did, and keeps the test page where it is.
+    document.addEventListener(
+      'click',
+      (event) => {
+        prevented = event.defaultPrevented;
+        event.preventDefault();
+      },
+      { once: true },
+    );
+
+    await click('[data-test-link]', { metaKey: true });
+
+    assert.false(prevented);
+    assert.equal(currentURL(), undefined);
+  });
+
+  test('the active link says it is the current page, and a disabled one that it is disabled', async function (assert) {
+    await visit('/');
+    await render(
+      hbs`<LinkTo @route="public.index" data-test-home>Home</LinkTo><LinkTo @route="login" @disabled={{true}} data-test-login>Login</LinkTo>`,
+      { LinkTo },
+    );
+
+    assert.dom('[data-test-home]').hasAttribute('aria-current', 'page');
+    assert.dom('[data-test-login]').doesNotHaveAttribute('aria-current');
+    assert.dom('[data-test-login]').hasAttribute('aria-disabled', 'true');
+    assert.dom('[data-test-home]').doesNotHaveAttribute('aria-disabled');
+  });
+
   test('it can @preventDefault with certain behavior', async function (assert) {
     assert.expect(5);
 

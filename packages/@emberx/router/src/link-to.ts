@@ -28,7 +28,14 @@ export default class extends Component<{
   @service router: any;
 
   static template = hbs`
-    <a href="{{this.link}}" {{on "click" this.transition}} class="emberx-link {{this.class}}" ...attributes>
+    <a
+      href="{{this.link}}"
+      aria-current={{if this.isActive "page"}}
+      aria-disabled={{if @disabled "true"}}
+      {{on "click" this.transition}}
+      class="emberx-link {{this.class}}"
+      ...attributes
+    >
       {{yield}}
     </a>
   `;
@@ -143,14 +150,23 @@ export default class extends Component<{
     ].join(' ');
   }
 
-  @action transition(event: any) {
-    // @ts-ignore
-    const element = event.target;
-    if (element.target === '' || element.target === '_self') {
-      event.preventDefault();
-    } else {
+  @action transition(event: MouseEvent) {
+    // The link itself, not the element inside it that was clicked. A click
+    // meant for a new tab or window, or a link opening in another target, is
+    // the browser's to follow.
+    const link = event.currentTarget as HTMLAnchorElement;
+    if (
+      event.defaultPrevented ||
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey ||
+      (link.target !== '' && link.target !== '_self')
+    ) {
       return;
     }
+    event.preventDefault();
 
     if (this.args.disabled) {
       return;

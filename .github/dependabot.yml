@@ -35,4 +35,4 @@ updates:
           - 'qunitx'
           - 'qunitx-cli'
           - 'qunit-dom'
-          - '@memserver/*'
+          - '@memoria/*'

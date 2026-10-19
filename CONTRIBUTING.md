@@ -96,13 +96,6 @@ repo, the source `scripts/build-emberx-vendor.ts` copies from. Verify with:
 npm ls @emberx/vendor   # every entry should be the one workspace package
 ```
 
-**`pretender` is pinned to 3.4.3** via `overrides`. `@memserver/server` — the API mock used
-by tests — calls `Pretender.prototype.passthrough`, which pretender moved from the
-prototype to the instance in 3.4.4, _inside_ memserver's own `^3.4.3` range. Any unpinned
-install therefore fails every memserver-using test in `beforeEach` with "The function you
-tried passing to Pretender ... is undefined or missing". Removing the pin requires updating
-or replacing memserver first.
-
 **Debug assertions are off by default.** `@glimmer/env` ships `DEBUG = false` and expects a
 build plugin to flip it; emberx has no such plugin, so Glimmer's development assertions
 have never run here. The component base class (below) checks `EMBERX_DEBUG` instead. Turn
@@ -152,8 +145,7 @@ In the repo, each package's `exports` point at its source:
 So every tool resolves `@emberx/router` to `packages/@emberx/router/src/` as it is: esbuild
 (the browser suite, `npm run dev`, the benchmarks, the Deno suite, the doctests),
 TypeScript, and node, where `scripts/register.ts` compiles the decorators that node's
-type stripping rejects. That holds for imports from inside `node_modules` too:
-`@memserver/model` imports `@emberx/string`, and gets its source. Nothing is built but a
+type stripping rejects. Nothing is built but a
 release, and CI's test jobs run with no `dist/`, so a change that needs one fails there.
 
 `make build` makes each package's `dist/` a package of its own: the bundle, its

@@ -48,9 +48,8 @@
   },
   "devDependencies": {
     "@glimmer/component": "2.1.1",
-    "@memserver/model": "2.5.3",
-    "@memserver/response": "2.5.3",
-    "@memserver/server": "2.5.3",
+    "@memoria/model": "0.0.33",
+    "@memoria/server": "0.0.33",
     "ember-source": "7.3.1",
     "esbuild": "^0.28.2",
     "git-cliff": "^2.14.2",
@@ -62,9 +61,6 @@
     "qunitx-cli": "^0.39.0",
     "rsvp": "^4.8.5",
     "typescript": "^5.9.3"
-  },
-  "overrides": {
-    "pretender": "3.4.3"
   },
   "browserslist": [
     "last 2 Chrome versions",

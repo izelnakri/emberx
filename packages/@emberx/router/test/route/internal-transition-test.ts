@@ -2,7 +2,7 @@ import { module, test } from 'qunitx';
 import Router from '@emberx/router';
 import { visit, currentURL } from '@emberx/test-helpers';
 import setupTest from '../helpers/index.ts';
-import setupMemserver from '../helpers/setup-memserver.ts';
+import setupMockServer from '../helpers/setup-mock-server.ts';
 import Session from '../helpers/services/session.ts';
 import BasicRoute from '../helpers/routes/basic-route.ts';
 import ParentRoute from '../helpers/routes/parent-route.ts';
@@ -43,7 +43,7 @@ module('@emberx/router | Route Internal Transitions', function (hooks) {
       },
     ]);
   });
-  setupMemserver(hooks);
+  setupMockServer(hooks);
 
   test('user can land on root and go to children route that includes parent model', async function (assert) {
     const router = this.owner.lookup('service:router');

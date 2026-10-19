@@ -4,12 +4,12 @@ import { render, click, currentURL, visit, waitFor } from '@emberx/test-helpers'
 import startRouter from '@examples/blog/start-router.ts';
 import { LinkTo } from '@emberx/router';
 import setupTest from './helpers/index.ts';
-import setupMemserver from './helpers/setup-memserver.ts';
+import setupMockServer from './helpers/setup-mock-server.ts';
 
 // TODO: make @replace={{true}} tests
 module('@emberx/router | <LinkTo> tests', function (hooks) {
   setupTest(hooks, startRouter);
-  setupMemserver(hooks);
+  setupMockServer(hooks);
 
   test('it throws when @route param is missing', async function (assert) {
     try {

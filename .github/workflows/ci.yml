@@ -138,12 +138,13 @@ jobs:
   # `bench:compare` (scripts/check-benchmarks.ts --base) measures the base commit
   # and this one back to back on this runner, so the comparison is like for
   # like; nothing is committed. The base is the PR's base, or where a pushed
-  # branch left main. Advisory while shared-runner noise is still being learned.
+  # branch left main. A gate: of its runs through October 2026, it failed only
+  # where a change was slower on purpose, which a Benchmark-Regression trailer
+  # accepts (CONTRIBUTING.md).
   bench:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v7
         with:

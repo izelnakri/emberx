@@ -5,7 +5,7 @@ import createDocument from '@simple-dom/document';
 import HTMLSerializer from '@simple-dom/serializer';
 import voidMap from '@simple-dom/void-map';
 import { renderWithBuilder, traverseAndCompileAllComponents, type EmberXComponentClass } from '@emberx/component';
-import { Owner } from '@emberx/router';
+import Router, { Owner } from '@emberx/router';
 
 interface RenderOptions {
   args?: Record<string, unknown>;
@@ -50,45 +50,41 @@ async function renderToString(component: EmberXComponentClass, options: RenderOp
   return html;
 }
 
-/** Renders queue, since @emberx/router's Owner and router are one per process. */
-let queue: Promise<unknown> = Promise.resolve();
+interface URLRenderOptions extends Pick<RenderOptions, 'hydratable'> {
+  /**
+   * Services of this render's own, beside the app's (Router.addServices()),
+   * which its routes and pages find as theirs: the request's cookies or
+   * session, for example. Router.createInstance() takes them.
+   */
+  services?: Record<string, unknown>;
+}
 
 /**
- * Renders the page a URL shows to an HTML string: the router Router.start()
- * started goes to `url`, model hooks, redirects and loading or error substates
- * included, and the page it ends on renders as renderToString() renders it.
+ * Renders the page a URL shows to an HTML string: a router of its own, from
+ * Router.createInstance(), goes to `url`, model hooks, redirects and loading or
+ * error substates included, and the page it ends on renders as renderToString()
+ * renders it.
  *
- * The router keeps the URL in memory (its `none` location, the default without
- * a `window`). One URL renders at a time: emberx's Owner holds one router.
+ * The router keeps the URL in memory, its `none` location. Each render has its
+ * own router and owner, so a server renders the URLs it is asked for at once,
+ * each with its own `services`.
  */
-function renderURLToString(url: string, options: Pick<RenderOptions, 'hydratable'> = {}): Promise<string> {
-  const render = queue.then(async () => {
-    const router = Owner.lookup('service:router');
-    if (!router) {
-      throw new Error('renderURLToString() needs Router.start() to have started a router first.');
-    }
+async function renderURLToString(url: string, options: URLRenderOptions = {}): Promise<string> {
+  if (!Owner.lookup('service:router')) {
+    throw new Error('renderURLToString() needs Router.start() to have started a router first.');
+  }
 
-    let page: { Page: EmberXComponentClass; args: Record<string, unknown> } | undefined;
-    const renderPage = router.renderPage;
-    router.renderPage = async (Page: EmberXComponentClass, args: Record<string, unknown>) => {
-      page = { Page, args };
-    };
+  const router = Router.createInstance({ services: options.services });
+  let page: { Page: EmberXComponentClass; args: Record<string, unknown> } | undefined;
+  router.renderPage = async (Page: EmberXComponentClass, args: Record<string, unknown>) => {
+    page = { Page, args };
+  };
+  await router.visit(url);
+  if (!page) {
+    throw new Error(`${url} rendered no page.`);
+  }
 
-    try {
-      await router.visit(url);
-    } finally {
-      router.renderPage = renderPage;
-    }
-
-    if (!page) {
-      throw new Error(`${url} rendered no page.`);
-    }
-
-    return renderToString(page.Page, { args: page.args, owner: Owner, hydratable: options.hydratable });
-  });
-  queue = render.catch(() => {});
-
-  return render;
+  return renderToString(page.Page, { args: page.args, owner: router.owner, hydratable: options.hydratable });
 }
 
 export { renderToString, renderURLToString };

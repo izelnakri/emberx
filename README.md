@@ -723,8 +723,9 @@ import startRouter from './start-router.ts';
 await startRouter().visit(`${location.pathname}${location.search}`);
 ```
 
-emberx's `Owner` holds one router per process, so `renderURLToString` renders one URL at a
-time: requests that arrive together wait their turn.
+Each call renders with a router of its own, so requests that arrive together render at once,
+each with the `services` it is given (`renderURLToString(url, { services: { session } })`). See
+[@emberx/ssr](packages/@emberx/ssr/README.md).
 
 #### Compiling templates at build time (optional):
 

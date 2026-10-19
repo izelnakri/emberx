@@ -54,6 +54,7 @@ module('@emberx/router | Public API', function (hooks) {
       'locationBar',
       'log',
       'oldState',
+      'owner',
       'recognizer',
       'state',
       'testing',

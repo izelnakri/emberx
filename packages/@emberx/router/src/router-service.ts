@@ -13,6 +13,7 @@ import {
 } from './query-params.ts';
 import { findSubstate, type Substate } from './substates.ts';
 import { ROUTE_ABOVE_PAGE } from './route-above-page.ts';
+import { classOf } from './route.ts';
 
 /**
  * router_js publishes both an ESM and a CJS build; under the CJS interop shape
@@ -51,6 +52,12 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
   locationBar?: LocationBar;
 
   Resolver = DefaultResolver;
+  /**
+   * Where the router's pages find their services, this router among them: the
+   * static Owner for the router Router.start() started, or an owner of its own
+   * for one Router.createInstance() made.
+   */
+  owner: any = Owner;
 
   /** The query params in the URL, cast to the values they denote. Declared defaults are not in here. */
   @tracked accessor queryParams: FreeObject = {};
@@ -74,6 +81,9 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
    * with the same model.
    */
   #routesAbovePage = new WeakMap<object, object>();
+
+  /** For a router with an owner of its own, the route each route class is in it, by class. */
+  #routes = new Map<object, object>();
 
   /**
    * For each transition, the index of the deepest route that stays active
@@ -130,7 +140,7 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
       throw new Error('#app or #ember-testing not found for the @emberx/router to boot/render the application!');
     }
 
-    await renderComponent(Page as any, { element, args, owner: Owner });
+    await renderComponent(Page as any, { element, args, owner: this.owner });
   }
 
   /**
@@ -342,11 +352,21 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
       console.log('[EmberXRouter debug]:', name);
     }
 
-    const targetRoute = this.Resolver.resolve(name);
+    const RouteClass = this.Resolver.resolve(name);
+    warnAboutEmberRouteMethods(RouteClass);
+    if (this.owner === Owner) {
+      return Object.assign(RouteClass, Owner.services);
+    }
 
-    warnAboutEmberRouteMethods(targetRoute);
-
-    return Object.assign(targetRoute, Owner.services);
+    // The route's static hooks run with this router and its services: an object
+    // of this router's own, which has the class's statics, rather than the
+    // class, which every router shares.
+    let route = this.#routes.get(RouteClass);
+    if (!route) {
+      route = Object.assign(Object.create(RouteClass), this.owner.services) as object;
+      this.#routes.set(RouteClass, route);
+    }
+    return route;
   }
 
   /**
@@ -391,7 +411,7 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
     // The page is the deepest active route of its class; its index route renders it when it has none.
     const routeInfos: any[] = this.state?.routeInfos ?? [];
     let pageIndex = routeInfos.length - 1;
-    while (pageIndex >= 0 && routeInfos[pageIndex].route !== page.constructor) {
+    while (pageIndex >= 0 && classOf(routeInfos[pageIndex].route) !== page.constructor) {
       pageIndex--;
     }
 
@@ -406,8 +426,8 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
     const routeInfo = routeInfos[index];
     let instance = this.#routesAbovePage.get(routeInfo);
     if (!instance) {
-      const RouteClass = routeInfo.route;
-      instance = new RouteClass(Owner, {
+      const RouteClass = classOf(routeInfo.route);
+      instance = new RouteClass(this.owner, {
         model: routeInfo.context,
         params: Object.assign({}, ...routeInfos.slice(0, index + 1).map((info) => info.params)),
         queryParams: this.queryParamsWithDefaults,

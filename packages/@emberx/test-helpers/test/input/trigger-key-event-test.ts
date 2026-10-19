@@ -164,6 +164,7 @@ module('@emberx/test-helpers | triggerKeyEvent', function (hooks) {
       await checkKey(187, '=');
       await checkKey(189, '-');
       await checkKey(65, 'a');
+      await checkKey(87, 'w');
       await checkKey(90, 'z');
       await checkKey(65, 'A', { shiftKey: true });
       await checkKey(90, 'Z', { shiftKey: true });

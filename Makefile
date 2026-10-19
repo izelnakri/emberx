@@ -184,6 +184,10 @@ release:
 		git status --short; \
 		exit 1; \
 	fi
+	@npm ls --all > /dev/null 2>&1 || { \
+		echo "node_modules does not match package.json and package-lock.json: run npm ci, then release."; \
+		exit 1; \
+	}
 	@npm whoami > /dev/null 2>&1 || npm login
 	$(MAKE) check-static
 	$(MAKE) bench-check BENCH_BASE=$$(git describe --tags --abbrev=0 2>/dev/null)

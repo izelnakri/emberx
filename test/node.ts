@@ -19,3 +19,4 @@ import '../packages/@emberx/test-helpers/test/index.ts';
 import '../packages/@emberx/ssr/test/index.ts';
 import '../examples/basic/tests/my-component-test.ts';
 import './e2e/index.ts';
+import './public-api-test.ts';

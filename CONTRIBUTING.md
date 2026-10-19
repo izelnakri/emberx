@@ -259,6 +259,21 @@ catastrophic regression, ten times the threshold: at that scale the scheduler mo
 numbers more than code does. qunitx-cli draws that line at 1ms; emberx's headline cost,
 template compilation, runs 40µs–10ms and has to stay gated.
 
+## Public API and versions
+
+A package's public API is what it exports, as `test/public-api-test.ts` lists it (and
+`@emberx/ssr`'s test for its own), with the behaviour its README and JSDoc describe and the types
+its declarations give. A name starting with `_` is exported for emberx's own packages, not for
+apps. `@emberx/vendor` is no package of its own to an app: what an app imports from Ember comes
+through the packages above.
+
+All seven packages share one version, which `make release` stamps. A change that removes or
+renames an export, or changes what one does in a way a caller would notice, is a breaking change:
+its commit says so with `!` and a `BREAKING-CHANGE:` trailer, and, while emberx is below 1.0, it
+releases as the next minor version (`LEVEL=minor`), from 1.0 the next major. An export added is
+a feature, a minor version; a fix, a patch. Changing `test/public-api-test.ts` is how a change
+to the API is made on purpose rather than by accident.
+
 ## Releasing
 
 ```sh

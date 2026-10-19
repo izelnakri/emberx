@@ -40,6 +40,15 @@ module('@emberx/ssr | renderToString', function (hooks) {
     step = () => {};
   });
 
+  test('@emberx/ssr exports what it promises, and nothing else: its public API (test/public-api-test.ts)', async function (assert) {
+    assert.deepEqual(Object.keys(await import('@emberx/ssr')).sort(), [
+      'embedToShoeboxScriptTag',
+      'renderToString',
+      'renderURL',
+      'renderURLToString',
+    ]);
+  });
+
   test('renders nested components and args to HTML', async function (assert) {
     const html = await renderToString(List, { args: { names: ['first', 'second'] }, hydratable: false });
 

@@ -5,6 +5,7 @@ import { ROUTE_ABOVE_PAGE } from './route-above-page.ts';
 import Router from './index.ts';
 import Owner from './owner.ts';
 import { buildQueryParams, type QueryParamDeclarations } from './query-params.ts';
+import type { Body, Head } from './head.ts';
 import EmberXComponent, { action, hbs, service } from '@emberx/component';
 import { QUERY_PARAMS_SYMBOL } from 'router_js';
 
@@ -48,6 +49,36 @@ export default class Route extends EmberXComponent<FreeObject> {
    *   static title = (post) => `${post.title} | Blog`;
    */
   static title?: string | ((model: any) => string);
+
+  /**
+   * What the page puts in `<head>`, or a function of the route's model, what
+   * its model hook resolved to, that returns it: its `title` and
+   * `description`, `meta`, `link` and `script` elements. Routes merge from the
+   * application route down: a deeper route's element replaces one above it
+   * with the same `<meta>` name, the canonical `<link>`, or the same script
+   * `id` or `src`, so the application route has the app's defaults and a page
+   * what is its own.
+   *
+   *   static head = (post) => ({
+   *     description: post.summary,
+   *     meta: [{ property: 'og:image', content: post.image }],
+   *     link: [{ rel: 'canonical', href: `https://blog.example/posts/${post.id}` }],
+   *   });
+   *
+   * The router applies it after each transition, changing only the elements
+   * that changed, and @emberx/ssr's renderURL renders it for the server's
+   * document. See ./head.ts for every field.
+   */
+  static head?: Head | ((model: any) => Head);
+
+  /**
+   * Elements the page puts first or last in `<body>`, around it, or a
+   * function of its model that returns them, merged as `head` is: an
+   * analytics script, a `<noscript>` for one.
+   *
+   *   static body = { end: [{ tag: 'script', src: '/analytics.js', async: true }] };
+   */
+  static body?: Body | ((model: any) => Body);
 
   /**
    * The query params this route reads, and how a change to each is handled.

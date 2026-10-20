@@ -1,6 +1,7 @@
 import { resetRendering } from '@emberx/component';
 import Router, { Route, hbs, service } from '@emberx/router';
 import { embedToShoeboxScriptTag, renderURL, renderURLToString } from '@emberx/ssr';
+import { applyHead } from '../../router/src/head.ts';
 import { module, test } from 'qunitx';
 
 const POSTS = {
@@ -47,6 +48,23 @@ class AccountRoute extends Route {
   }
 
   static template = hbs`<h1>{{this.model.greeting}}</h1><p>{{this.session.user}}'s account</p>`;
+}
+
+// A head with everything in it, and text that must not break the document it goes in.
+class ArticleRoute extends Route {
+  static head = {
+    title: 'Fish & "Chips" <live>',
+    description: 'Say "hi" & <wave>',
+    meta: [{ property: 'og:title', content: 'Fish & Chips' }],
+    link: [{ rel: 'canonical', href: 'https://blog.example/article?a=1&b=2' }],
+    script: [{ type: 'application/ld+json', children: JSON.stringify({ name: '</script><script>alert(1)</script>' }) }],
+  };
+  static body = {
+    start: [{ tag: 'noscript', innerHTML: '<img src="/pixel.gif">' }],
+    end: [{ tag: 'script', src: '/analytics.js', async: true }],
+  };
+
+  static template = hbs`<h1>Article</h1>`;
 }
 
 class PostErrorRoute extends Route {
@@ -151,10 +169,55 @@ module('@emberx/ssr | renderURLToString', function (hooks) {
     assert.deepEqual(page, {
       html: '<h1>Compilers are the New Frameworks</h1><p>Post 1</p>',
       title: 'Compilers are the New Frameworks | Blog',
+      head: '<title>Compilers are the New Frameworks | Blog</title>',
+      bodyStart: '',
+      bodyEnd: '',
       url: '/posts/1',
       models: { application: {}, posts: {}, 'posts.post': POSTS[1] },
     });
     assert.deepEqual((await renderURL('/')).title, 'Blog');
+  });
+
+  test('renderURL renders the head, escaped, and the elements first and last in <body>', async function (assert) {
+    const page = await renderURL('/article');
+    const marker = (key: string) => `data-emberx-head="${key}"`;
+
+    assert.equal(
+      page.head,
+      '<title>Fish &amp; "Chips" &lt;live&gt;</title>' +
+        `<meta name="description" content="Say &quot;hi&quot; &amp; &lt;wave&gt;" ${marker('meta:description')}>` +
+        `<meta property="og:title" content="Fish &amp; Chips" ${marker('meta:og:title')}>` +
+        `<link rel="canonical" href="https://blog.example/article?a=1&amp;b=2" ${marker('link:canonical')}>` +
+        `<script type="application/ld+json" ${marker('script:article#0')}>{"name":"\\u003c/script>\\u003cscript>alert(1)\\u003c/script>"}</script>`,
+    );
+    assert.equal(page.bodyStart, `<noscript ${marker('bodyStart:article#0')}><img src="/pixel.gif"></noscript>`);
+    assert.equal(page.bodyEnd, `<script src="/analytics.js" async ${marker('bodyEnd:/analytics.js')}></script>`);
+  });
+
+  test("the browser's router adopts the head the server rendered, rather than adding it again", async function (assert) {
+    const page = await renderURL('/article');
+    const browser = document.implementation.createHTMLDocument('');
+    browser.head.innerHTML = page.head;
+    browser.body.innerHTML = `${page.bodyStart}<div id="app">${page.html}</div>${page.bodyEnd}`;
+    const before = [...browser.querySelectorAll('[data-emberx-head]')];
+
+    // The browser's router, on the page the server sent: only its head is looked at here, so it renders nothing.
+    const router = Router.createInstance();
+    router.renderPage = async () => {};
+    await router.visit('/article');
+    applyHead(browser, router.currentHead);
+
+    const after = [...browser.querySelectorAll('[data-emberx-head]')];
+    assert.equal(before.length, 6);
+    assert.true(
+      after.length === before.length && after.every((node, index) => node === before[index]),
+      'every one the same node',
+    );
+    assert.equal(
+      JSON.parse(browser.querySelector('script[type="application/ld+json"]')!.textContent!).name,
+      '</script><script>alert(1)</script>',
+      'the JSON reads back as it was',
+    );
   });
 
   test('an error substate gives no models, which the browser would take for the page it failed to show', async function (assert) {
@@ -197,6 +260,7 @@ function startRouter(options = {}) {
       { path: '/posts/:post_id', route: PostRoute, errorRoute: PostErrorRoute },
       { path: '/old-post', route: OldPostRoute },
       { path: '/account', route: AccountRoute },
+      { path: '/article', route: ArticleRoute },
     ],
     { location: 'none', ...options },
   );

@@ -14,6 +14,7 @@ import {
 import { findSubstate, type Substate } from './substates.ts';
 import { ROUTE_ABOVE_PAGE } from './route-above-page.ts';
 import { classOf } from './route.ts';
+import { applyHead, collectHead, type HeadElement } from './head.ts';
 
 /**
  * router_js publishes both an ESM and a CJS build; under the CJS interop shape
@@ -66,6 +67,8 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
   @tracked accessor currentURL: string | undefined;
   /** The page's title: see Route.title. */
   @tracked accessor currentTitle: string | undefined;
+  /** The elements the page puts in the document around it: see Route.head. */
+  @tracked accessor currentHead: HeadElement[] = [];
   /** Whether a transition is under way. currentURL is already its destination by then. */
   @tracked accessor isTransitioning = false;
   /** The URL the transition under way is leaving. */
@@ -295,7 +298,7 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
 
     this.currentRoute = targetRouteInfo.route as any;
     this.currentRouteName = targetRouteInfo.name;
-    this.#showTitle(routeInfos);
+    this.#showHead(routeInfos);
 
     return transition;
   }
@@ -365,7 +368,7 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
 
     this.currentRoute = targetRouteInfo._route;
     this.currentRouteName = targetRouteInfo.name;
-    this.#showTitle(routeInfos);
+    this.#showHead(routeInfos);
     this.#endTransition();
   }
 
@@ -496,14 +499,14 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
     this.#preloadedModels.clear();
   }
 
-  /** Names the page by the deepest route that has a title, in `document.title` too for a browser's router. */
-  #showTitle(routeInfos: any[]) {
-    const routeInfo = routeInfos.findLast((routeInfo) => routeInfo.route?.title !== undefined);
-    const title = routeInfo?.route.title;
-
-    this.currentTitle = typeof title === 'function' ? title.call(routeInfo.route, routeInfo.context) : title;
-    if (this.currentTitle !== undefined && this.location === 'history' && !this.testing) {
-      document.title = this.currentTitle;
+  /** The page's title and head elements, applied to the document too by a browser's router outside a test. */
+  #showHead(routeInfos: any[]) {
+    const { title, elements } = collectHead(routeInfos);
+    this.currentTitle = title;
+    this.currentHead = elements;
+    if (this.location === 'history' && !this.testing) {
+      if (title !== undefined) document.title = title;
+      applyHead(document, elements);
     }
   }
 

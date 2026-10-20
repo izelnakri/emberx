@@ -30,6 +30,9 @@ renders to HTML. It returns what the document around the page needs too:
 
 - `html`: the page, for the element the browser's router renders into, `#app`;
 - `title`: the page's title, from the deepest route with a `static title`;
+- `head`: the `<title>` and the elements of the routes' `static head`, and `bodyStart` and
+  `bodyEnd`, those of their `static body`, escaped, and marked so that the browser's router adopts
+  them;
 - `url`: where the page is, after its redirects, for a redirect response;
 - `models`: the routes' models, by route name. Given to the browser's `Router.start({ models })`,
   its first transition takes them instead of running the model hooks again, so the browser does
@@ -61,10 +64,16 @@ Deno.serve(async (request) => {
 
   return new Response(
     `<!doctype html>
-    <title>${escapeHTML(page.title ?? 'Blog')}</title>
-    <div id="app">${page.html}</div>
-    <script type="application/json" id="models">${embedToShoeboxScriptTag(page.models)}</script>
-    <script type="module" src="/app.js"></script>`,
+    <html>
+      <head>${page.head}</head>
+      <body>
+        ${page.bodyStart}
+        <div id="app">${page.html}</div>
+        <script type="application/json" id="models">${embedToShoeboxScriptTag(page.models)}</script>
+        <script type="module" src="/app.js"></script>
+        ${page.bodyEnd}
+      </body>
+    </html>`,
     { headers: { 'content-type': 'text/html' } },
   );
 });

@@ -395,21 +395,55 @@ router.urlFor('posts.post', post, { queryParams: { page: 2 } }); // '/posts/1?pa
 PostsRoute.refresh(); // its model hooks again, and its children's; {{on "click" this.refresh}} in a template
 ```
 
-#### Page titles:
+#### Page titles, `<head>` and `<body>`:
 
 A route's `static title`, a string or a function of its model, names the page: the deepest
-active route that has one wins. The router keeps it as `router.currentTitle`, and in a browser
-puts it in `document.title` after each transition, which a screen reader announces.
+active route that has one wins. `static head` is what a page puts in `<head>`, for search
+engines, link previews and the like: a `title`, a `description`, and `meta`, `link` and `script`
+elements, a `script` for structured data (JSON-LD) above all. `static body` is what it puts
+`start` and `end` of `<body>`, around the page: an analytics script, or a `<noscript>` for one.
+Each is a value, or a function of the route's model, what its model hook resolved to, with the
+route as `this`.
 
 ```ts ignore
 class ApplicationRoute extends Route {
   static title = 'Blog';
+  static head = {
+    description: 'Essays on web frameworks.',
+    meta: [{ property: 'og:site_name', content: 'Blog' }],
+    link: [{ rel: 'canonical', href: 'https://blog.example/' }],
+  };
+  static body = {
+    end: [{ tag: 'script', src: '/analytics.js', async: true }],
+  };
 }
 
 class PostRoute extends Route {
-  static title = (post) => `${post.title} | Blog`;
+  static head = (post) => ({
+    title: `${post.title} | Blog`,
+    description: post.summary,
+    meta: [{ property: 'og:title', content: post.title }],
+    link: [{ rel: 'canonical', href: `https://blog.example/posts/${post.id}` }],
+    script: [
+      { type: 'application/ld+json', children: JSON.stringify({ '@type': 'BlogPosting', headline: post.title }) },
+    ],
+  });
 }
 ```
+
+Routes merge from the application route down to the page: a deeper route's element replaces one
+above it that is the same `<meta>` (by `name`, `property`, `http-equiv` or `itemprop`), the
+canonical `<link>`, or a script with the same `id` or `src`; the others add up. So the
+application route holds the app's defaults, and each page only what is its own: on `/posts/1`
+above, the description and canonical link are the post's, and `og:site_name` and the analytics
+script are the app's.
+
+In a browser, the router applies them after each transition, the title to `document.title`, which
+a screen reader announces, and changes only the elements that changed: one that stays the same
+is left as it is, so its script does not run again. `router.currentTitle` and
+`router.currentHead` hold what it applied. On a server, `@emberx/ssr`'s `renderURL` renders them
+into the document it sends, and the browser's router adopts those elements on its first
+transition rather than adding them again.
 
 #### When a transition fails:
 

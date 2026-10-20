@@ -5,7 +5,10 @@ import createDocument from '@simple-dom/document';
 import HTMLSerializer from '@simple-dom/serializer';
 import voidMap from '@simple-dom/void-map';
 import { compileTemplates, renderWithBuilder, type EmberXComponentClass } from '@emberx/component';
-import Router, { Owner } from '@emberx/router';
+import Router, { Owner, type HeadElement } from '@emberx/router';
+
+const ESCAPES: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' };
+const VOID_ELEMENTS = new Set(['meta', 'link', 'base', 'br', 'hr', 'img', 'input', 'source']);
 
 interface RenderOptions {
   args?: Record<string, unknown>;
@@ -65,6 +68,16 @@ export interface RenderedPage {
   html: string;
   /** The page's title, for `<title>`: see Route.title. */
   title: string | undefined;
+  /**
+   * What goes in `<head>`: the `<title>`, then the `<meta>`, `<link>` and
+   * `<script>` elements of the routes' `static head`, escaped, and marked so
+   * the browser's router adopts them rather than adding them again.
+   */
+  head: string;
+  /** The elements first in `<body>`, before the page: their `static body`'s `start`. */
+  bodyStart: string;
+  /** The elements last in `<body>`, after the page: their `static body`'s `end`. */
+  bodyEnd: string;
   /** The URL the page is at: `url`, or where its redirects ended. */
   url: string;
   /**
@@ -80,7 +93,8 @@ export interface RenderedPage {
  * Renders the page a URL shows: a router of its own, from
  * Router.createInstance(), goes to `url`, model hooks, redirects and loading or
  * error substates included, and the page it ends on renders as renderToString()
- * renders it. Returns its HTML, with its title, its URL and its models.
+ * renders it. Returns its HTML, with what the document around it needs: its
+ * title and head elements, its URL and its models.
  *
  * The router keeps the URL in memory, its `none` location. Each render has its
  * own router and owner, so a server renders the URLs it is asked for at once,
@@ -107,6 +121,11 @@ async function renderURL(url: string, options: URLRenderOptions = {}): Promise<R
   return {
     html: await renderToString(page.Page, { args: page.args, owner: router.owner, hydratable: options.hydratable }),
     title: router.currentTitle,
+    head:
+      (router.currentTitle === undefined ? '' : `<title>${escapeText(router.currentTitle)}</title>`) +
+      elementsHTML(router.currentHead, 'head'),
+    bodyStart: elementsHTML(router.currentHead, 'bodyStart'),
+    bodyEnd: elementsHTML(router.currentHead, 'bodyEnd'),
     url: router.currentURL ?? url,
     models: isSubstate ? {} : Object.fromEntries(routeInfos.map((routeInfo) => [routeInfo.name, routeInfo.context])),
   };
@@ -131,3 +150,32 @@ function embedToShoeboxScriptTag(value: unknown): string {
 }
 
 export { embedToShoeboxScriptTag, renderToString, renderURL, renderURLToString };
+
+/**
+ * The HTML of the head elements that go `where`, each marked with its key as
+ * @emberx/router's head.ts marks the ones it adds, so the browser's router
+ * adopts them.
+ */
+function elementsHTML(elements: HeadElement[], where: HeadElement['where']): string {
+  return elements
+    .filter((element) => element.where === where)
+    .map(({ tag, key, attributes, children, innerHTML }) => {
+      const marked: Record<string, string | true> = { ...attributes, 'data-emberx-head': key };
+      const written = Object.entries(marked)
+        .map(([name, value]) => (value === true ? ` ${name}` : ` ${name}="${escapeAttribute(value)}"`))
+        .join('');
+      // A script's text comes escaped for the element (@emberx/router's head.ts), and markup as it is.
+      const content = innerHTML ?? (tag === 'script' ? children : escapeText(children ?? '')) ?? '';
+
+      return VOID_ELEMENTS.has(tag) ? `<${tag}${written}>` : `<${tag}${written}>${content}</${tag}>`;
+    })
+    .join('');
+}
+
+function escapeText(text: string): string {
+  return text.replace(/[&<>]/g, (character) => ESCAPES[character]);
+}
+
+function escapeAttribute(value: string): string {
+  return value.replace(/[&<>"]/g, (character) => ESCAPES[character]);
+}

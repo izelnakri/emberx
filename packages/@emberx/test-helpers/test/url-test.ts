@@ -71,7 +71,7 @@ module('@emberx/test-helpers | url helpers', function (hooks) {
 
     await visit('/someunknownthing');
 
-    assert.dom('[data-test-route-title]').hasText('Route: not-found. This route is missing a template!');
+    assert.dom('[data-test-not-found] h1').hasText('Page not found');
     assert.equal(currentURL(), '/someunknownthing');
     assert.equal(currentRouteName(), 'not-found');
   });
@@ -85,7 +85,7 @@ module('@emberx/test-helpers | url helpers', function (hooks) {
 
     await visit('/asdaidasdasd'); // TODO: then should wait for parent children resolution
 
-    assert.dom('[data-test-route-title]').hasText('Route: not-found. This route is missing a template!');
+    assert.dom('[data-test-not-found] h1').hasText('Page not found');
     assert.equal(currentURL(), '/asdaidasdasd');
     assert.equal(currentRouteName(), 'not-found');
 

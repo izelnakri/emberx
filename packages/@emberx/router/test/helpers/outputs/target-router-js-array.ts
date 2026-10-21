@@ -1,4 +1,4 @@
-import { Route } from '@emberx/router';
+import { NotFoundRoute } from '@emberx/router';
 
 export default [
   {
@@ -84,7 +84,7 @@ export default [
   },
   {
     name: 'not-found',
-    route: class NotFoundRoute extends Route {},
+    route: NotFoundRoute,
     options: { path: '/*slug' },
     nestedRoutes: [],
   },

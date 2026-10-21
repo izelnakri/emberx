@@ -124,6 +124,12 @@ without a name is named after its path, one name segment for each path segment:
 Give a route a `name` when the one from its path isn't the one you want, as the comments
 route above does: from its path it would be `posts.slug.comments`.
 
+A URL no route matches goes to the `not-found` route. Unless the app declares a catch-all,
+that is `NotFoundRoute`, a page that says nothing is at the URL, titled "Page not found". Declare
+`{ path: '/*path', route: AppNotFoundRoute }` to show a page of your own, extending
+`NotFoundRoute` to keep its title; with `resolve` (below), a `not-found` route it finds
+replaces it too.
+
 A route's parents need no definition of their own. With `/admin/reports` declared alone, the
 router creates an `admin` route above `admin.reports`, with no class and nothing to show, the
 way Ember's `this.route('admin', function () { this.route('reports'); })` does. Declare

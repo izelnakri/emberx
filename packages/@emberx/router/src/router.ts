@@ -1,6 +1,7 @@
 export { hbs } from '@emberx/component';
 import RouterService from './router-service.ts';
 import Route from './route.ts';
+import NotFoundRoute from './not-found-route.ts';
 import Owner, { type RouteRegistry } from './owner.ts';
 import RouteMapContext from './route-map-context.ts';
 import DefaultResolver from './resolvers/default.ts';
@@ -265,7 +266,7 @@ export default class Router {
       Owner.routes['not-found'] = {
         name: 'not-found',
         options: { path: '/*slug' },
-        route: class NotFoundRoute extends Route {},
+        route: NotFoundRoute,
       };
     }
 
@@ -469,6 +470,9 @@ function resolveByConvention(resolve: (name: string) => ResolvedRoute) {
     if (!Owner.routes[name].route) {
       Owner.routes[name].route = find(name);
     }
+  }
+  if (Owner.routes['not-found']?.route === NotFoundRoute) {
+    Owner.routes['not-found'].route = find('not-found') ?? NotFoundRoute;
   }
   if (!Owner.routes[APPLICATION]?.route) {
     const route = find(APPLICATION);

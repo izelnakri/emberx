@@ -1,3 +1,30 @@
+## [0.5.0] - 2026-10-21
+[`v0.4.0...v0.5.0`](https://github.com/izelnakri/emberx/compare/v0.4.0...v0.5.0)
+
+### Bug Fixes
+- LinkTo follows clicks on what it holds, leaves new-tab clicks alone, and is accessible — 2026-10-19 by [@izelnakri](https://github.com/izelnakri) ([`2271060`](https://github.com/izelnakri/emberx/commit/2271060911ea9368e948fab93fe66f18c0b3fed8))
+
+### Dependencies
+- @memoria/server replaces @memserver/* — 2026-10-19 by [@izelnakri](https://github.com/izelnakri) ([`f3db462`](https://github.com/izelnakri/emberx/commit/f3db4623a6e5c9b44a8b31c10aa3deb88617ae60))
+- TypeScript 7 — 2026-10-19 by [@izelnakri](https://github.com/izelnakri) ([`e6d7565`](https://github.com/izelnakri/emberx/commit/e6d75651d580b087df83e3497f225e6b71ba38ef))
+
+### Documentation
+- The READMEs are the documentation — 2026-10-19 by [@izelnakri](https://github.com/izelnakri) ([`200a948`](https://github.com/izelnakri/emberx/commit/200a948ca1bc66fe024f8836b83042d010f2e1f5))
+- ROADMAP.md is done, and CONTRIBUTING.md says what is left to know — 2026-10-19 by [@izelnakri](https://github.com/izelnakri) ([`b153fa2`](https://github.com/izelnakri/emberx/commit/b153fa23ad3abbe3115dd9645a7aefee536c3749))
+
+### Features
+- Requests render at once, each with a router of its own — 2026-10-19 by [@izelnakri](https://github.com/izelnakri) ([`e2270b3`](https://github.com/izelnakri/emberx/commit/e2270b3079d4ea8f06be1ff885d2949106ef2241))
+- Page titles, and the models a server rendered with reach the browser — 2026-10-19 by [@izelnakri](https://github.com/izelnakri) ([`c1cba64`](https://github.com/izelnakri/emberx/commit/c1cba643a3b41c409d712f50b4af634607d62183))
+- @cached, registerDestructor, test waiters and setOnerror — 2026-10-19 by [@izelnakri](https://github.com/izelnakri) ([`0ac4b4b`](https://github.com/izelnakri/emberx/commit/0ac4b4bc268829c498f8966ec3ddda919c627aff))
+- Settled() waits for test waiters, and setupOnerror — 2026-10-19 by [@izelnakri](https://github.com/izelnakri) ([`d302685`](https://github.com/izelnakri/emberx/commit/d302685c1a80d9afac73df1bf06320c51a9d753d))
+- A route's static head and static body put what a page needs in the document — 2026-10-20 by [@izelnakri](https://github.com/izelnakri) ([`6d17714`](https://github.com/izelnakri/emberx/commit/6d17714dae72d7af1ef731532c8a177d85f51802))
+
+### Performance
+- [**breaking**] Ember's template compiler loads only for a runtime template — 2026-10-19 by [@izelnakri](https://github.com/izelnakri) ([`5f4dfbf`](https://github.com/izelnakri/emberx/commit/5f4dfbfd6addd4c87bf99ad8f41f189d221be1ae))
+
+### Refactoring
+- The input helpers are its own, not browser-inputs' — 2026-10-19 by [@izelnakri](https://github.com/izelnakri) ([`3ddc253`](https://github.com/izelnakri/emberx/commit/3ddc253ddfe51b26c507207f20b58e7d650191f6))
+
 ## [0.4.0] - 2026-10-19
 [`v0.3.0...v0.4.0`](https://github.com/izelnakri/emberx/compare/v0.3.0...v0.4.0)
 

@@ -453,6 +453,10 @@ and the page stays as it was: an app with no error routes catches it, or declare
 application route for everything. An aborted transition, one `willTransition` stopped for
 example, is no failure.
 
+To follow transitions in the console, turn on `Router.LOG_ROUTES`, which logs each route the
+router looks up, and `Router.LOG_MODELS`, which logs each model and transition a route sets up.
+Both are off by default.
+
 #### Actions on a page:
 
 In emberx a page is a route: one class holds the page's hooks, its template and everything the

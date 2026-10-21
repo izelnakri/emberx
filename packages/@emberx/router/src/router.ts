@@ -83,8 +83,10 @@ export interface routerJSRouteDefinition {
 // NOTE: there is this.recognizer.add (when recognizer is an instance via new RouteRecognizer())
 export default class Router {
   static Resolver = DefaultResolver;
-  static LOG_ROUTES = true;
-  static LOG_MODELS = true;
+  /** Whether the router logs each route it looks up: off by default, on to debug a transition. */
+  static LOG_ROUTES = false;
+  /** Whether the router logs each model and transition its routes set up: off by default, as LOG_ROUTES. */
+  static LOG_MODELS = false;
   /**
    * Whether the routers started from now on run under test, as `Ember.testing`
    * says for Ember: @emberx/test-helpers' setupTest() turns it on for each test.

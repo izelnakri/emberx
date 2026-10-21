@@ -6,9 +6,9 @@ import targetRouterJSArray from './helpers/outputs/target-router-js-array.ts';
 import setupTest from './helpers/index.ts';
 
 module('@emberx/router | Logging', function () {
-  test('the router logs the routes and models it enters by default', function (assert) {
-    assert.true(Router.LOG_ROUTES);
-    assert.true(Router.LOG_MODELS);
+  test('the router logs nothing unless it is asked to', function (assert) {
+    assert.false(Router.LOG_ROUTES);
+    assert.false(Router.LOG_MODELS);
   });
 });
 

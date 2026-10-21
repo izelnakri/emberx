@@ -73,8 +73,6 @@ class PostErrorRoute extends Route {
 
 module('@emberx/ssr | renderURLToString', function (hooks) {
   hooks.beforeEach(function () {
-    Router.LOG_ROUTES = false;
-    Router.LOG_MODELS = false;
     fetches = 0;
     startRouter();
   });

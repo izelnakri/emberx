@@ -224,7 +224,7 @@ help:
 	@echo "  format            Check formatting (prettier)"
 	@echo "  fix / fmt         Auto-fix formatting"
 	@echo "  lint              Lint sources (deno lint)"
-	@echo "  typecheck         tsc --noEmit over all package sources"
+	@echo "  typecheck         tsc --noEmit over all package sources and test/types.ts"
 	@echo "  vendor            Rewrite @emberx/vendor from the pinned packages"
 	@echo "  vendor-check      Fail if @emberx/vendor differs from them"
 	@echo "  test              Node, Deno and browser suites, from the sources"

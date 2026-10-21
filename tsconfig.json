@@ -45,6 +45,6 @@
        the @emberx/vendor modules that use them. */
     "types": []
   },
-  "include": ["packages/@emberx/*/src/**/*.ts"],
+  "include": ["packages/@emberx/*/src/**/*.ts", "test/types.ts"],
   "exclude": ["node_modules", "tmp", "dist", "**/dist/**"]
 }

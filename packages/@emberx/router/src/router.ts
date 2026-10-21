@@ -15,22 +15,22 @@ export interface FreeObject {
 
 export interface RouteDefinition {
   path?: string;
-  route: Route | undefined;
+  route: typeof Route | undefined;
   /** What LinkTo, transitionTo and modelFor call the route. Without one, it comes from the path: see routeNameFromPath. */
   name?: string;
   options?: FreeObject;
   /** What the route's own URL shows, when it has routes under it and should not show `route`. */
-  indexRoute?: Route;
+  indexRoute?: typeof Route;
   /**
    * Shown while this route, or a route under it without a loadingRoute of its
    * own, is loading. Ember's `<name>_loading` substate.
    */
-  loadingRoute?: Route;
+  loadingRoute?: typeof Route;
   /**
    * Shown when this route, or a route under it without an errorRoute of its
    * own, fails, with the error as its model. Ember's `<name>_error` substate.
    */
-  errorRoute?: Route;
+  errorRoute?: typeof Route;
 }
 
 /** A route class, or a module whose default export is one, as `import.meta.glob` returns them. */
@@ -73,7 +73,7 @@ export interface InstanceOptions {
 
 export interface routerJSRouteDefinition {
   path?: string;
-  route: Route | undefined;
+  route: typeof Route | undefined;
   options?: FreeObject;
   name: string;
   nestedRoutes?: [routerJSRouteDefinition?];
@@ -123,7 +123,7 @@ export default class Router {
     arrayOfRouteDefinitions: Array<RouteDefinition> = [],
     routeMapOrOptions?: (() => void) | StartOptions,
     startOptions: StartOptions = {},
-  ): Router {
+  ): typeof Router {
     const routeMap = typeof routeMapOrOptions === 'function' ? routeMapOrOptions : undefined;
     const { resolve, location, models } = typeof routeMapOrOptions === 'object' ? routeMapOrOptions : startOptions;
     stopPreviousRouter();
@@ -265,7 +265,6 @@ export default class Router {
       Owner.routes['not-found'] = {
         name: 'not-found',
         options: { path: '/*slug' },
-        // @ts-ignore
         route: class NotFoundRoute extends Route {},
       };
     }
@@ -462,7 +461,7 @@ function registerSubstate({ name: substateName, route }: RouteDefinition) {
 function resolveByConvention(resolve: (name: string) => ResolvedRoute) {
   const find = (name: string) => {
     const resolved = resolve(name);
-    return (typeof resolved === 'function' ? resolved : resolved?.default) as Route | undefined;
+    return typeof resolved === 'function' ? resolved : resolved?.default;
   };
   const names = Object.keys(Owner.routes).filter((name) => name !== 'not-found');
 

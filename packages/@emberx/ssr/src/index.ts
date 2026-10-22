@@ -5,7 +5,7 @@ import createDocument from '@simple-dom/document';
 import HTMLSerializer from '@simple-dom/serializer';
 import voidMap from '@simple-dom/void-map';
 import { compileTemplates, renderWithBuilder, type EmberXComponentClass } from '@emberx/component';
-import Router, { Owner, type HeadElement } from '@emberx/router';
+import Router, { Owner, type HeadElement, type RouteDefinition } from '@emberx/router';
 
 const ESCAPES: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' };
 const VOID_ELEMENTS = new Set(['meta', 'link', 'base', 'br', 'hr', 'img', 'input', 'source']);
@@ -81,6 +81,12 @@ export interface RenderedPage {
   /** The URL the page is at: `url`, or where its redirects ended. */
   url: string;
   /**
+   * The HTTP status the page is answered with: 404 for a catch-all route's
+   * page, the not-found route's or one the app declared, 500 for an error
+   * substate's, and 200 for any other.
+   */
+  status: 200 | 404 | 500;
+  /**
    * The models of the routes the page is under, by route name, for the
    * browser's Router.start({ models }): its first transition takes them instead
    * of running the model hooks again. Empty for an error or loading substate.
@@ -116,7 +122,8 @@ async function renderURL(url: string, options: URLRenderOptions = {}): Promise<R
   }
 
   const routeInfos: Array<{ name: string; context?: unknown }> = router.state?.routeInfos ?? [];
-  const isSubstate = !!Owner.routes[router.currentRouteName!]?.options?.substate;
+  const route = Owner.routes[router.currentRouteName!];
+  const isSubstate = !!route?.options?.substate;
 
   return {
     html: await renderToString(page.Page, { args: page.args, owner: router.owner, hydratable: options.hydratable }),
@@ -127,6 +134,7 @@ async function renderURL(url: string, options: URLRenderOptions = {}): Promise<R
     bodyStart: elementsHTML(router.currentHead, 'bodyStart'),
     bodyEnd: elementsHTML(router.currentHead, 'bodyEnd'),
     url: router.currentURL ?? url,
+    status: statusOf(route),
     models: isSubstate ? {} : Object.fromEntries(routeInfos.map((routeInfo) => [routeInfo.name, routeInfo.context])),
   };
 }
@@ -170,6 +178,15 @@ function elementsHTML(elements: HeadElement[], where: HeadElement['where']): str
       return VOID_ELEMENTS.has(tag) ? `<${tag}${written}>` : `<${tag}${written}>${content}</${tag}>`;
     })
     .join('');
+}
+
+/** The status of a page `route` shows: see RenderedPage.status. */
+function statusOf(route: RouteDefinition | undefined): RenderedPage['status'] {
+  if (route?.options?.substate) {
+    return route.name!.endsWith('error') ? 500 : 200;
+  }
+
+  return route?.options?.path?.startsWith('/*') ? 404 : 200;
 }
 
 function escapeText(text: string): string {

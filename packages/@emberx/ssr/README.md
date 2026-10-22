@@ -34,6 +34,8 @@ renders to HTML. It returns what the document around the page needs too:
   `bodyEnd`, those of their `static body`, escaped, and marked so that the browser's router adopts
   them;
 - `url`: where the page is, after its redirects, for a redirect response;
+- `status`: the response's status: 404 for the page of a catch-all route, the router's
+  not-found route or one the app declares, 500 for an error route's, 200 otherwise;
 - `models`: the routes' models, by route name. Left in the document in a
   `<script type="application/json" id="shoebox">` element, the browser's `Router.start()` reads
   them, and its first transition takes them instead of running the model hooks again, so the
@@ -76,7 +78,7 @@ Deno.serve(async (request) => {
         ${page.bodyEnd}
       </body>
     </html>`,
-    { headers: { 'content-type': 'text/html' } },
+    { status: page.status, headers: { 'content-type': 'text/html' } },
   );
 });
 

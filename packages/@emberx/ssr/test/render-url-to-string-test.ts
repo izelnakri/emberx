@@ -174,6 +174,7 @@ module('@emberx/ssr | renderURLToString', function (hooks) {
       bodyStart: '',
       bodyEnd: '',
       url: '/posts/1',
+      status: 200,
       models: { application: {}, posts: {}, 'posts.post': POSTS[1] },
     });
     assert.deepEqual((await renderURL('/')).title, 'Blog');
@@ -219,6 +220,29 @@ module('@emberx/ssr | renderURLToString', function (hooks) {
       '</script><script>alert(1)</script>',
       'the JSON reads back as it was',
     );
+  });
+
+  test("the page's status: 200 for a route's page, 404 for a URL no route matches, 500 for an error substate", async function (assert) {
+    assert.equal((await renderURL('/posts/1')).status, 200);
+    assert.equal((await renderURL('/old-post')).status, 200, 'a redirect ends on a page');
+
+    const notFound = await renderURL('/no/such/page', { hydratable: false });
+    assert.equal(notFound.status, 404);
+    assert.equal(notFound.title, 'Page not found');
+    assert.ok(notFound.html.includes('There is no page at /no/such/page.'));
+
+    assert.equal((await renderURL('/posts/9')).status, 500);
+  });
+
+  test('a catch-all the app declares is answered with a 404 too', async function (assert) {
+    class LostRoute extends Route {
+      static template = hbs`<h1>Lost</h1>`;
+    }
+    Router.start([{ path: '/docs/*path', route: LostRoute }], { location: 'none' });
+
+    const page = await renderURL('/docs/a/b', { hydratable: false });
+    assert.equal(page.html, '<h1>Lost</h1>');
+    assert.equal(page.status, 404);
   });
 
   test('an error substate gives no models, which the browser would take for the page it failed to show', async function (assert) {

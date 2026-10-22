@@ -128,7 +128,7 @@ A URL no route matches goes to the `not-found` route. Unless the app declares a 
 that is `NotFoundRoute`, a page that says nothing is at the URL, titled "Page not found". Declare
 `{ path: '/*path', route: AppNotFoundRoute }` to show a page of your own, extending
 `NotFoundRoute` to keep its title; with `resolve` (below), a `not-found` route it finds
-replaces it too.
+replaces it too. An `@emberx/ssr` server answers such a page with a 404.
 
 A route's parents need no definition of their own. With `/admin/reports` declared alone, the
 router creates an `admin` route above `admin.reports`, with no class and nothing to show, the

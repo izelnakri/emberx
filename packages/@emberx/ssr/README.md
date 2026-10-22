@@ -34,10 +34,12 @@ renders to HTML. It returns what the document around the page needs too:
   `bodyEnd`, those of their `static body`, escaped, and marked so that the browser's router adopts
   them;
 - `url`: where the page is, after its redirects, for a redirect response;
-- `models`: the routes' models, by route name. Given to the browser's `Router.start({ models })`,
-  its first transition takes them instead of running the model hooks again, so the browser does
-  not fetch what the page it hydrates already shows. They travel as JSON, so a model is its data,
-  not a class instance; `embedToShoeboxScriptTag()` writes them so a `<script>` element holds them safely.
+- `models`: the routes' models, by route name. Left in the document in a
+  `<script type="application/json" id="shoebox">` element, the browser's `Router.start()` reads
+  them, and its first transition takes them instead of running the model hooks again, so the
+  browser does not fetch what the page it hydrates already shows. They travel as JSON, so a model
+  is its data, not a class instance; `embedToShoeboxScriptTag()` writes them so a `<script>`
+  element holds them safely.
 
 `renderURLToString(url)` returns the HTML alone. Start the same router on both sides; in the
 browser, its first render hydrates the server's page.
@@ -69,7 +71,7 @@ Deno.serve(async (request) => {
       <body>
         ${page.bodyStart}
         <div id="app">${page.html}</div>
-        <script type="application/json" id="models">${embedToShoeboxScriptTag(page.models)}</script>
+        <script type="application/json" id="shoebox">${embedToShoeboxScriptTag(page.models)}</script>
         <script type="module" src="/app.js"></script>
         ${page.bodyEnd}
       </body>
@@ -78,12 +80,10 @@ Deno.serve(async (request) => {
   );
 });
 
-// app.ts, in the browser
+// app.ts, in the browser: Router.start() reads the models from #shoebox
 import startRouter from './start-router.ts';
 
-const models = JSON.parse(document.getElementById('models').textContent);
-
-await startRouter({ models }).visit(`${location.pathname}${location.search}`);
+await startRouter().visit(`${location.pathname}${location.search}`);
 ```
 
 Each call renders with a router and an owner of its own, from `Router.createInstance()`, so a

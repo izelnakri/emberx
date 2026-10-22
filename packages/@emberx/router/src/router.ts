@@ -9,6 +9,8 @@ import { isSubstateName, getSubstatePath } from './substates.ts';
 
 /** The name of the route above every route. */
 const APPLICATION = 'application';
+/** The id of the element a server leaves the page's models in: see StartOptions.shoebox. */
+const SHOEBOX = 'shoebox';
 
 export interface FreeObject {
   [propName: string]: any;
@@ -57,8 +59,15 @@ export interface StartOptions {
    * @emberx/ssr's renderURL returns them: the first transition's routes take
    * these instead of running their model hooks, so the browser does not fetch
    * again what the page it hydrates already shows. Their other hooks run.
+   * Without them, they are read from the shoebox.
    */
   models?: Record<string, unknown>;
+  /**
+   * The id of the `<script type="application/json">` element a server left
+   * the models in: `shoebox` by default. Router.start() reads it, when the
+   * document has one and no `models` are given, and removes it.
+   */
+  shoebox?: string;
 }
 
 export interface InstanceOptions {
@@ -126,7 +135,8 @@ export default class Router {
     startOptions: StartOptions = {},
   ): typeof Router {
     const routeMap = typeof routeMapOrOptions === 'function' ? routeMapOrOptions : undefined;
-    const { resolve, location, models } = typeof routeMapOrOptions === 'object' ? routeMapOrOptions : startOptions;
+    const options = typeof routeMapOrOptions === 'object' ? routeMapOrOptions : startOptions;
+    const { resolve, location, models = readShoebox(options.shoebox ?? SHOEBOX) } = options;
     stopPreviousRouter();
     Owner.clear('routes');
 
@@ -345,6 +355,15 @@ function mapRoutes(router: RouterService, routes: Array<routerJSRouteDefinition>
   });
 
   return router;
+}
+
+/** The models a server left in the element with the id `id`, which is then removed: see StartOptions.shoebox. */
+function readShoebox(id: string): Record<string, unknown> | undefined {
+  const element = typeof document === 'undefined' ? null : document.getElementById(id);
+  if (!element) return;
+
+  element.remove();
+  return JSON.parse(element.textContent as string);
 }
 
 /**

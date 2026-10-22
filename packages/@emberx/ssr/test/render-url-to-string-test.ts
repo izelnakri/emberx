@@ -79,6 +79,9 @@ module('@emberx/ssr | renderURLToString', function (hooks) {
   hooks.afterEach(function () {
     Router.reset();
     resetRendering();
+    // An #app of its own for each test, as test-helpers gives each its own #ember-testing: the
+    // page an earlier test rendered into it is torn down after the next one renders there.
+    document.getElementById('app')!.replaceWith(Object.assign(document.createElement('div'), { id: 'app' }));
   });
 
   test('renders the page a URL shows, after its model hooks', async function (assert) {
@@ -234,6 +237,22 @@ module('@emberx/ssr | renderURLToString', function (hooks) {
     await Router.visit('/posts/1');
     await Router.visit('/posts/2');
     assert.equal(fetches, 3, 'later transitions run the model hook');
+  });
+
+  test("without models, the browser's router reads them from the shoebox the server left", async function (assert) {
+    const { models } = await renderURL('/posts/2');
+    const shoebox = Object.assign(document.createElement('script'), {
+      id: 'shoebox',
+      type: 'application/json',
+      textContent: embedToShoeboxScriptTag(models),
+    });
+    document.body.append(shoebox);
+
+    startRouter();
+    assert.notOk(shoebox.isConnected, 'the shoebox is read once, and removed');
+
+    await Router.visit('/posts/2');
+    assert.equal(fetches, 1, 'the browser did not fetch the post again');
   });
 
   test('embedToShoeboxScriptTag keeps a script element whole', function (assert) {

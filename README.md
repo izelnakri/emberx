@@ -764,9 +764,9 @@ instead of building the page again.
 
 For a whole app, `renderURL(url)` renders the page a URL shows: the router goes to it as it
 would in a browser, model hooks, redirects and loading or error substates included, and the page
-it ends on renders to HTML. It returns the page's `title` and the routes' `models` with it: the
-browser's `Router.start({ models })` takes those on its first transition instead of fetching
-them again, and its first render hydrates the server's page. Each call renders with a router of
+it ends on renders to HTML. It returns the page's `title` and the routes' `models` with it: left
+in the page's `#shoebox` element, the browser's `Router.start()` reads them, and its first
+transition takes them instead of fetching them again; its first render hydrates the server's page. Each call renders with a router of
 its own, so requests that arrive together render at once, each with the `services` it is given.
 See [@emberx/ssr](packages/@emberx/ssr/README.md) for a server.
 

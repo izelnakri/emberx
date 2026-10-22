@@ -1,6 +1,6 @@
 import { resetRendering } from '@emberx/component';
 import Router, { Route, hbs, service } from '@emberx/router';
-import { embedToShoeboxScriptTag, renderURL, renderURLToString } from '@emberx/ssr';
+import { renderBaseHTMLToString, embedToShoeboxScriptTag, renderURL, renderURLToString } from '@emberx/ssr';
 import { applyHead } from '../../router/src/head.ts';
 import { module, test } from 'qunitx';
 
@@ -66,6 +66,18 @@ class ArticleRoute extends Route {
 
   static template = hbs`<h1>Article</h1>`;
 }
+
+// An app's index.html, as its build writes it.
+const INDEX_HTML = `<!doctype html>
+<html>
+  <head>
+    <title>My app</title>
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body class="app">
+    <div id="app"></div>
+  </body>
+</html>`;
 
 class PostErrorRoute extends Route {
   static template = hbs`<h1>Something went wrong: {{this.model.message}}</h1>`;
@@ -284,6 +296,68 @@ module('@emberx/ssr | renderURLToString', function (hooks) {
 
     assert.notOk(/<|\u2028/.test(json));
     assert.deepEqual(JSON.parse(json), { bio: '</script><script>alert(1)</script><!--\u2028' });
+  });
+
+  test("renderBaseHTMLToString puts the page in the base HTML, its title in place of the base HTML's", async function (assert) {
+    const rendered = await renderURL('/article', { hydratable: false });
+
+    assert.equal(
+      renderBaseHTMLToString(INDEX_HTML, rendered),
+      `<!doctype html>
+<html>
+  <head>
+    <script type="module" src="/app.js"></script>
+  ${rendered.head}</head>
+  <body class="app">${rendered.bodyStart}
+    <div id="app"><h1>Article</h1></div><script type="application/json" id="shoebox">{"application":{},"article":{}}</script>
+  ${rendered.bodyEnd}</body>
+</html>`,
+    );
+  });
+
+  test("renderBaseHTMLToString keeps the base HTML's title for a page without one, and a page's $ as it is", async function (assert) {
+    const rendered = {
+      ...(await renderURL('/', { hydratable: false })),
+      title: undefined,
+      head: '',
+      html: "<p>$& $' $1</p>",
+    };
+    const html = renderBaseHTMLToString(INDEX_HTML, rendered);
+
+    assert.ok(html.includes('<title>My app</title>'));
+    assert.ok(html.includes(`<div id="app"><p>$& $' $1</p></div>`));
+  });
+
+  test("renderBaseHTMLToString places everything by the base HTML's markup, whatever the page's holds", async function (assert) {
+    const rendered = {
+      ...(await renderURL('/article', { hydratable: false })),
+      html: '<pre>&lt;/body&gt;</pre></body><p>after</p>',
+    };
+    const html = renderBaseHTMLToString(
+      INDEX_HTML.replace('<div id="app">', '<svg><title>Logo</title></svg><div id="app">'),
+      rendered,
+    );
+
+    assert.ok(html.includes('<pre>&lt;/body&gt;</pre></body><p>after</p></div>'), "the page's markup is as it was");
+    assert.ok(
+      html.endsWith(`${rendered.bodyEnd}</body>\n</html>`),
+      "the page's body elements end the base HTML's <body>",
+    );
+    assert.ok(html.includes('<svg><title>Logo</title></svg>'), "an <svg>'s <title> in the body stays");
+    assert.equal(html.match(/<title>/g)!.length, 2, "the page's title replaces the head's; the <svg>'s stays");
+  });
+
+  test('renderBaseHTMLToString needs a head, a body and an empty #app to put the page in', async function (assert) {
+    const rendered = await renderURL('/');
+
+    assert.throws(
+      () => renderBaseHTMLToString('<html><head></head><body></body></html>', rendered),
+      /empty <div id="app"><\/div>/,
+    );
+    assert.throws(
+      () => renderBaseHTMLToString('<div id="app"></div>', rendered),
+      /needs the base HTML to have a <\/head>, a <body>/,
+    );
   });
 
   test('needs a started router', async function (assert) {

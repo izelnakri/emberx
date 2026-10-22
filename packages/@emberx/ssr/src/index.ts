@@ -9,6 +9,10 @@ import Router, { Owner, type HeadElement, type RouteDefinition } from '@emberx/r
 
 const ESCAPES: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' };
 const VOID_ELEMENTS = new Set(['meta', 'link', 'base', 'br', 'hr', 'img', 'input', 'source']);
+/** The empty element the browser's router renders the page into. */
+const APP_ELEMENT = /<div id="app">\s*<\/div>/;
+const TITLE_ELEMENT = /<title>[\s\S]*?<\/title>\s*/;
+const BODY_ELEMENT = /<body[^>]*>/;
 
 interface RenderOptions {
   args?: Record<string, unknown>;
@@ -90,7 +94,7 @@ export interface RenderedPage {
    * The models of the routes the page is under, by route name, for the
    * browser's Router.start({ models }): its first transition takes them instead
    * of running the model hooks again. Empty for an error or loading substate.
-   * Put in the document with embedToShoeboxScriptTag().
+   * renderBaseHTMLToString() leaves them in the #shoebox that Router.start() reads.
    */
   models: Record<string, unknown>;
 }
@@ -148,7 +152,7 @@ async function renderURLToString(url: string, options: URLRenderOptions = {}): P
  * `value` as JSON that is safe inside a `<script>` element: no `</script>` or
  * `<!--` in it ends the element early, and no line separator breaks it.
  *
- *   `<script type="application/json" id="models">${embedToShoeboxScriptTag(page.models)}</script>`
+ *   `<script type="application/json" id="shoebox">${embedToShoeboxScriptTag(page.models)}</script>`
  */
 function embedToShoeboxScriptTag(value: unknown): string {
   return JSON.stringify(value).replace(
@@ -157,7 +161,51 @@ function embedToShoeboxScriptTag(value: unknown): string {
   );
 }
 
-export { embedToShoeboxScriptTag, renderToString, renderURL, renderURLToString };
+/**
+ * The document a server sends for a page renderURL() rendered, as HTML: the
+ * app's base HTML, its index.html, with the page's `<title>` in place of its
+ * own, the page's head elements last in `<head>`, its body elements first and
+ * last in `<body>`, its markup in the empty `<div id="app"></div>`, and its
+ * models after that, in the #shoebox the browser's Router.start() reads.
+ *
+ *   const rendered = await renderURL(url);
+ *   return new Response(renderBaseHTMLToString(baseHTML, rendered), { status: rendered.status });
+ */
+function renderBaseHTMLToString(baseHTML: string, rendered: RenderedPage): string {
+  // Every place is found in the base HTML, never in the rendered markup, which is neither scanned, where a
+  // `</body>` of its own would be taken for the document's, nor copied more than once.
+  const headEnd = baseHTML.indexOf('</head>');
+  const bodyElement = BODY_ELEMENT.exec(baseHTML);
+  const app = APP_ELEMENT.exec(baseHTML);
+  const bodyEnd = baseHTML.lastIndexOf('</body>');
+  if (headEnd === -1 || !bodyElement || !app || bodyEnd === -1) {
+    throw new Error(
+      'renderBaseHTMLToString() needs the base HTML to have a </head>, a <body> and </body>, and an empty <div id="app"></div> to put the page in.',
+    );
+  }
+
+  const bodyStart = bodyElement.index + bodyElement[0].length;
+  // The base HTML's own <title>, in its head: an <svg>'s <title> in its body is not one. The page's replaces it.
+  const title = rendered.title === undefined ? null : TITLE_ELEMENT.exec(baseHTML.slice(0, headEnd));
+  const beforeHeadEnd = title
+    ? baseHTML.slice(0, title.index) + baseHTML.slice(title.index + title[0].length, headEnd)
+    : baseHTML.slice(0, headEnd);
+  const shoebox = `<script type="application/json" id="shoebox">${embedToShoeboxScriptTag(rendered.models)}</script>`;
+
+  return (
+    beforeHeadEnd +
+    rendered.head +
+    baseHTML.slice(headEnd, bodyStart) +
+    rendered.bodyStart +
+    baseHTML.slice(bodyStart, app.index) +
+    `<div id="app">${rendered.html}</div>${shoebox}` +
+    baseHTML.slice(app.index + app[0].length, bodyEnd) +
+    rendered.bodyEnd +
+    baseHTML.slice(bodyEnd)
+  );
+}
+
+export { embedToShoeboxScriptTag, renderBaseHTMLToString, renderToString, renderURL, renderURLToString };
 
 /**
  * The HTML of the head elements that go `where`, each marked with its key as

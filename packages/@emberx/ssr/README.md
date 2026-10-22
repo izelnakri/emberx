@@ -43,8 +43,12 @@ renders to HTML. It returns what the document around the page needs too:
   is its data, not a class instance; `embedToShoeboxScriptTag()` writes them so a `<script>`
   element holds them safely.
 
-`renderURLToString(url)` returns the HTML alone. Start the same router on both sides; in the
-browser, its first render hydrates the server's page.
+`renderBaseHTMLToString(baseHTML, rendered)` returns the document to send, as HTML: the app's base
+HTML, its index.html, with the page's `<title>` in place of its own, the page's head elements last
+in `<head>`, its body elements first and last in `<body>`, its markup in the empty
+`<div id="app"></div>`, and its models after that, in the `#shoebox` the browser's `Router.start()`
+reads. `renderURLToString(url)` returns the page's markup alone. Start the same router on both
+sides; in the browser, its first render hydrates the server's page.
 
 ```ts ignore
 // start-router.ts, shared by the server and the browser
@@ -54,32 +58,25 @@ import routes from './routes.ts';
 export default (options = {}) => Router.start(routes, options);
 
 // server.ts
-import { embedToShoeboxScriptTag, renderURL } from '@emberx/ssr';
+import { renderBaseHTMLToString, renderURL } from '@emberx/ssr';
 import startRouter from './start-router.ts';
+
+// The app's index.html, with its <title>, its scripts and an empty <div id="app"></div>.
+const INDEX_HTML = await Deno.readTextFile('dist/index.html');
 
 startRouter();
 
 Deno.serve(async (request) => {
   const { pathname, search } = new URL(request.url);
-  const page = await renderURL(pathname + search, { services: { session: await sessionFrom(request) } });
-  if (page.url !== pathname + search) {
-    return Response.redirect(new URL(page.url, request.url), 302);
+  const rendered = await renderURL(pathname + search, { services: { session: await sessionFrom(request) } });
+  if (rendered.url !== pathname + search) {
+    return Response.redirect(new URL(rendered.url, request.url), 302);
   }
 
-  return new Response(
-    `<!doctype html>
-    <html>
-      <head>${page.head}</head>
-      <body>
-        ${page.bodyStart}
-        <div id="app">${page.html}</div>
-        <script type="application/json" id="shoebox">${embedToShoeboxScriptTag(page.models)}</script>
-        <script type="module" src="/app.js"></script>
-        ${page.bodyEnd}
-      </body>
-    </html>`,
-    { status: page.status, headers: { 'content-type': 'text/html' } },
-  );
+  return new Response(renderBaseHTMLToString(INDEX_HTML, rendered), {
+    status: rendered.status,
+    headers: { 'content-type': 'text/html' },
+  });
 });
 
 // app.ts, in the browser: Router.start() reads the models from #shoebox

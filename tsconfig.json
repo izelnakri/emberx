@@ -34,6 +34,8 @@
     "noUnusedParameters": true,
     "allowUnreachableCode": false,
     "noImplicitReturns": false,
+    /* Deno's default, which an app's routes and components check under. */
+    "noImplicitOverride": true,
     "forceConsistentCasingInFileNames": true,
 
     "skipLibCheck": true,

@@ -206,6 +206,11 @@ releases as the next minor version (`LEVEL=minor`), from 1.0 the next major. An 
 a feature, a minor version; a fix, a patch. Changing `test/public-api-test.ts` is how a change
 to the API is made on purpose rather than by accident.
 
+An app's routes and components type-check under Deno's `noImplicitOverride`, which
+`test/types.ts` keeps true. So the base classes declare no static an app sets, which would need
+`override`: `EmberXComponentClass` and `RouteHooks` type them, and a `static {}` block sets their
+defaults.
+
 ## Releasing
 
 ```sh

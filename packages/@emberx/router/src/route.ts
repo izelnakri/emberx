@@ -6,7 +6,7 @@ import Router from './index.ts';
 import Owner from './owner.ts';
 import { buildQueryParams, type QueryParamDeclarations } from './query-params.ts';
 import type { Body, Head } from './head.ts';
-import EmberXComponent, { action, hbs, service } from '@emberx/component';
+import EmberXComponent, { action, hbs, service, type PrecompiledTemplate } from '@emberx/component';
 import { QUERY_PARAMS_SYMBOL } from 'router_js';
 
 interface FreeObject {
@@ -24,21 +24,15 @@ interface RouteInfo {
   context?: unknown;
 }
 
-// TODO: maybe provide the associated routeInfo for router_js hacking and expose the Route itself on didTransition
-// TODO: serialize() model hook might be needed to make default params and queryParams for the route links
-export default class Route extends EmberXComponent<FreeObject> {
-  static router: RouterService;
-
-  @service router: RouterService;
-
-  static includes = {};
-  static template = hbs`
-    <div id="intro">
-      <h1 data-test-route-title>Route: {{this.routeName}}. This route is missing a template!</h1>
-      <h5>Route params: {{debug @params}}</h5>
-      <h5>Route queryParams: {{debug @queryParams}}</h5>
-    </div>
-  `;
+/**
+ * The statics a route declares: template and includes, title, head and body,
+ * queryParams, and the model hooks. Typed here rather than declared on Route,
+ * so a route setting one needs no `override` under noImplicitOverride, Deno's
+ * default; Route sets their defaults when it is defined.
+ */
+export interface RouteHooks {
+  includes?: FreeObject;
+  template?: string | PrecompiledTemplate;
 
   /**
    * The page's title, or a function of its model that returns it: the
@@ -48,7 +42,7 @@ export default class Route extends EmberXComponent<FreeObject> {
    *
    *   static title = (post) => `${post.title} | Blog`;
    */
-  static title?: string | ((model: any) => string);
+  title?: string | ((model: any) => string);
 
   /**
    * What the page puts in `<head>`, or a function of the route's model, what
@@ -69,7 +63,7 @@ export default class Route extends EmberXComponent<FreeObject> {
    * that changed, and @emberx/ssr's renderURL renders it for the server's
    * document. See ./head.ts for every field.
    */
-  static head?: Head | ((model: any) => Head);
+  head?: Head | ((model: any) => Head);
 
   /**
    * Elements the page puts first or last in `<body>`, around it, or a
@@ -78,13 +72,46 @@ export default class Route extends EmberXComponent<FreeObject> {
    *
    *   static body = { end: [{ tag: 'script', src: '/analytics.js', async: true }] };
    */
-  static body?: Body | ((model: any) => Body);
+  body?: Body | ((model: any) => Body);
 
   /**
    * The query params this route reads, and how a change to each is handled.
    * See ./query-params.ts for the shape.
    */
-  static queryParams: QueryParamDeclarations = {};
+  queryParams?: QueryParamDeclarations;
+
+  /** What the page shows, from its params: a promise is waited for. `{}` by default. */
+  model?(params: FreeObject, transition: any): unknown;
+  /** Runs when the route becomes active. */
+  activate?(): void;
+  /** Runs when the route stops being active. */
+  deactivate?(transition: any): void;
+}
+
+// TODO: maybe provide the associated routeInfo for router_js hacking and expose the Route itself on didTransition
+// TODO: serialize() model hook might be needed to make default params and queryParams for the route links
+export default class Route extends EmberXComponent<FreeObject> {
+  static router: RouterService;
+
+  @service router: RouterService;
+
+  static {
+    // Defaults rather than declarations: see RouteHooks.
+    Object.assign(this, {
+      includes: {},
+      template: hbs`
+        <div id="intro">
+          <h1 data-test-route-title>Route: {{this.routeName}}. This route is missing a template!</h1>
+          <h5>Route params: {{debug @params}}</h5>
+          <h5>Route queryParams: {{debug @queryParams}}</h5>
+        </div>
+      `,
+      queryParams: {},
+      model: () => ({}),
+      activate() {},
+      deactivate() {},
+    } satisfies RouteHooks);
+  }
 
   /**
    * Runs the model hooks of this route, and of the active routes below it,
@@ -167,27 +194,18 @@ export default class Route extends EmberXComponent<FreeObject> {
 
     const { queryParams, ...segmentParams } = params;
 
-    return this.model(
+    return (this as RouteHooks).model!(
       { ...segmentParams, queryParams: buildQueryParams(queryParams ?? {}, transition.routeInfos) },
       transition,
     );
   }
 
-  // NOTE: maybe move these to instance methods only?
-  static activate() {}
-
   static enter() {
-    this.activate();
+    (this as RouteHooks).activate!();
   }
-
-  static deactivate(_transition: any) {}
 
   static exit(transition: any) {
-    this.deactivate(transition);
-  }
-
-  static model(_params?: FreeObject, _transition?: any): unknown {
-    return {};
+    (this as RouteHooks).deactivate!(transition);
   }
 
   static async setup(model: object, transition: FreeObject): Promise<any> {

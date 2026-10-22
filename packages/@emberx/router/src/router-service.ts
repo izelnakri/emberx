@@ -210,7 +210,7 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
   }
 
   /** router_js's name for send(). */
-  trigger(name: string, ...args: unknown[]): unknown {
+  override trigger(name: string, ...args: unknown[]): unknown {
     return this.send(name, ...args);
   }
 
@@ -291,7 +291,7 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
     return this.#handledErrors.delete(error);
   }
 
-  intermediateTransitionTo(name: string, ...args: any[]): any {
+  override intermediateTransitionTo(name: string, ...args: any[]): any {
     const transition = super.intermediateTransitionTo(name, ...args);
     const routeInfos = this.state!.routeInfos;
     const targetRouteInfo = routeInfos[routeInfos.length - 1];

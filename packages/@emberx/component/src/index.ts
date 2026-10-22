@@ -61,6 +61,10 @@ const DEFAULT_OWNER = {};
  * The static side of an emberx component class: the whole surface that
  * `renderComponent` and `traverseAndCompileAllComponents` touch.
  *
+ * `includes` and `template` are typed here rather than declared on
+ * EmberXComponent, so a component setting one needs no `override` under
+ * noImplicitOverride, Deno's default.
+ *
  * This is deliberately structural rather than `typeof EmberXComponent`. The
  * latter carries a *generic* construct signature (`new <Args>(...)`), which a
  * subclass that pins its `Args` type argument — `@emberx/router`'s `Route`,
@@ -68,8 +72,10 @@ const DEFAULT_OWNER = {};
  * assignable to. Only the statics matter here, so only the statics are asked for.
  */
 export interface EmberXComponentClass {
-  includes: FreeObject;
-  template: string | PrecompiledTemplate;
+  /** The components, helpers and modifiers the template uses, by the name it uses them by. */
+  includes?: FreeObject;
+  /** The template, an hbs`` string, or what @emberx/component/precompile compiled it to. */
+  template?: string | PrecompiledTemplate;
   setTemplate(template: string | PrecompiledTemplate): unknown;
 }
 
@@ -90,10 +96,13 @@ export default class EmberXComponent<Args extends FreeObject = FreeObject> exten
     super(owner as EmberOwner, args);
   }
 
-  static includes = {};
-  static template: string | PrecompiledTemplate;
+  static {
+    // A default rather than a declaration: see EmberXComponentClass.
+    Object.assign(this, { includes: {} } satisfies Partial<EmberXComponentClass>);
+  }
+
   /** Compiles the template, unless the build already did (@emberx/component/precompile). */
-  static setTemplate(template: string | PrecompiledTemplate) {
+  static setTemplate(this: EmberXComponentClass, template: string | PrecompiledTemplate) {
     // A new object: `includes` may be a parent class's, or the one the caller passed to render().
     const scope = { ...BUILTINS, ...this.includes };
     const templateFactory: any =
@@ -319,7 +328,7 @@ function traverseAndCompileAllComponents(ComponentClass: EmberXComponentClass) {
   // and before its includes, which may include it back.
   COMPILED.add(ComponentClass);
 
-  Object.values(ComponentClass.includes).forEach(traverseAndCompileAllComponents);
+  Object.values(ComponentClass.includes ?? {}).forEach(traverseAndCompileAllComponents);
 }
 
 export {
@@ -364,7 +373,7 @@ function hasRuntimeTemplate(ComponentClass: EmberXComponentClass, seen: Set<obje
   seen.add(ComponentClass);
   return (
     typeof ComponentClass.template === 'string' ||
-    Object.values(ComponentClass.includes).some((included) => hasRuntimeTemplate(included, seen))
+    Object.values(ComponentClass.includes ?? {}).some((included) => hasRuntimeTemplate(included, seen))
   );
 }
 

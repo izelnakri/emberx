@@ -39,8 +39,11 @@ const TSC = `${ROOT}/node_modules/typescript/lib/tsc.js`;
 /** Build order is irrelevant (packages are external to each other) but kept stable for readable logs. */
 export const PACKAGES = ['string', 'helper', 'component', 'router', 'test-helpers', 'ssr'];
 
-/** What a release publishes, leaf first: @emberx/vendor (scripts/build-emberx-vendor.ts), which has no build, then PACKAGES. */
-export const PUBLISHED = ['vendor', ...PACKAGES];
+/**
+ * What a release publishes, each package after the @emberx packages it depends
+ * on. @emberx/vendor (scripts/build-emberx-vendor.ts) has no build.
+ */
+export const PUBLISHED = ['string', 'vendor', 'helper', 'component', 'router', 'test-helpers', 'ssr'];
 
 /** Mark every bare specifier external; only relative/absolute imports get inlined. */
 const externalizeBareImports: esbuild.Plugin = {

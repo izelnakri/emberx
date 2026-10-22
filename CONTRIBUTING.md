@@ -222,9 +222,10 @@ matches the lockfile (`npm ci` after a pull that changed it): `npm publish` happ
 release commit, so releasing from anywhere else would publish code `main` never had. It runs the
 checks cheapest first: `make check-static`, `make bench-check`, the suites, the doctests, then
 `make test-release`. Then it stamps all seven packages to one version, their `@emberx/*` ranges
-included, publishes them leaf-first, prepends the release's section to `CHANGELOG.md` with
-[git-cliff](https://git-cliff.org), commits, tags and pushes. CI creates the GitHub release from
-the tag.
+included, and publishes each once the registry serves the `@emberx` packages it depends on:
+`npm publish` returns before the registry serves what it accepted. Then it prepends the release's
+section to `CHANGELOG.md` with [git-cliff](https://git-cliff.org), commits, tags and pushes. CI
+creates the GitHub release from the tag.
 
 The changelog is built from conventional commit subjects: `feat`, `fix`, `perf`, `refactor`,
 `deps` and `docs` appear in it; `build`, `ci`, `test` and `chore` do not.

@@ -1,7 +1,6 @@
 import { module, test } from 'qunitx';
 import Router, { Route, hbs } from '@emberx/router';
-import { visit } from '@emberx/test-helpers';
-import setupTest from '../helpers/index.ts';
+import { visit, setupRenderingTest } from '@emberx/test-helpers';
 
 const POSTS = { 1: { title: 'Compilers are the New Frameworks' } };
 
@@ -33,7 +32,7 @@ class PostErrorRoute extends Route {
 }
 
 module('@emberx/router | Page titles', function (hooks) {
-  setupTest(hooks, () =>
+  setupRenderingTest(hooks, () =>
     Router.start([
       { name: 'application', route: ApplicationRoute },
       { path: '/about', route: AboutRoute },

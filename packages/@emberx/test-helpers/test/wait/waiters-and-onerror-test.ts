@@ -11,8 +11,7 @@ import Component, {
   waitForPromise,
 } from '@emberx/component';
 import Router from '@emberx/router';
-import { click, getSettledState, render, settled, setupOnerror } from '@emberx/test-helpers';
-import { setupRenderingTest } from '../helpers/index.ts';
+import { click, getSettledState, render, settled, setupOnerror, setupRenderingTest } from '@emberx/test-helpers';
 
 class Feed extends Component {
   @tracked accessor posts: string[] = [];

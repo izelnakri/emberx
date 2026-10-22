@@ -1,7 +1,6 @@
 import { module, test } from 'qunitx';
 import Router, { Route, LinkTo, NotFoundRoute as NotFoundPage, hbs } from '@emberx/router';
-import { visit, render, currentURL, currentRouteName } from '@emberx/test-helpers';
-import setupTest from './helpers/index.ts';
+import { visit, render, currentURL, currentRouteName, setupRenderingTest } from '@emberx/test-helpers';
 
 class HomeRoute extends Route {
   static template = hbs`<h1 data-test-title>Home</h1>`;
@@ -33,7 +32,7 @@ class NotFoundRoute extends Route {
 
 module('@emberx/router | Route definitions', function () {
   module('a name from the path', function (hooks) {
-    setupTest(hooks, () => {
+    setupRenderingTest(hooks, () => {
       return Router.start([
         { path: '/', route: HomeRoute },
         { path: '/posts', route: PostsRoute },
@@ -105,7 +104,7 @@ module('@emberx/router | Route definitions', function () {
   });
 
   module('without a catch-all', function (hooks) {
-    setupTest(hooks, () => Router.start([{ path: '/', route: HomeRoute }]));
+    setupRenderingTest(hooks, () => Router.start([{ path: '/', route: HomeRoute }]));
 
     test('a URL no route matches shows the page NotFoundRoute renders', async function (assert) {
       await visit('/nowhere/at/all');
@@ -123,7 +122,7 @@ module('@emberx/router | Route definitions', function () {
       static template = hbs`<h1 data-test-title>Lost? Try the home page.</h1>`;
     }
 
-    setupTest(hooks, () =>
+    setupRenderingTest(hooks, () =>
       Router.start([{ path: '/', route: HomeRoute }], {
         resolve: (name) => (name === 'not-found' ? { default: AppNotFoundRoute } : undefined),
       }),
@@ -138,7 +137,7 @@ module('@emberx/router | Route definitions', function () {
   });
 
   module('a name given', function (hooks) {
-    setupTest(hooks);
+    setupRenderingTest(hooks);
 
     test('a name in the definition is used instead of the one from its path', function (assert) {
       Router.start([{ path: '/articles/:id', name: 'posts.post', route: PostRoute }]);
@@ -149,7 +148,7 @@ module('@emberx/router | Route definitions', function () {
   });
 
   module('a route declared twice', function (hooks) {
-    setupTest(hooks);
+    setupRenderingTest(hooks);
 
     test('the same name twice is reported, and the later declaration is the one used', function (assert) {
       const errors = consoleErrorsOf(() =>

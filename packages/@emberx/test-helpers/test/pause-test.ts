@@ -1,6 +1,5 @@
 import { module, test } from 'qunitx';
-import { pauseTest, resumeTest, wait } from '@emberx/test-helpers';
-import { setupRenderingTest } from './helpers/index.ts';
+import { pauseTest, resumeTest, wait, setupRenderingTest } from '@emberx/test-helpers';
 
 module('@emberx/test-helpers | pauseTest', function (hooks) {
   setupRenderingTest(hooks);

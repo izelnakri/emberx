@@ -1,7 +1,6 @@
 import { module, test } from 'qunitx';
 import Router, { Route, hbs } from '@emberx/router';
-import { visit, currentURL } from '@emberx/test-helpers';
-import setupTest from './helpers/index.ts';
+import { visit, currentURL, setupRenderingTest } from '@emberx/test-helpers';
 
 const session = { currentUser: null };
 
@@ -31,7 +30,7 @@ class LoginRoute extends Route {
 }
 
 module('@emberx/router | RouterService', function (hooks) {
-  setupTest(hooks, () => {
+  setupRenderingTest(hooks, () => {
     return Router.start([
       { path: '/', name: 'home', route: HomeRoute },
       { path: '/posts', name: 'posts', route: PostsRoute },

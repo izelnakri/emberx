@@ -3,7 +3,7 @@ import Router from '@emberx/router';
 import oldRouterMap from './helpers/old-router-map.ts';
 import targetFlatRegistry from './helpers/outputs/target-flat-registry.ts';
 import targetRouterJSArray from './helpers/outputs/target-router-js-array.ts';
-import setupTest from './helpers/index.ts';
+import { setupRenderingTest } from '@emberx/test-helpers';
 
 module('@emberx/router | Logging', function () {
   test('the router logs nothing unless it is asked to', function (assert) {
@@ -13,7 +13,7 @@ module('@emberx/router | Logging', function () {
 });
 
 module('@emberx/router | Public API', function (hooks) {
-  setupTest(hooks);
+  setupRenderingTest(hooks);
 
   test('Router.map creates route registry without Router.start()', async function (assert) {
     Router.reset();

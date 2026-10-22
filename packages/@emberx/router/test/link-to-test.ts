@@ -1,14 +1,13 @@
 import { module, test } from 'qunitx';
 import { hbs } from '@emberx/component';
-import { render, click, currentURL, visit, waitFor } from '@emberx/test-helpers';
+import { render, click, currentURL, visit, waitFor, setupRenderingTest } from '@emberx/test-helpers';
 import startRouter from '@examples/blog/start-router.ts';
 import { LinkTo } from '@emberx/router';
-import setupTest from './helpers/index.ts';
 import setupMockServer from './helpers/setup-mock-server.ts';
 
 // TODO: make @replace={{true}} tests
 module('@emberx/router | <LinkTo> tests', function (hooks) {
-  setupTest(hooks, startRouter);
+  setupRenderingTest(hooks, startRouter);
   setupMockServer(hooks);
 
   test('it throws when @route param is missing', async function (assert) {

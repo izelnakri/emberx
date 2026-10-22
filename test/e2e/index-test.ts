@@ -1,7 +1,6 @@
 import { module, test } from 'qunitx';
-import { visit, click, currentURL } from '@emberx/test-helpers';
+import { visit, click, currentURL, setupApplicationTest } from '@emberx/test-helpers';
 import startRouter from '@examples/blog/start-router.ts';
-import { setupApplicationTest } from '../helpers.ts';
 
 module('E2E | /', function (hooks) {
   setupApplicationTest(hooks, startRouter);

@@ -1,7 +1,6 @@
 import { module, test } from 'qunitx';
 import Router from '@emberx/router';
-import { visit, currentURL } from '@emberx/test-helpers';
-import setupTest from '../helpers/index.ts';
+import { visit, currentURL, setupRenderingTest } from '@emberx/test-helpers';
 import setupMockServer from '../helpers/setup-mock-server.ts';
 import Session from '../helpers/services/session.ts';
 import BasicRoute from '../helpers/routes/basic-route.ts';
@@ -11,7 +10,7 @@ import NewCommentRoute from '../helpers/routes/new-comment-route.ts';
 import LoginRoute from '../helpers/routes/login-route.ts';
 
 module('@emberx/router | Route Internal Transitions', function (hooks) {
-  setupTest(hooks, () => {
+  setupRenderingTest(hooks, () => {
     Router.addServices({
       session: new Session(),
     });

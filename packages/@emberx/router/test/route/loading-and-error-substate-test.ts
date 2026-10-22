@@ -1,8 +1,15 @@
 // https://guides.emberjs.com/release/routing/loading-and-error-substates/
 import { module, test } from 'qunitx';
 import Router, { Route, hbs } from '@emberx/router';
-import { visit, currentURL, currentRouteName, wait, waitFor, waitUntil } from '@emberx/test-helpers';
-import setupTest from '../helpers/index.ts';
+import {
+  visit,
+  currentURL,
+  currentRouteName,
+  wait,
+  waitFor,
+  waitUntil,
+  setupRenderingTest,
+} from '@emberx/test-helpers';
 import API from '../helpers/services/api.ts';
 import ParentLoadingRoute from '../helpers/routes/parent-loading-route.ts';
 import ChildLoadingRoute from '../helpers/routes/child-loading-route.ts';
@@ -93,7 +100,7 @@ class DashboardRoute extends Route {
 
 module('@emberx/router | Loading and error substates', function () {
   module('loading substates', function (hooks) {
-    setupTest(
+    setupRenderingTest(
       hooks,
       startRouter(
         { name: 'posts_loading', route: ParentLoadingRoute },
@@ -152,7 +159,7 @@ module('@emberx/router | Loading and error substates', function () {
   });
 
   module('error substates', function (hooks) {
-    setupTest(
+    setupRenderingTest(
       hooks,
       startRouter(
         { name: 'posts_loading', route: ParentLoadingRoute },
@@ -248,7 +255,10 @@ module('@emberx/router | Loading and error substates', function () {
   });
 
   module('top-level loading and error routes', function (hooks) {
-    setupTest(hooks, startRouter({ name: 'loading', route: LoadingRoute }, { name: 'error', route: ErrorRoute }));
+    setupRenderingTest(
+      hooks,
+      startRouter({ name: 'loading', route: LoadingRoute }, { name: 'error', route: ErrorRoute }),
+    );
     hooks.beforeEach(function (assert) {
       recordSubstates(assert, this.owner.lookup('service:router'));
     });
@@ -299,7 +309,7 @@ module('@emberx/router | Loading and error substates', function () {
   });
 
   module('substates declared in Router.map()', function (hooks) {
-    setupTest(hooks, () => {
+    setupRenderingTest(hooks, () => {
       api = new API();
       Router.addServices({ api });
 
@@ -348,7 +358,7 @@ module('@emberx/router | Loading and error substates', function () {
   });
 
   module('loadingRoute and errorRoute on a route definition', function (hooks) {
-    setupTest(hooks, () => {
+    setupRenderingTest(hooks, () => {
       api = new API();
       Router.addServices({ api });
 
@@ -448,7 +458,7 @@ module('@emberx/router | Loading and error substates', function () {
   });
 
   module('without substates', function (hooks) {
-    setupTest(hooks, startRouter());
+    setupRenderingTest(hooks, startRouter());
 
     test('an error nothing handles rejects visit() and keeps the page it failed to leave', async function (assert) {
       api.respondWith('/posts', POSTS);

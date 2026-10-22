@@ -1,7 +1,6 @@
 import { module, test } from 'qunitx';
 import Component, { tracked } from '@emberx/component';
-import { render, rerender, clearRender, hbs } from '@emberx/test-helpers';
-import { setupRenderingTest } from './helpers/index.ts';
+import { render, rerender, clearRender, hbs, setupRenderingTest } from '@emberx/test-helpers';
 
 class Counter {
   @tracked accessor count = 1;

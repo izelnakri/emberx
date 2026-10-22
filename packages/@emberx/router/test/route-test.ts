@@ -1,12 +1,11 @@
 import { module, test } from 'qunitx';
 import Router, { Owner, Route } from '@emberx/router';
 import BasicRoute from './helpers/routes/basic-route.ts';
-import { visit, click, waitFor } from '@emberx/test-helpers';
-import setupTest from './helpers/index.ts';
+import { visit, click, waitFor, setupRenderingTest } from '@emberx/test-helpers';
 import setupMockServer from './helpers/setup-mock-server.ts';
 
 module('@emberx/router | Route Unit Test', function (hooks) {
-  setupTest(hooks, () => {
+  setupRenderingTest(hooks, () => {
     return Router.start([
       {
         path: '/',

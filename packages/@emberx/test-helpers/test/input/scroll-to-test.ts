@@ -1,7 +1,6 @@
 import { hbs } from '@emberx/component';
 import { module, test } from 'qunitx';
-import { render, scrollTo } from '@emberx/test-helpers';
-import { setupRenderingTest } from '../helpers/index.ts';
+import { render, scrollTo, setupRenderingTest } from '@emberx/test-helpers';
 
 module('@emberx/test-helpers | scrollTo', function (hooks) {
   setupRenderingTest(hooks);

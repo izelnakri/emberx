@@ -122,3 +122,4 @@ export default {
 //     -   [getSettledState][27]
 
 export type { SettledState } from './wait.ts';
+export type { Assert } from './setup.ts';

@@ -1,7 +1,6 @@
 import { module, test } from 'qunitx';
 import Router, { Route, hbs } from '@emberx/router';
-import { visit, currentURL, currentRouteName, settled } from '@emberx/test-helpers';
-import setupTest from './helpers/index.ts';
+import { visit, currentURL, currentRouteName, settled, setupRenderingTest } from '@emberx/test-helpers';
 
 class HomeRoute extends Route {
   static template = hbs`<h1 data-test-title>Home</h1>`;
@@ -31,7 +30,7 @@ module('@emberx/router | Back and forward buttons', function (hooks) {
   hooks.afterEach(function () {
     window.history.replaceState(window.history.state, '', pageURL);
   });
-  setupTest(hooks, startRouter);
+  setupRenderingTest(hooks, startRouter);
 
   test('going back and forward renders the route the browser went to', async function (assert) {
     await visit('/');

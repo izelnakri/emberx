@@ -3,6 +3,8 @@
  * accept without a cast. Never run.
  */
 import Component, { hbs } from '@emberx/component';
+import { module, test } from 'qunitx';
+import { render, setupRenderingTest, type Assert } from '@emberx/test-helpers';
 import Router, { LinkTo, NotFoundRoute, Route, type RouteDefinition, type StartOptions } from '@emberx/router';
 
 class Greeting extends Component<{ name: string }> {
@@ -52,3 +54,18 @@ export function startRouter(options: StartOptions = {}): typeof Router {
 }
 
 export const visiting: Promise<unknown> = startRouter().visit('/posts');
+
+// assert.dom, which setupRenderingTest() sets up, is on a QUnitX test's assert.
+module('Index page', function (hooks) {
+  setupRenderingTest(hooks);
+
+  test('says hello', async function (assert) {
+    await render('<Greeting @name="you" />', { Greeting });
+
+    assert.dom('p').hasText('Hello you');
+  });
+});
+
+export function assertGreets(assert: Assert, name: string): void {
+  assert.dom('p').hasText(`Hello ${name}`);
+}

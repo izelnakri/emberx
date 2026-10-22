@@ -1,7 +1,6 @@
 import Component, { hbs, service, renderComponent, action, tracked } from '@emberx/component';
 import { module, test } from 'qunitx';
-import { click } from '@emberx/test-helpers';
-import { setupRenderingTest } from './helpers/index.ts';
+import { click, setupRenderingTest } from '@emberx/test-helpers';
 
 module('@emberx/component | Render tests', function (hooks) {
   setupRenderingTest(hooks);

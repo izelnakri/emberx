@@ -31,6 +31,8 @@ import {
 } from '@emberx/test-helpers';
 // async rerender();     waits for the render a tracked change scheduled
 // async clearRender();  empties what render() rendered
+// Each setup*Test() sets up qunit-dom's assert.dom(selector), which looks in #ember-testing, and types it on
+// QUnitX's assert. `Assert` is that type, for a helper that takes one: function assertGreets(assert: Assert) {}
 import { module, test } from 'qunitx';
 import Router, { Route } from '@emberx/router';
 

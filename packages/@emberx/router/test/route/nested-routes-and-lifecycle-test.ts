@@ -1,7 +1,6 @@
 import { module, test } from 'qunitx';
 import Router, { hbs } from '@emberx/router';
-import { visit, click, currentURL, settled } from '@emberx/test-helpers';
-import setupTest from '../helpers/index.ts';
+import { visit, click, currentURL, settled, setupRenderingTest } from '@emberx/test-helpers';
 import LoggedRoute, { setupHookSteps } from '../helpers/routes/logged-route.ts';
 
 const USERS = [
@@ -125,7 +124,7 @@ const RESOLVE_USER = ['users.user: beforeModel', 'users.user: model', 'users.use
 const RESOLVE_ABOUT = ['about: beforeModel', 'about: model', 'about: afterModel', 'about: redirect'];
 
 module('@emberx/router | Nested routes and lifecycle hooks', function (hooks) {
-  setupTest(hooks, () => {
+  setupRenderingTest(hooks, () => {
     return Router.start([
       { path: '/', name: 'home', route: HomeRoute },
       { path: '/users', name: 'users', route: UsersRoute },

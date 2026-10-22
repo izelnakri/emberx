@@ -1,8 +1,17 @@
 import { module, test } from 'qunitx';
 import Component, { action, service, tracked } from '@emberx/component';
 import Router, { Route, hbs } from '@emberx/router';
-import { render, click, currentURL, settled, isSettled, getSettledState, wait, waitUntil } from '@emberx/test-helpers';
-import { setupRenderingTest } from '../helpers/index.ts';
+import {
+  render,
+  click,
+  currentURL,
+  settled,
+  isSettled,
+  getSettledState,
+  wait,
+  waitUntil,
+  setupRenderingTest,
+} from '@emberx/test-helpers';
 
 // Settled by the test, so it can look at what is pending meanwhile.
 let release: (() => void) | null = null;

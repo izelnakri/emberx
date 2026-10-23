@@ -40,6 +40,8 @@ jobs:
       # The docs' code examples, run and checked by `deno test --doc`.
       - run: npm run test:doctests
       - run: npm run typecheck
+      # What `deno publish` would refuse, found on every push rather than at the tag.
+      - run: npm run publish:jsr -- --dry-run
 
   test:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork
@@ -219,6 +221,29 @@ jobs:
       - run: npm run test:release
         env:
           FORCE_COLOR: 0
+
+  # From CI rather than `make release`, as qunitx publishes, so each package has
+  # provenance from the OIDC token. The version is the one `make release` stamped.
+  publish-jsr:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: package.json
+          cache: npm
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: 2.9.7
+      # build-jsr.ts reads build.ts's package list, which imports esbuild.
+      - run: npm ci
+      - run: npm run publish:jsr
 
   github-release:
     if: startsWith(github.ref, 'refs/tags/v')

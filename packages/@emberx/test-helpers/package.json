@@ -22,6 +22,6 @@
     "qunit-dom": "^3.6.0"
   },
   "peerDependencies": {
-    "qunitx": ">=1.4.0"
+    "qunitx": "^1.4.0"
   }
 }

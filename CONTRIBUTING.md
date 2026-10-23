@@ -230,7 +230,12 @@ checks cheapest first: `make check-static`, `make bench-check`, the suites, the 
 included, and publishes each once the registry serves the `@emberx` packages it depends on:
 `npm publish` returns before the registry serves what it accepted. Then it prepends the release's
 section to `CHANGELOG.md` with [git-cliff](https://git-cliff.org), commits, tags and pushes. CI
-creates the GitHub release from the tag.
+creates the GitHub release from the tag, and publishes the same version to JSR.
+
+On JSR each package is `@izelnakri/emberx-<package>`, since a JSR name has one scope.
+`npm run build:jsr` builds them in `tmp/jsr/`, and the tag's `publish-jsr` job publishes them.
+`make jsr-check`, in `make check-static` and CI, is that publish as a dry run. Each package must
+exist on jsr.io, linked to this repository, before a tag first publishes it.
 
 The changelog is built from conventional commit subjects: `feat`, `fix`, `perf`, `refactor`,
 `deps` and `docs` appear in it; `build`, `ci`, `test` and `chore` do not.

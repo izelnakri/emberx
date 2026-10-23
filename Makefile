@@ -5,7 +5,7 @@ REGRESSION_THRESHOLD ?= 26
 BENCH_BASE ?=
 
 .PHONY: bench bench-check bench-print bench-update build check check-static clean coverage \
-        dev docs site docker-build docker-test fix fmt format help install lint release setup test test-all-browsers \
+        dev docs jsr-check site docker-build docker-test fix fmt format help install lint release setup test test-all-browsers \
         test-browser test-browser-dev test-chrome test-firefox test-deno test-doctests test-node test-release test-webkit typecheck \
         vendor vendor-check
 
@@ -40,7 +40,7 @@ check: check-static test test-doctests
 
 # What needs no build and no browser, so it fails in seconds. `make release` runs it
 # before the benchmarks and the suites, the order qunitx and qunitx-cli release in.
-check-static: format lint typecheck vendor-check
+check-static: format lint jsr-check typecheck vendor-check
 
 # Formatting is prettier, configured by the "prettier" key in package.json; the
 # files it skips are negated patterns in the npm scripts, so there is no
@@ -60,6 +60,11 @@ fix fmt:
 #   no-explicit-any, ban-ts-comment   existing type debt, tightened separately
 lint:
 	npm run lint
+
+# What `deno publish` would refuse in the JSR packages: an export without an
+# explicit type, or a module augmenting another.
+jsr-check:
+	npm run publish:jsr -- --dry-run
 
 typecheck:
 	npm run typecheck
@@ -239,10 +244,11 @@ help:
 	@echo ""
 	@echo "Verify"
 	@echo "  check             check-static + test + test-doctests"
-	@echo "  check-static      format + lint + typecheck + vendor-check: no build, no browser"
+	@echo "  check-static      format + lint + jsr-check + typecheck + vendor-check: no build, no browser"
 	@echo "  format            Check formatting (prettier)"
 	@echo "  fix / fmt         Auto-fix formatting"
 	@echo "  lint              Lint sources (deno lint)"
+	@echo "  jsr-check         What deno publish would refuse in the JSR packages"
 	@echo "  typecheck         tsc --noEmit over all package sources and test/types.ts"
 	@echo "  vendor            Rewrite @emberx/vendor from the pinned packages"
 	@echo "  vendor-check      Fail if @emberx/vendor differs from them"

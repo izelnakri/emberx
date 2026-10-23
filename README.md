@@ -4,6 +4,7 @@
 [![codecov](https://codecov.io/gh/izelnakri/emberx/branch/main/graph/badge.svg)](https://codecov.io/gh/izelnakri/emberx)
 [![npm](https://img.shields.io/npm/v/@emberx/component?label=npm)](https://www.npmjs.com/org/emberx)
 [![npm downloads](https://img.shields.io/npm/dm/@emberx/component)](https://www.npmjs.com/package/@emberx/component)
+[![JSR](https://jsr.io/badges/@izelnakri/emberx-component)](https://jsr.io/@izelnakri/emberx-component)
 [![API docs](https://img.shields.io/badge/docs-API-d4412b)](https://izelnakri.github.io/emberx/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![Sponsor](https://img.shields.io/badge/sponsor-%E2%99%A5-pink)](https://github.com/sponsors/izelnakri)
@@ -30,21 +31,32 @@ module runs in the browser through any bundler, under node, and under Deno as it
 **[API docs](https://izelnakri.github.io/emberx/#packages)** ·
 **[Coverage](https://izelnakri.github.io/emberx/coverage/)** ·
 **[npm](https://www.npmjs.com/org/emberx)** ·
+**[JSR](https://jsr.io/@izelnakri)** ·
 **[Changelog](CHANGELOG.md)**
 
-| Package                                                           | What it is                                                                     | npm                                                                                                                    | API                                                         |
-| ----------------------------------------------------------------- | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| [`@emberx/component`](packages/@emberx/component/README.md)       | Glimmer components, `@tracked`/`@action`/`@service`/`@cached`, rendering       | [![npm](https://img.shields.io/npm/v/@emberx/component?label=)](https://www.npmjs.com/package/@emberx/component)       | [API](https://izelnakri.github.io/emberx/api/component/)    |
-| [`@emberx/router`](packages/@emberx/router/README.md)             | Ember's router: route hooks, query params, substates, actions, `<LinkTo>`      | [![npm](https://img.shields.io/npm/v/@emberx/router?label=)](https://www.npmjs.com/package/@emberx/router)             | [API](https://izelnakri.github.io/emberx/api/router/)       |
-| [`@emberx/helper`](packages/@emberx/helper/README.md)             | template helpers (`eq`, `and`, `take`...), and `helper()` for your own         | [![npm](https://img.shields.io/npm/v/@emberx/helper?label=)](https://www.npmjs.com/package/@emberx/helper)             | [API](https://izelnakri.github.io/emberx/api/helper/)       |
-| [`@emberx/test-helpers`](packages/@emberx/test-helpers/README.md) | `render`, `visit`, `click` and the rest, which wait for what they start        | [![npm](https://img.shields.io/npm/v/@emberx/test-helpers?label=)](https://www.npmjs.com/package/@emberx/test-helpers) | [API](https://izelnakri.github.io/emberx/api/test-helpers/) |
-| [`@emberx/ssr`](packages/@emberx/ssr/README.md)                   | components and whole pages rendered to HTML on a server, hydrated in a browser | [![npm](https://img.shields.io/npm/v/@emberx/ssr?label=)](https://www.npmjs.com/package/@emberx/ssr)                   | [API](https://izelnakri.github.io/emberx/api/ssr/)          |
-| [`@emberx/string`](packages/@emberx/string/README.md)             | Ember's string utilities: `camelize`, `dasherize`...                           | [![npm](https://img.shields.io/npm/v/@emberx/string?label=)](https://www.npmjs.com/package/@emberx/string)             | [API](https://izelnakri.github.io/emberx/api/string/)       |
+| Package                                                           | What it is                                                                     | npm                                                                                                                    | API                                                         | JSR                                                                                                           |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| [`@emberx/component`](packages/@emberx/component/README.md)       | Glimmer components, `@tracked`/`@action`/`@service`/`@cached`, rendering       | [![npm](https://img.shields.io/npm/v/@emberx/component?label=)](https://www.npmjs.com/package/@emberx/component)       | [API](https://izelnakri.github.io/emberx/api/component/)    | [![JSR](https://jsr.io/badges/@izelnakri/emberx-component)](https://jsr.io/@izelnakri/emberx-component)       |
+| [`@emberx/router`](packages/@emberx/router/README.md)             | Ember's router: route hooks, query params, substates, actions, `<LinkTo>`      | [![npm](https://img.shields.io/npm/v/@emberx/router?label=)](https://www.npmjs.com/package/@emberx/router)             | [API](https://izelnakri.github.io/emberx/api/router/)       | [![JSR](https://jsr.io/badges/@izelnakri/emberx-router)](https://jsr.io/@izelnakri/emberx-router)             |
+| [`@emberx/helper`](packages/@emberx/helper/README.md)             | template helpers (`eq`, `and`, `take`...), and `helper()` for your own         | [![npm](https://img.shields.io/npm/v/@emberx/helper?label=)](https://www.npmjs.com/package/@emberx/helper)             | [API](https://izelnakri.github.io/emberx/api/helper/)       | [![JSR](https://jsr.io/badges/@izelnakri/emberx-helper)](https://jsr.io/@izelnakri/emberx-helper)             |
+| [`@emberx/test-helpers`](packages/@emberx/test-helpers/README.md) | `render`, `visit`, `click` and the rest, which wait for what they start        | [![npm](https://img.shields.io/npm/v/@emberx/test-helpers?label=)](https://www.npmjs.com/package/@emberx/test-helpers) | [API](https://izelnakri.github.io/emberx/api/test-helpers/) | [![JSR](https://jsr.io/badges/@izelnakri/emberx-test-helpers)](https://jsr.io/@izelnakri/emberx-test-helpers) |
+| [`@emberx/ssr`](packages/@emberx/ssr/README.md)                   | components and whole pages rendered to HTML on a server, hydrated in a browser | [![npm](https://img.shields.io/npm/v/@emberx/ssr?label=)](https://www.npmjs.com/package/@emberx/ssr)                   | [API](https://izelnakri.github.io/emberx/api/ssr/)          | [![JSR](https://jsr.io/badges/@izelnakri/emberx-ssr)](https://jsr.io/@izelnakri/emberx-ssr)                   |
+| [`@emberx/string`](packages/@emberx/string/README.md)             | Ember's string utilities: `camelize`, `dasherize`...                           | [![npm](https://img.shields.io/npm/v/@emberx/string?label=)](https://www.npmjs.com/package/@emberx/string)             | [API](https://izelnakri.github.io/emberx/api/string/)       | [![JSR](https://jsr.io/badges/@izelnakri/emberx-string)](https://jsr.io/@izelnakri/emberx-string)             |
 
 This README and each package's are the documentation, and the [website](https://izelnakri.github.io/emberx/)
 has each package's API docs, from the JSDoc in its sources; every code example in them that is not
 marked `ignore` runs as a test. `examples/` holds two apps: `basic`, and `blog`, which the
 end-to-end tests drive.
+
+Install from npm, or from [JSR](https://jsr.io/@izelnakri), where each package is
+`@izelnakri/emberx-<package>`:
+
+```sh
+npm install @emberx/component @emberx/router
+deno add jsr:@izelnakri/emberx-component jsr:@izelnakri/emberx-router
+```
+
+To work on emberx itself:
 
 ```sh
 npm ci          # or: make install

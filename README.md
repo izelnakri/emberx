@@ -1,23 +1,74 @@
-# EmberX: Explicitly resolvable & node.js friendly Ember.js
+# EmberX: Ember.js as plain npm packages, with no Ember-specific build
 
-Ember's components, router and test helpers as npm packages you import, with no Ember-specific
-build system: the same modules run in the browser, under node and under Deno, rendered by
-ember-source 7. Routes, components and helpers are imported where they are used, so they can be
-published and shared as plain npm packages too. Tests run with
-[QUnitX](https://github.com/izelnakri/qunitx) and `@emberx/test-helpers`.
+[![CI](https://github.com/izelnakri/emberx/actions/workflows/ci.yml/badge.svg)](https://github.com/izelnakri/emberx/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/izelnakri/emberx/branch/main/graph/badge.svg)](https://codecov.io/gh/izelnakri/emberx)
+[![npm](https://img.shields.io/npm/v/@emberx/component?label=npm)](https://www.npmjs.com/org/emberx)
+[![npm downloads](https://img.shields.io/npm/dm/@emberx/component)](https://www.npmjs.com/package/@emberx/component)
+[![JSR](https://jsr.io/badges/@izelnakri/emberx-component)](https://jsr.io/@izelnakri/emberx-component)
+[![API docs](https://img.shields.io/badge/docs-API-d4412b)](https://izelnakri.github.io/emberx/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![Sponsor](https://img.shields.io/badge/sponsor-%E2%99%A5-pink)](https://github.com/sponsors/izelnakri)
 
-| Package                                                           | What it is                                                                     |
-| ----------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| [`@emberx/component`](packages/@emberx/component/README.md)       | Glimmer components, `@tracked`/`@action`/`@service`/`@cached`, rendering       |
-| [`@emberx/router`](packages/@emberx/router/README.md)             | Ember's router: route hooks, query params, substates, actions, `<LinkTo>`      |
-| [`@emberx/helper`](packages/@emberx/helper/README.md)             | template helpers (`eq`, `and`, `take`...), and `helper()` for your own         |
-| [`@emberx/test-helpers`](packages/@emberx/test-helpers/README.md) | `render`, `visit`, `click` and the rest, which wait for what they start        |
-| [`@emberx/ssr`](packages/@emberx/ssr/README.md)                   | components and whole pages rendered to HTML on a server, hydrated in a browser |
-| [`@emberx/string`](packages/@emberx/string/README.md)             | Ember's string utilities: `camelize`, `dasherize`...                           |
+**Ember's rendering engine, router and test helpers, as ES modules you import.** No Ember CLI, no
+resolver, no addons: write a component in a `.ts` file, import it where it is used, and the same
+module runs in the browser through any bundler, under node, and under Deno as it is.
 
-This README and each package's are the documentation; every code example in them that is not
-marked `ignore` runs as a test. `examples/` holds two apps: `basic`, and `blog`, which the
-end-to-end tests drive.
+- **Glimmer, from ember-source 7.** `@tracked` state and templates that update only the DOM that
+  depends on what changed. Templates compile in the browser on first render, or at build time when
+  you want no `eval`.
+- **Ember's router, whole.** Nested routes, model hooks, query params, loading and error substates,
+  redirects, page titles and `<head>`. A page is a route: no controllers.
+- **Server rendering with hydration.** `renderURL()` renders any URL with a router of its own per
+  request, and answers with its status; the browser adopts the server's HTML instead of rebuilding
+  it, and its models instead of fetching them again.
+- **Tests that run anywhere.** The same test file runs under node, Deno and real browsers through
+  [QUnitX](https://github.com/izelnakri/qunitx), and `@emberx/test-helpers` waits for the actions,
+  transitions and renders it starts, with no runloop.
+- **Shareable by design.** A template's `static includes` names what it uses, so a route, a
+  component or a helper is a module any npm package can ship.
+
+**[Website](https://izelnakri.github.io/emberx/)** ·
+**[API docs](https://izelnakri.github.io/emberx/#packages)** ·
+**[Coverage](https://izelnakri.github.io/emberx/coverage/)** ·
+**[npm](https://www.npmjs.com/org/emberx)** ·
+**[JSR](https://jsr.io/@izelnakri)** ·
+**[Changelog](CHANGELOG.md)**
+
+| Package                                                           | What it is                                                                     | npm                                                                                                                    | API                                                         | JSR                                                                                                           |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| [`@emberx/component`](packages/@emberx/component/README.md)       | Glimmer components, `@tracked`/`@action`/`@service`/`@cached`, rendering       | [![npm](https://img.shields.io/npm/v/@emberx/component?label=)](https://www.npmjs.com/package/@emberx/component)       | [API](https://izelnakri.github.io/emberx/api/component/)    | [![JSR](https://jsr.io/badges/@izelnakri/emberx-component)](https://jsr.io/@izelnakri/emberx-component)       |
+| [`@emberx/router`](packages/@emberx/router/README.md)             | Ember's router: route hooks, query params, substates, actions, `<LinkTo>`      | [![npm](https://img.shields.io/npm/v/@emberx/router?label=)](https://www.npmjs.com/package/@emberx/router)             | [API](https://izelnakri.github.io/emberx/api/router/)       | [![JSR](https://jsr.io/badges/@izelnakri/emberx-router)](https://jsr.io/@izelnakri/emberx-router)             |
+| [`@emberx/helper`](packages/@emberx/helper/README.md)             | template helpers (`eq`, `and`, `take`...), and `helper()` for your own         | [![npm](https://img.shields.io/npm/v/@emberx/helper?label=)](https://www.npmjs.com/package/@emberx/helper)             | [API](https://izelnakri.github.io/emberx/api/helper/)       | [![JSR](https://jsr.io/badges/@izelnakri/emberx-helper)](https://jsr.io/@izelnakri/emberx-helper)             |
+| [`@emberx/test-helpers`](packages/@emberx/test-helpers/README.md) | `render`, `visit`, `click` and the rest, which wait for what they start        | [![npm](https://img.shields.io/npm/v/@emberx/test-helpers?label=)](https://www.npmjs.com/package/@emberx/test-helpers) | [API](https://izelnakri.github.io/emberx/api/test-helpers/) | [![JSR](https://jsr.io/badges/@izelnakri/emberx-test-helpers)](https://jsr.io/@izelnakri/emberx-test-helpers) |
+| [`@emberx/ssr`](packages/@emberx/ssr/README.md)                   | components and whole pages rendered to HTML on a server, hydrated in a browser | [![npm](https://img.shields.io/npm/v/@emberx/ssr?label=)](https://www.npmjs.com/package/@emberx/ssr)                   | [API](https://izelnakri.github.io/emberx/api/ssr/)          | [![JSR](https://jsr.io/badges/@izelnakri/emberx-ssr)](https://jsr.io/@izelnakri/emberx-ssr)                   |
+| [`@emberx/string`](packages/@emberx/string/README.md)             | Ember's string utilities: `camelize`, `dasherize`...                           | [![npm](https://img.shields.io/npm/v/@emberx/string?label=)](https://www.npmjs.com/package/@emberx/string)             | [API](https://izelnakri.github.io/emberx/api/string/)       | [![JSR](https://jsr.io/badges/@izelnakri/emberx-string)](https://jsr.io/@izelnakri/emberx-string)             |
+
+This README and each package's are the documentation, and the [website](https://izelnakri.github.io/emberx/)
+has each package's API docs, from the JSDoc in its sources; every code example in them that is not
+marked `ignore` runs as a test.
+
+`examples/` holds two apps, each rendered on a server and hydrated in the browser. Deno serves
+them with read access to the repository and network access to localhost, nothing else:
+
+```sh
+npm run examples:basic   # a component with a service, rendered with renderToString: no data
+npm run examples:blog    # a routed blog, its comments fetched from its own API as it renders
+npm run examples:blog -- --precompile   # the same, with its templates compiled at build time
+```
+
+They serve http://localhost:1234 (`PORT=4000 npm run examples:blog` for another port).
+`benches/ssr-examples.bench.ts` measures both rendering, with templates compiled at runtime and at
+build time. The end-to-end tests drive the blog.
+
+Install from npm, or from [JSR](https://jsr.io/@izelnakri), where each package is
+`@izelnakri/emberx-<package>`:
+
+```sh
+npm install @emberx/component @emberx/router
+deno add jsr:@izelnakri/emberx-component jsr:@izelnakri/emberx-router
+```
+
+To work on emberx itself:
 
 ```sh
 npm ci          # or: make install
@@ -28,21 +79,23 @@ make dev        # serves examples/blog on http://localhost:1234
 
 Everything runs through `make`; run `make` on its own for the full list.
 
-| Command              | What it does                                            |
-| -------------------- | ------------------------------------------------------- |
-| `make check`         | format + lint + typecheck + tests, the core CI checks   |
-| `make test`          | the node, Deno and browser suites, with no build        |
-| `make test-node`     | the full suite under node + jsdom, plus @emberx/ssr     |
-| `make test-deno`     | the same suite under Deno                               |
-| `make test-doctests` | the code examples in the docs, run and checked          |
-| `make test-browser`  | the full suite in a real browser (chromium)             |
-| `make coverage`      | browser-suite line coverage, written to `tmp/coverage/` |
-| `make bench`         | runtime template-compilation and per-render benchmarks  |
-| `make build`         | `dist/` and `.d.ts` for every package, for publishing   |
-| `make dev`           | example app with watch rebuilds                         |
+| Command              | What it does                                           |
+| -------------------- | ------------------------------------------------------ |
+| `make check`         | format + lint + typecheck + tests, the core CI checks  |
+| `make test`          | the node, Deno and browser suites, with no build       |
+| `make test-node`     | the full suite under node + jsdom, plus @emberx/ssr    |
+| `make test-deno`     | the same suite under Deno                              |
+| `make test-doctests` | the code examples in the docs, run and checked         |
+| `make test-browser`  | the full suite in a real browser (chromium)            |
+| `make coverage`      | coverage of the packages' sources, to `tmp/coverage/`  |
+| `make site`          | the docs site: API docs, coverage and the landing page |
+| `make bench`         | runtime template-compilation and per-render benchmarks |
+| `make build`         | `dist/` and `.d.ts` for every package, for publishing  |
+| `make dev`           | example app with watch rebuilds                        |
 
 CI runs these same checks as separate jobs, and also runs the browser suite in Firefox and WebKit,
-a benchmark regression check and a package verification step.
+a benchmark regression check, a package verification step, and coverage, which it sends to
+Codecov.
 
 Linting is `deno lint` and formatting is prettier, the same pair qunitx-cli uses. `deno fmt` would
 be the natural partner, but it always moves a class-field decorator onto its own line, turning
@@ -123,6 +176,12 @@ without a name is named after its path, one name segment for each path segment:
 
 Give a route a `name` when the one from its path isn't the one you want, as the comments
 route above does: from its path it would be `posts.slug.comments`.
+
+A URL no route matches goes to the `not-found` route. Unless the app declares a catch-all,
+that is `NotFoundRoute`, a page that says nothing is at the URL, titled "Page not found". Declare
+`{ path: '/*path', route: AppNotFoundRoute }` to show a page of your own, extending
+`NotFoundRoute` to keep its title; with `resolve` (below), a `not-found` route it finds
+replaces it too. An `@emberx/ssr` server answers such a page with a 404.
 
 A route's parents need no definition of their own. With `/admin/reports` declared alone, the
 router creates an `admin` route above `admin.reports`, with no class and nothing to show, the
@@ -453,6 +512,10 @@ and the page stays as it was: an app with no error routes catches it, or declare
 application route for everything. An aborted transition, one `willTransition` stopped for
 example, is no failure.
 
+To follow transitions in the console, turn on `Router.LOG_ROUTES`, which logs each route the
+router looks up, and `Router.LOG_MODELS`, which logs each model and transition a route sets up.
+Both are off by default.
+
 #### Actions on a page:
 
 In emberx a page is a route: one class holds the page's hooks, its template and everything the
@@ -754,9 +817,9 @@ instead of building the page again.
 
 For a whole app, `renderURL(url)` renders the page a URL shows: the router goes to it as it
 would in a browser, model hooks, redirects and loading or error substates included, and the page
-it ends on renders to HTML. It returns the page's `title` and the routes' `models` with it: the
-browser's `Router.start({ models })` takes those on its first transition instead of fetching
-them again, and its first render hydrates the server's page. Each call renders with a router of
+it ends on renders to HTML. It returns the page's `title` and the routes' `models` with it: left
+in the page's `#shoebox` element, the browser's `Router.start()` reads them, and its first
+transition takes them instead of fetching them again; its first render hydrates the server's page. Each call renders with a router of
 its own, so requests that arrive together render at once, each with the `services` it is given.
 See [@emberx/ssr](packages/@emberx/ssr/README.md) for a server.
 

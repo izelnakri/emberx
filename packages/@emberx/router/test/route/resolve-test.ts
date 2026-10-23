@@ -1,7 +1,6 @@
 import { module, test } from 'qunitx';
 import Router, { Route, hbs } from '@emberx/router';
-import { visit, currentURL, currentRouteName, waitFor } from '@emberx/test-helpers';
-import setupTest from '../helpers/index.ts';
+import { visit, currentURL, currentRouteName, waitFor, setupRenderingTest } from '@emberx/test-helpers';
 
 // Settles the slow route's model, for the loading tests.
 let release: (() => void) | null = null;
@@ -73,7 +72,7 @@ module('@emberx/router | Routes found by name, with resolve', function (hooks) {
   });
 
   module('a Router.map() definition', function (hooks) {
-    setupTest(hooks, () => {
+    setupRenderingTest(hooks, () => {
       return Router.start(
         [],
         function () {
@@ -110,7 +109,7 @@ module('@emberx/router | Routes found by name, with resolve', function (hooks) {
   });
 
   module('route definitions', function (hooks) {
-    setupTest(hooks, () => {
+    setupRenderingTest(hooks, () => {
       return Router.start(
         [
           { path: '/slow', route: SlowRoute },
@@ -152,7 +151,7 @@ module('@emberx/router | Routes found by name, with resolve', function (hooks) {
   module('a declaration and resolve for the same route', function (hooks) {
     let errors: unknown[] = [];
 
-    setupTest(hooks, () => {
+    setupRenderingTest(hooks, () => {
       errors = [];
       const consoleError = console.error;
       console.error = (message) => errors.push(message);

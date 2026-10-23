@@ -1,7 +1,7 @@
 import Component, { renderComponent, action, tracked, didRender, loadTemplateCompiler } from '@emberx/component';
 import { precompileTemplate, precompileTemplates } from '@emberx/component/precompile';
 import { module, test } from 'qunitx';
-import { setupRenderingTest } from './helpers/index.ts';
+import { setupRenderingTest } from '@emberx/test-helpers';
 
 module('@emberx/component | Precompiled templates', function (hooks) {
   setupRenderingTest(hooks);

@@ -8,7 +8,7 @@ import Component, {
   tracked,
 } from '@emberx/component';
 import { module, test } from 'qunitx';
-import { setupRenderingTest } from './helpers/index.ts';
+import { setupRenderingTest } from '@emberx/test-helpers';
 
 module('@emberx/component | @cached and registerDestructor', function (hooks) {
   setupRenderingTest(hooks);

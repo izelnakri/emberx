@@ -1,8 +1,11 @@
 import Router, { Owner } from '@emberx/router';
+import { setup as setupDOMAssertions, type Assert as DOMAssert } from 'qunit-dom';
+import type QUnitxAssert from 'qunitx/assert';
 import { resetRendering } from '@emberx/component';
 import { setContext } from './context.ts';
 import { pauseTest, resumeTest } from './pause.ts';
 import { catchActionErrors, resetOnerror, stopCatchingActionErrors } from './onerror.ts';
+import './qunitx-assert.ts';
 
 /**
  * The per-test object QUnit constructs and applies every hook against. emberx
@@ -32,9 +35,14 @@ interface QUnitHooks {
   after: (callback: QUnitHookCallback) => void;
 }
 
+/** A test's `assert`: QUnitX's, with qunit-dom's `assert.dom`. */
+export type Assert = QUnitxAssert & DOMAssert;
+
 export function setupTest(hooks: QUnitHooks, _startRouter?: () => unknown): void {
   hooks.beforeEach(async function (assert) {
     setContext(this, assert);
+    // `assert.dom(selector)`, which looks in #ember-testing unless given another root.
+    setupDOMAssertions(assert as unknown as DOMAssert);
 
     this.pauseTest = pauseTest;
     this.resumeTest = resumeTest;

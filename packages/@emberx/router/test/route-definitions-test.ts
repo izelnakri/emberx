@@ -1,7 +1,6 @@
 import { module, test } from 'qunitx';
-import Router, { Route, LinkTo, hbs } from '@emberx/router';
-import { visit, render, currentURL, currentRouteName } from '@emberx/test-helpers';
-import setupTest from './helpers/index.ts';
+import Router, { Route, LinkTo, NotFoundRoute as NotFoundPage, hbs } from '@emberx/router';
+import { visit, render, currentURL, currentRouteName, setupRenderingTest } from '@emberx/test-helpers';
 
 class HomeRoute extends Route {
   static template = hbs`<h1 data-test-title>Home</h1>`;
@@ -33,7 +32,7 @@ class NotFoundRoute extends Route {
 
 module('@emberx/router | Route definitions', function () {
   module('a name from the path', function (hooks) {
-    setupTest(hooks, () => {
+    setupRenderingTest(hooks, () => {
       return Router.start([
         { path: '/', route: HomeRoute },
         { path: '/posts', route: PostsRoute },
@@ -104,8 +103,41 @@ module('@emberx/router | Route definitions', function () {
     });
   });
 
+  module('without a catch-all', function (hooks) {
+    setupRenderingTest(hooks, () => Router.start([{ path: '/', route: HomeRoute }]));
+
+    test('a URL no route matches shows the page NotFoundRoute renders', async function (assert) {
+      await visit('/nowhere/at/all');
+
+      assert.equal(currentRouteName(), 'not-found');
+      assert.strictEqual(Router.owner.routes['not-found'].route, NotFoundPage);
+      assert.dom('[data-test-not-found] h1').hasText('Page not found');
+      assert.dom('[data-test-not-found] p').hasText('There is no page at /nowhere/at/all.');
+      assert.equal(this.owner.lookup('service:router').currentTitle, 'Page not found');
+    });
+  });
+
+  module('without a catch-all, with resolve', function (hooks) {
+    class AppNotFoundRoute extends NotFoundPage {
+      static template = hbs`<h1 data-test-title>Lost? Try the home page.</h1>`;
+    }
+
+    setupRenderingTest(hooks, () =>
+      Router.start([{ path: '/', route: HomeRoute }], {
+        resolve: (name) => (name === 'not-found' ? { default: AppNotFoundRoute } : undefined),
+      }),
+    );
+
+    test('the not-found route it finds replaces NotFoundRoute', async function (assert) {
+      await visit('/nowhere');
+
+      assert.dom('[data-test-title]').hasText('Lost? Try the home page.');
+      assert.equal(this.owner.lookup('service:router').currentTitle, 'Page not found', 'its title is inherited');
+    });
+  });
+
   module('a name given', function (hooks) {
-    setupTest(hooks);
+    setupRenderingTest(hooks);
 
     test('a name in the definition is used instead of the one from its path', function (assert) {
       Router.start([{ path: '/articles/:id', name: 'posts.post', route: PostRoute }]);
@@ -116,7 +148,7 @@ module('@emberx/router | Route definitions', function () {
   });
 
   module('a route declared twice', function (hooks) {
-    setupTest(hooks);
+    setupRenderingTest(hooks);
 
     test('the same name twice is reported, and the later declaration is the one used', function (assert) {
       const errors = consoleErrorsOf(() =>

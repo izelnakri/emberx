@@ -1,19 +1,6 @@
 import RSVP from 'rsvp';
 import { Route, LinkTo, hbs } from '@emberx/router';
 
-class CommentStore {
-  static async findAll(queryParams) {
-    const targetQueryParams = Object.keys(queryParams).reduce((result, key) => {
-      result.set(key, queryParams[key]);
-
-      return result;
-    }, new URLSearchParams());
-    const fullURL = targetQueryParams.toString() === '' ? `/comments` : `/comments?${targetQueryParams.toString()}`;
-    const response = await fetch(fullURL);
-    return await response.json();
-  }
-}
-
 export default class PreviewUserRoute extends Route {
   // @service intl;
 
@@ -29,7 +16,12 @@ export default class PreviewUserRoute extends Route {
       console.log('transition is', transition);
     }
 
-    return RSVP.hash({ comments: CommentStore.findAll(params.queryParams || {}) });
+    // The blog's API service (services/api.ts), from the browser, or from the server rendering the page.
+    const query = new URLSearchParams(
+      Object.entries(params.queryParams ?? {}).filter(([, value]) => value !== undefined) as [string, string][],
+    ).toString();
+
+    return RSVP.hash({ comments: this.api.get(query === '' ? '/comments' : `/comments?${query}`) });
   }
 
   static includes = { LinkTo };

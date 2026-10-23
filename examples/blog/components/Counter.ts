@@ -1,9 +1,9 @@
-import Component, { tracked, action } from '@emberx/component';
+import Component, { tracked, action, hbs } from '@emberx/component';
 
 export default class extends Component {
   @tracked accessor count = 1;
 
-  static template = `<button {{on "click" this.incrementCounter}}>Counter: {{this.count}}</button>`;
+  static template = hbs`<button {{on "click" this.incrementCounter}}>Counter: {{this.count}}</button>`;
 
   @action
   incrementCounter() {

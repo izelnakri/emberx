@@ -1,7 +1,6 @@
 import { module, test } from 'qunitx';
 import Router, { Route, hbs } from '@emberx/router';
-import { visit, currentURL, click, settled } from '@emberx/test-helpers';
-import setupTest from '../helpers/index.ts';
+import { visit, currentURL, click, settled, setupRenderingTest } from '@emberx/test-helpers';
 import { setupHookSteps } from '../helpers/routes/logged-route.ts';
 import QueryParamParentRoute from '../helpers/routes/query-param-parent-route.ts';
 import QueryParamChildRoute from '../helpers/routes/query-param-child-route.ts';
@@ -14,7 +13,7 @@ const DEFAULTS = { page: 1, sort: 'oldest', category: 'all' };
 const WITH_CHILD_DEFAULTS = { ...DEFAULTS, comments: false };
 
 module('@emberx/router | Query params', function (hooks) {
-  setupTest(hooks, () => {
+  setupRenderingTest(hooks, () => {
     return Router.start([
       { path: '/', name: 'home', route: HomeRoute },
       { path: '/posts', name: 'posts', route: QueryParamParentRoute },

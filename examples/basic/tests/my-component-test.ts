@@ -1,6 +1,5 @@
 import { module, test } from 'qunitx';
-import { render, click, hbs } from '@emberx/test-helpers';
-import { setupRenderingTest } from '../../../test/helpers.ts';
+import { render, click, hbs, setupRenderingTest } from '@emberx/test-helpers';
 import MyComponent from '../src/MyComponent.ts';
 import LocaleService from '../src/services/LocaleService.ts';
 

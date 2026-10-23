@@ -1,6 +1,6 @@
-import helper from './helper.ts';
+import helper, { type HelperFunction } from './helper.ts';
 
-const gt = helper(function ([left, right]: number[], hash) {
+const gt: HelperFunction<number[], { forceNumber?: boolean }> = helper(function ([left, right]: number[], hash) {
   if (hash.forceNumber) {
     if (typeof left !== 'number') {
       left = Number(left);
@@ -13,7 +13,7 @@ const gt = helper(function ([left, right]: number[], hash) {
   return left > right;
 });
 
-const gte = helper(function ([left, right]: number[], hash) {
+const gte: HelperFunction<number[], { forceNumber?: boolean }> = helper(function ([left, right]: number[], hash) {
   if (hash.forceNumber) {
     if (typeof left !== 'number') {
       left = Number(left);

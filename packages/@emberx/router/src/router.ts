@@ -1,6 +1,7 @@
 export { hbs } from '@emberx/component';
 import RouterService from './router-service.ts';
 import Route from './route.ts';
+import NotFoundRoute from './not-found-route.ts';
 import Owner, { type RouteRegistry } from './owner.ts';
 import RouteMapContext from './route-map-context.ts';
 import DefaultResolver from './resolvers/default.ts';
@@ -8,6 +9,8 @@ import { isSubstateName, getSubstatePath } from './substates.ts';
 
 /** The name of the route above every route. */
 const APPLICATION = 'application';
+/** The id of the element a server leaves the page's models in: see StartOptions.shoebox. */
+const SHOEBOX = 'shoebox';
 
 export interface FreeObject {
   [propName: string]: any;
@@ -15,22 +18,22 @@ export interface FreeObject {
 
 export interface RouteDefinition {
   path?: string;
-  route: Route | undefined;
+  route: typeof Route | undefined;
   /** What LinkTo, transitionTo and modelFor call the route. Without one, it comes from the path: see routeNameFromPath. */
   name?: string;
   options?: FreeObject;
   /** What the route's own URL shows, when it has routes under it and should not show `route`. */
-  indexRoute?: Route;
+  indexRoute?: typeof Route;
   /**
    * Shown while this route, or a route under it without a loadingRoute of its
    * own, is loading. Ember's `<name>_loading` substate.
    */
-  loadingRoute?: Route;
+  loadingRoute?: typeof Route;
   /**
    * Shown when this route, or a route under it without an errorRoute of its
    * own, fails, with the error as its model. Ember's `<name>_error` substate.
    */
-  errorRoute?: Route;
+  errorRoute?: typeof Route;
 }
 
 /** A route class, or a module whose default export is one, as `import.meta.glob` returns them. */
@@ -56,8 +59,15 @@ export interface StartOptions {
    * @emberx/ssr's renderURL returns them: the first transition's routes take
    * these instead of running their model hooks, so the browser does not fetch
    * again what the page it hydrates already shows. Their other hooks run.
+   * Without them, they are read from the shoebox.
    */
   models?: Record<string, unknown>;
+  /**
+   * The id of the `<script type="application/json">` element a server left
+   * the models in: `shoebox` by default. Router.start() reads it, when the
+   * document has one and no `models` are given, and removes it.
+   */
+  shoebox?: string;
 }
 
 export interface InstanceOptions {
@@ -73,7 +83,7 @@ export interface InstanceOptions {
 
 export interface routerJSRouteDefinition {
   path?: string;
-  route: Route | undefined;
+  route: typeof Route | undefined;
   options?: FreeObject;
   name: string;
   nestedRoutes?: [routerJSRouteDefinition?];
@@ -83,8 +93,10 @@ export interface routerJSRouteDefinition {
 // NOTE: there is this.recognizer.add (when recognizer is an instance via new RouteRecognizer())
 export default class Router {
   static Resolver = DefaultResolver;
-  static LOG_ROUTES = true;
-  static LOG_MODELS = true;
+  /** Whether the router logs each route it looks up: off by default, on to debug a transition. */
+  static LOG_ROUTES = false;
+  /** Whether the router logs each model and transition its routes set up: off by default, as LOG_ROUTES. */
+  static LOG_MODELS = false;
   /**
    * Whether the routers started from now on run under test, as `Ember.testing`
    * says for Ember: @emberx/test-helpers' setupTest() turns it on for each test.
@@ -96,7 +108,7 @@ export default class Router {
   /** The routes Router.start() declared, as router_js maps them: each router it or createInstance() makes maps them. */
   static #routerJSRoutes: Array<routerJSRouteDefinition> = [];
 
-  static get owner() {
+  static get owner(): typeof Owner {
     return Owner;
   }
 
@@ -108,7 +120,7 @@ export default class Router {
     return Owner;
   }
 
-  static visit(url: string) {
+  static visit(url: string): Promise<void> {
     const routerService = Owner.lookup('service:router');
     if (!routerService) {
       throw new Error('Router.visit() was called before Router.start().');
@@ -121,9 +133,10 @@ export default class Router {
     arrayOfRouteDefinitions: Array<RouteDefinition> = [],
     routeMapOrOptions?: (() => void) | StartOptions,
     startOptions: StartOptions = {},
-  ): Router {
+  ): typeof Router {
     const routeMap = typeof routeMapOrOptions === 'function' ? routeMapOrOptions : undefined;
-    const { resolve, location, models } = typeof routeMapOrOptions === 'object' ? routeMapOrOptions : startOptions;
+    const options = typeof routeMapOrOptions === 'object' ? routeMapOrOptions : startOptions;
+    const { resolve, location, models = readShoebox(options.shoebox ?? SHOEBOX) } = options;
     stopPreviousRouter();
     Owner.clear('routes');
 
@@ -174,7 +187,7 @@ export default class Router {
     return Owner.routes;
   }
 
-  static reset() {
+  static reset(): typeof Router {
     stopPreviousRouter();
     Owner.clear('routes');
     Owner.clear('services');
@@ -263,8 +276,7 @@ export default class Router {
       Owner.routes['not-found'] = {
         name: 'not-found',
         options: { path: '/*slug' },
-        // @ts-ignore
-        route: class NotFoundRoute extends Route {},
+        route: NotFoundRoute,
       };
     }
 
@@ -343,6 +355,15 @@ function mapRoutes(router: RouterService, routes: Array<routerJSRouteDefinition>
   });
 
   return router;
+}
+
+/** The models a server left in the element with the id `id`, which is then removed: see StartOptions.shoebox. */
+function readShoebox(id: string): Record<string, unknown> | undefined {
+  const element = typeof document === 'undefined' ? null : document.getElementById(id);
+  if (!element) return;
+
+  element.remove();
+  return JSON.parse(element.textContent as string);
 }
 
 /**
@@ -460,7 +481,7 @@ function registerSubstate({ name: substateName, route }: RouteDefinition) {
 function resolveByConvention(resolve: (name: string) => ResolvedRoute) {
   const find = (name: string) => {
     const resolved = resolve(name);
-    return (typeof resolved === 'function' ? resolved : resolved?.default) as Route | undefined;
+    return typeof resolved === 'function' ? resolved : resolved?.default;
   };
   const names = Object.keys(Owner.routes).filter((name) => name !== 'not-found');
 
@@ -468,6 +489,9 @@ function resolveByConvention(resolve: (name: string) => ResolvedRoute) {
     if (!Owner.routes[name].route) {
       Owner.routes[name].route = find(name);
     }
+  }
+  if (Owner.routes['not-found']?.route === NotFoundRoute) {
+    Owner.routes['not-found'].route = find('not-found') ?? NotFoundRoute;
   }
   if (!Owner.routes[APPLICATION]?.route) {
     const route = find(APPLICATION);

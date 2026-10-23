@@ -71,6 +71,7 @@ const PUBLIC_API: Record<string, string[]> = {
   '@emberx/component/precompile': ['precompileTemplate', 'precompileTemplates'],
   '@emberx/router': [
     'LinkTo',
+    'NotFoundRoute',
     'Owner',
     'Route',
     'RouterService',

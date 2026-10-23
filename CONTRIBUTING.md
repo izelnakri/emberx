@@ -30,14 +30,20 @@ packages/@emberx/       the seven published packages
   router/               routing on top of router_js
   test-helpers/         render/visit/click/settled, no runloop
   ssr/                  server-side rendering
-examples/basic          a component, a helper and a service, with its tests in tests/
-examples/blog           the app the end-to-end tests in test/e2e/ drive
+examples/basic          a component, a helper and a service, with its tests in tests/, and server.ts
+examples/blog           the app the end-to-end tests in test/e2e/ drive, and server.ts
+examples/build.ts       bundles an example for examples/serve.ts, which serves it: npm run examples:*
 benches/                Deno.bench and Chrome.bench files; results stay on your machine
+docs/index.html         the landing page of izelnakri.github.io/emberx, which `make site` fills in
 build.ts                the package build: each dist/ and its .d.ts files
 scripts/                vendoring, benchmarks, publishing, the release test, node's loader
 test/                   the suites' entry points, the public API test, the blog's E2E tests;
                         each package's own suite is in packages/@emberx/*/test/
 ```
+
+https://izelnakri.github.io/emberx/ is what `make site` builds in `tmp/site/`: the landing page
+(`docs/index.html`), each package's API docs from its JSDoc (`make docs`) and the coverage report.
+The Pages workflow deploys it on every push to `main`; `npx serve tmp/site` previews it.
 
 `build.ts` and the scripts are TypeScript that Deno runs, as in qunitx and qunitx-cli. Two
 exceptions: `scripts/register.ts` is node's loader for the sources, and
@@ -206,6 +212,11 @@ releases as the next minor version (`LEVEL=minor`), from 1.0 the next major. An 
 a feature, a minor version; a fix, a patch. Changing `test/public-api-test.ts` is how a change
 to the API is made on purpose rather than by accident.
 
+An app's routes and components type-check under Deno's `noImplicitOverride`, which
+`test/types.ts` keeps true. So the base classes declare no static an app sets, which would need
+`override`: `EmberXComponentClass` and `RouteHooks` type them, and a `static {}` block sets their
+defaults.
+
 ## Releasing
 
 ```sh
@@ -217,9 +228,15 @@ matches the lockfile (`npm ci` after a pull that changed it): `npm publish` happ
 release commit, so releasing from anywhere else would publish code `main` never had. It runs the
 checks cheapest first: `make check-static`, `make bench-check`, the suites, the doctests, then
 `make test-release`. Then it stamps all seven packages to one version, their `@emberx/*` ranges
-included, publishes them leaf-first, prepends the release's section to `CHANGELOG.md` with
-[git-cliff](https://git-cliff.org), commits, tags and pushes. CI creates the GitHub release from
-the tag.
+included, and publishes each once the registry serves the `@emberx` packages it depends on:
+`npm publish` returns before the registry serves what it accepted. Then it prepends the release's
+section to `CHANGELOG.md` with [git-cliff](https://git-cliff.org), commits, tags and pushes. CI
+creates the GitHub release from the tag, and publishes the same version to JSR.
+
+On JSR each package is `@izelnakri/emberx-<package>`, since a JSR name has one scope.
+`npm run build:jsr` builds them in `tmp/jsr/`, and the tag's `publish-jsr` job publishes them.
+`make jsr-check`, in `make check-static` and CI, is that publish as a dry run. Each package must
+exist on jsr.io, linked to this repository, before a tag first publishes it.
 
 The changelog is built from conventional commit subjects: `feat`, `fix`, `perf`, `refactor`,
 `deps` and `docs` appear in it; `build`, `ci`, `test` and `chore` do not.

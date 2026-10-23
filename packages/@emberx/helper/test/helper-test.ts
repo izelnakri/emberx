@@ -3,8 +3,7 @@ import helper from '@emberx/helper';
 import { tracked } from '@emberx/component';
 import { action } from '@emberx/component';
 import { module, test } from 'qunitx';
-import { click } from '@emberx/test-helpers';
-import { setupRenderingTest } from './helpers/index.ts';
+import { click, setupRenderingTest } from '@emberx/test-helpers';
 
 module('@emberx/helper | Public API', function (hooks) {
   setupRenderingTest(hooks);

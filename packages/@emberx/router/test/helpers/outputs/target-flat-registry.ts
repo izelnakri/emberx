@@ -1,4 +1,4 @@
-import { Route } from '@emberx/router';
+import { NotFoundRoute } from '@emberx/router';
 
 export default {
   admin: {
@@ -97,7 +97,7 @@ export default {
     options: {
       path: '/*slug',
     },
-    route: class NotFoundRoute extends Route {},
+    route: NotFoundRoute,
     name: 'not-found',
   },
   public: {

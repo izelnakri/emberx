@@ -1,7 +1,6 @@
 import { module, test } from 'qunitx';
 import Router, { Route, hbs, action, tracked } from '@emberx/router';
-import { visit, click, currentURL, currentRouteName, waitFor } from '@emberx/test-helpers';
-import setupTest from '../helpers/index.ts';
+import { visit, click, currentURL, currentRouteName, waitFor, setupRenderingTest } from '@emberx/test-helpers';
 import LoggedRoute, { setupHookSteps } from '../helpers/routes/logged-route.ts';
 
 const POSTS = [
@@ -106,7 +105,7 @@ class ErrorRoute extends Route {
 }
 
 module('@emberx/router | The application route', function (hooks) {
-  setupTest(hooks, () => {
+  setupRenderingTest(hooks, () => {
     return Router.start([
       { name: 'application', route: ApplicationRoute, loadingRoute: LoadingRoute, errorRoute: ErrorRoute },
       { path: '/', name: 'home', route: HomeRoute },
@@ -278,7 +277,7 @@ module('@emberx/router | The application route', function (hooks) {
 });
 
 module('@emberx/router | The application route, when none is declared', function (hooks) {
-  setupTest(hooks, () => {
+  setupRenderingTest(hooks, () => {
     return Router.start(
       [
         { path: '/about', name: 'about', route: AboutRoute },
@@ -335,7 +334,7 @@ module('@emberx/router | The application route, when none is declared', function
 });
 
 module('@emberx/router | The application route, declared for its loading and error routes only', function (hooks) {
-  setupTest(hooks, () => {
+  setupRenderingTest(hooks, () => {
     return Router.start([
       { name: 'application', loadingRoute: LoadingRoute, errorRoute: ErrorRoute },
       { path: '/about', name: 'about', route: AboutRoute },

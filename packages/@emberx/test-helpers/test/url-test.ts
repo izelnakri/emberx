@@ -1,7 +1,6 @@
 import { module, test } from 'qunitx';
-import { visit, currentURL, currentRouteName } from '@emberx/test-helpers';
+import { visit, currentURL, currentRouteName, setupRenderingTest } from '@emberx/test-helpers';
 import Router, { Route, hbs } from '@emberx/router';
-import { setupRenderingTest } from './helpers/index.ts';
 
 module('@emberx/test-helpers | url helpers', function (hooks) {
   class IndexRoute extends Route {
@@ -71,7 +70,7 @@ module('@emberx/test-helpers | url helpers', function (hooks) {
 
     await visit('/someunknownthing');
 
-    assert.dom('[data-test-route-title]').hasText('Route: not-found. This route is missing a template!');
+    assert.dom('[data-test-not-found] h1').hasText('Page not found');
     assert.equal(currentURL(), '/someunknownthing');
     assert.equal(currentRouteName(), 'not-found');
   });
@@ -85,7 +84,7 @@ module('@emberx/test-helpers | url helpers', function (hooks) {
 
     await visit('/asdaidasdasd'); // TODO: then should wait for parent children resolution
 
-    assert.dom('[data-test-route-title]').hasText('Route: not-found. This route is missing a template!');
+    assert.dom('[data-test-not-found] h1').hasText('Page not found');
     assert.equal(currentURL(), '/asdaidasdasd');
     assert.equal(currentRouteName(), 'not-found');
 

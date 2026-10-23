@@ -22,30 +22,28 @@ import { spawnSync } from 'node:child_process';
 import { PUBLISHED, publishedDirectory } from '../build.ts';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+/** How long the registry may take to serve a version it accepted: @emberx/vendor, the largest, took two minutes. */
+const REGISTRY_TIMEOUT = 10 * 60 * 1000;
+const REGISTRY_POLL_INTERVAL = 5000;
 
 const level = process.argv[2];
 const isDryRun = process.argv.includes('--dry-run');
 
-const rootManifest = await readJSON(`${ROOT}/package.json`);
+const rootManifest = JSON.parse(await readFile(`${ROOT}/package.json`, 'utf8'));
 const version = nextVersion(rootManifest.version, level);
 
 // Checked before anything is stamped: npm rejects a version that already
 // exists, and finding that out after the first package has gone out leaves a
 // half-published set.
 for (const name of PUBLISHED) {
-  const probe = spawnSync('npm', ['view', `@emberx/${name}@${version}`, 'version'], {
-    cwd: ROOT,
-    encoding: 'utf8',
-    shell: process.platform === 'win32',
-  });
-  if (probe.stdout.trim() === version) {
+  if (isPublished(name, version)) {
     process.stderr.write(`@emberx/${name}@${version} is already published — pick the next free version.\n`);
     process.exit(1);
   }
 }
 
 rootManifest.version = version;
-await writeJSON(`${ROOT}/package.json`, rootManifest);
+await writeFile(`${ROOT}/package.json`, `${JSON.stringify(rootManifest, null, 2)}\n`);
 
 const names = await Promise.all(PUBLISHED.map((name) => stampPackage(name, version)));
 process.stdout.write(`stamped ${names.length} packages at ${version}\n`);
@@ -62,23 +60,45 @@ if (isDryRun) {
   process.exit(0);
 }
 
-// Published leaf-first (PUBLISHED is ordered that way), so at no point does the
-// registry hold an @emberx package whose @emberx dependencies are missing.
+// Each package after its @emberx dependencies (PUBLISHED is ordered that way), and only once the
+// registry serves them: npm publish returns before it does, and in 0.5.0 @emberx/vendor appeared two
+// minutes after the packages that depend on it, so an install in between failed.
 for (const name of PUBLISHED) {
   const { status } = npm(['publish', publishedDirectory(name), '--access', 'public']);
   if (status !== 0) {
     process.stderr.write(`publishing @emberx/${name}@${version} failed; nothing after it was published.\n`);
     process.exit(status ?? 1);
   }
+  if (!(await waitUntilPublished(name, version))) {
+    process.stderr.write(
+      `the registry does not serve @emberx/${name}@${version} after ${REGISTRY_TIMEOUT / 60000} minutes; nothing after it was published.\n`,
+    );
+    process.exit(1);
+  }
   process.stdout.write(`published @emberx/${name}@${version}\n`);
 }
 
-async function readJSON(path: string) {
-  return JSON.parse(await readFile(path, 'utf8'));
+/** Asks the registry for `@emberx/<name>@<version>` until it serves it; false after REGISTRY_TIMEOUT. */
+async function waitUntilPublished(name: string, version: string): Promise<boolean> {
+  const deadline = Date.now() + REGISTRY_TIMEOUT;
+  while (Date.now() < deadline) {
+    if (isPublished(name, version)) return true;
+
+    await new Promise((resolve) => setTimeout(resolve, REGISTRY_POLL_INTERVAL));
+  }
+
+  return false;
 }
 
-async function writeJSON(path: string, value: unknown) {
-  await writeFile(path, `${JSON.stringify(value, null, 2)}\n`);
+/** Whether the registry serves `@emberx/<name>@<version>`, asked past npm's cache. */
+function isPublished(name: string, version: string): boolean {
+  const { stdout } = spawnSync('npm', ['view', `@emberx/${name}@${version}`, 'version', '--prefer-online'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    shell: process.platform === 'win32',
+  });
+
+  return stdout.trim() === version;
 }
 
 /** `patch`/`minor`/`major` relative to `current`, or an explicit version passed through. */
@@ -105,7 +125,7 @@ function npm(args: string[]) {
 /** Rewrites a package's own version and any @emberx dependency ranges to `version`. */
 async function stampPackage(name: string, version: string) {
   const path = `${ROOT}/packages/@emberx/${name}/package.json`;
-  const manifest = await readJSON(path);
+  const manifest = JSON.parse(await readFile(path, 'utf8'));
 
   manifest.version = version;
 
@@ -115,7 +135,7 @@ async function stampPackage(name: string, version: string) {
     }
   }
 
-  await writeJSON(path, manifest);
+  await writeFile(path, `${JSON.stringify(manifest, null, 2)}\n`);
 
   return manifest.name;
 }

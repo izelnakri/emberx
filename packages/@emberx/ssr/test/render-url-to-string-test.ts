@@ -1,6 +1,6 @@
 import { resetRendering } from '@emberx/component';
 import Router, { Route, hbs, service } from '@emberx/router';
-import { embedToShoeboxScriptTag, renderURL, renderURLToString } from '@emberx/ssr';
+import { renderBaseHTMLToString, embedToShoeboxScriptTag, renderURL, renderURLToString } from '@emberx/ssr';
 import { applyHead } from '../../router/src/head.ts';
 import { module, test } from 'qunitx';
 
@@ -67,20 +67,33 @@ class ArticleRoute extends Route {
   static template = hbs`<h1>Article</h1>`;
 }
 
+// An app's index.html, as its build writes it.
+const INDEX_HTML = `<!doctype html>
+<html>
+  <head>
+    <title>My app</title>
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body class="app">
+    <div id="app"></div>
+  </body>
+</html>`;
+
 class PostErrorRoute extends Route {
   static template = hbs`<h1>Something went wrong: {{this.model.message}}</h1>`;
 }
 
 module('@emberx/ssr | renderURLToString', function (hooks) {
   hooks.beforeEach(function () {
-    Router.LOG_ROUTES = false;
-    Router.LOG_MODELS = false;
     fetches = 0;
     startRouter();
   });
   hooks.afterEach(function () {
     Router.reset();
     resetRendering();
+    // An #app of its own for each test, as test-helpers gives each its own #ember-testing: the
+    // page an earlier test rendered into it is torn down after the next one renders there.
+    document.getElementById('app')!.replaceWith(Object.assign(document.createElement('div'), { id: 'app' }));
   });
 
   test('renders the page a URL shows, after its model hooks', async function (assert) {
@@ -173,6 +186,7 @@ module('@emberx/ssr | renderURLToString', function (hooks) {
       bodyStart: '',
       bodyEnd: '',
       url: '/posts/1',
+      status: 200,
       models: { application: {}, posts: {}, 'posts.post': POSTS[1] },
     });
     assert.deepEqual((await renderURL('/')).title, 'Blog');
@@ -220,6 +234,29 @@ module('@emberx/ssr | renderURLToString', function (hooks) {
     );
   });
 
+  test("the page's status: 200 for a route's page, 404 for a URL no route matches, 500 for an error substate", async function (assert) {
+    assert.equal((await renderURL('/posts/1')).status, 200);
+    assert.equal((await renderURL('/old-post')).status, 200, 'a redirect ends on a page');
+
+    const notFound = await renderURL('/no/such/page', { hydratable: false });
+    assert.equal(notFound.status, 404);
+    assert.equal(notFound.title, 'Page not found');
+    assert.ok(notFound.html.includes('There is no page at /no/such/page.'));
+
+    assert.equal((await renderURL('/posts/9')).status, 500);
+  });
+
+  test('a catch-all the app declares is answered with a 404 too', async function (assert) {
+    class LostRoute extends Route {
+      static template = hbs`<h1>Lost</h1>`;
+    }
+    Router.start([{ path: '/docs/*path', route: LostRoute }], { location: 'none' });
+
+    const page = await renderURL('/docs/a/b', { hydratable: false });
+    assert.equal(page.html, '<h1>Lost</h1>');
+    assert.equal(page.status, 404);
+  });
+
   test('an error substate gives no models, which the browser would take for the page it failed to show', async function (assert) {
     assert.deepEqual((await renderURL('/posts/9')).models, {});
   });
@@ -238,11 +275,89 @@ module('@emberx/ssr | renderURLToString', function (hooks) {
     assert.equal(fetches, 3, 'later transitions run the model hook');
   });
 
+  test("without models, the browser's router reads them from the shoebox the server left", async function (assert) {
+    const { models } = await renderURL('/posts/2');
+    const shoebox = Object.assign(document.createElement('script'), {
+      id: 'shoebox',
+      type: 'application/json',
+      textContent: embedToShoeboxScriptTag(models),
+    });
+    document.body.append(shoebox);
+
+    startRouter();
+    assert.notOk(shoebox.isConnected, 'the shoebox is read once, and removed');
+
+    await Router.visit('/posts/2');
+    assert.equal(fetches, 1, 'the browser did not fetch the post again');
+  });
+
   test('embedToShoeboxScriptTag keeps a script element whole', function (assert) {
     const json = embedToShoeboxScriptTag({ bio: '</script><script>alert(1)</script><!--\u2028' });
 
     assert.notOk(/<|\u2028/.test(json));
     assert.deepEqual(JSON.parse(json), { bio: '</script><script>alert(1)</script><!--\u2028' });
+  });
+
+  test("renderBaseHTMLToString puts the page in the base HTML, its title in place of the base HTML's", async function (assert) {
+    const rendered = await renderURL('/article', { hydratable: false });
+
+    assert.equal(
+      renderBaseHTMLToString(INDEX_HTML, rendered),
+      `<!doctype html>
+<html>
+  <head>
+    <script type="module" src="/app.js"></script>
+  ${rendered.head}</head>
+  <body class="app">${rendered.bodyStart}
+    <div id="app"><h1>Article</h1></div><script type="application/json" id="shoebox">{"application":{},"article":{}}</script>
+  ${rendered.bodyEnd}</body>
+</html>`,
+    );
+  });
+
+  test("renderBaseHTMLToString keeps the base HTML's title for a page without one, and a page's $ as it is", async function (assert) {
+    const rendered = {
+      ...(await renderURL('/', { hydratable: false })),
+      title: undefined,
+      head: '',
+      html: "<p>$& $' $1</p>",
+    };
+    const html = renderBaseHTMLToString(INDEX_HTML, rendered);
+
+    assert.ok(html.includes('<title>My app</title>'));
+    assert.ok(html.includes(`<div id="app"><p>$& $' $1</p></div>`));
+  });
+
+  test("renderBaseHTMLToString places everything by the base HTML's markup, whatever the page's holds", async function (assert) {
+    const rendered = {
+      ...(await renderURL('/article', { hydratable: false })),
+      html: '<pre>&lt;/body&gt;</pre></body><p>after</p>',
+    };
+    const html = renderBaseHTMLToString(
+      INDEX_HTML.replace('<div id="app">', '<svg><title>Logo</title></svg><div id="app">'),
+      rendered,
+    );
+
+    assert.ok(html.includes('<pre>&lt;/body&gt;</pre></body><p>after</p></div>'), "the page's markup is as it was");
+    assert.ok(
+      html.endsWith(`${rendered.bodyEnd}</body>\n</html>`),
+      "the page's body elements end the base HTML's <body>",
+    );
+    assert.ok(html.includes('<svg><title>Logo</title></svg>'), "an <svg>'s <title> in the body stays");
+    assert.equal(html.match(/<title>/g)!.length, 2, "the page's title replaces the head's; the <svg>'s stays");
+  });
+
+  test('renderBaseHTMLToString needs a head, a body and an empty #app to put the page in', async function (assert) {
+    const rendered = await renderURL('/');
+
+    assert.throws(
+      () => renderBaseHTMLToString('<html><head></head><body></body></html>', rendered),
+      /empty <div id="app"><\/div>/,
+    );
+    assert.throws(
+      () => renderBaseHTMLToString('<div id="app"></div>', rendered),
+      /needs the base HTML to have a <\/head>, a <body>/,
+    );
   });
 
   test('needs a started router', async function (assert) {

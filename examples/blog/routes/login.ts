@@ -1,4 +1,4 @@
-import { Route } from '@emberx/router';
+import { Route, hbs } from '@emberx/router';
 
 export default class LoginRoute extends Route {
   // @service intl;
@@ -8,7 +8,7 @@ export default class LoginRoute extends Route {
     return {};
   }
 
-  static template = `
+  static template = hbs`
     <h1>Hello LoginRoute</h1>
   `;
 }

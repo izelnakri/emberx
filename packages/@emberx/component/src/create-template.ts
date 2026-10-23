@@ -43,7 +43,7 @@ export default function createTemplate(
   templateSource: string,
   options: CreateTemplateOptions = {},
   scopeValues: ScopeValues = {},
-) {
+): object | undefined {
   if (!compiler) {
     throw new Error(
       'The template compiler is not loaded: `await loadTemplateCompiler()` from @emberx/component before compiling a template yourself. renderComponent loads it on its own.',

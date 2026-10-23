@@ -169,7 +169,7 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
    * `willTransition` goes where send() goes: the page on screen, then the routes
    * above it. Any of them can abort it.
    */
-  triggerEvent(routeInfos: any[], ignoreFailure: boolean, name: string, args: any[]) {
+  triggerEvent(routeInfos: any[], ignoreFailure: boolean, name: string, args: any[]): unknown {
     if (name === 'finalizeQueryParamChange') {
       return this.#finalizeQueryParams(routeInfos, args[0], args[1], args[2]);
     } else if (name === 'queryParamsDidChange') {
@@ -210,7 +210,7 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
   }
 
   /** router_js's name for send(). */
-  trigger(name: string, ...args: unknown[]): unknown {
+  override trigger(name: string, ...args: unknown[]): unknown {
     return this.send(name, ...args);
   }
 
@@ -230,7 +230,7 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
     }
   }
 
-  transitionDidError(error: any, transition: any) {
+  transitionDidError(error: any, transition: any): any {
     if (error.wasAborted || transition.isAborted) {
       // A redirect aborts the transition too, and leaves the next one active.
       if (!this.activeTransition) {
@@ -291,7 +291,7 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
     return this.#handledErrors.delete(error);
   }
 
-  intermediateTransitionTo(name: string, ...args: any[]): any {
+  override intermediateTransitionTo(name: string, ...args: any[]): any {
     const transition = super.intermediateTransitionTo(name, ...args);
     const routeInfos = this.state!.routeInfos;
     const targetRouteInfo = routeInfos[routeInfos.length - 1];

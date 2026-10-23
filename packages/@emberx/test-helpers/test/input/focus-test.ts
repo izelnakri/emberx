@@ -1,7 +1,6 @@
 import { hbs } from '@emberx/component';
 import { module, test } from 'qunitx';
-import { render, focus } from '@emberx/test-helpers';
-import { setupRenderingTest } from '../helpers/index.ts';
+import { render, focus, setupRenderingTest } from '@emberx/test-helpers';
 
 module('@emberx/test-helpers | focus', function (hooks) {
   const FOCUS_STEPS = ['focus', 'focusin'];

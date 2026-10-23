@@ -43,6 +43,7 @@ module('@emberx/ssr | renderToString', function (hooks) {
   test('@emberx/ssr exports what it promises, and nothing else: its public API (test/public-api-test.ts)', async function (assert) {
     assert.deepEqual(Object.keys(await import('@emberx/ssr')).sort(), [
       'embedToShoeboxScriptTag',
+      'renderBaseHTMLToString',
       'renderToString',
       'renderURL',
       'renderURLToString',

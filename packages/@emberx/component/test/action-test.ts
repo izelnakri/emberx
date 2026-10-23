@@ -1,7 +1,6 @@
 import Component, { hbs, renderComponent, action, tracked } from '@emberx/component';
 import { module, test } from 'qunitx';
-import { click, wait, waitFor } from '@emberx/test-helpers';
-import { setupRenderingTest } from './helpers/index.ts';
+import { click, wait, waitFor, setupRenderingTest } from '@emberx/test-helpers';
 import setupMockServer from './helpers/setup-mock-server.ts';
 
 module('@emberx/component | Action tests', function (hooks) {

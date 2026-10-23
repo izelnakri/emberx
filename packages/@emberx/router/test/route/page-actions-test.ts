@@ -1,7 +1,6 @@
 import { module, test } from 'qunitx';
 import Router, { Route, hbs, action, service, tracked } from '@emberx/router';
-import { visit, click, fillIn, currentURL, wait } from '@emberx/test-helpers';
-import setupTest from '../helpers/index.ts';
+import { visit, click, fillIn, currentURL, wait, setupRenderingTest } from '@emberx/test-helpers';
 import { setupHookSteps, step } from '../helpers/routes/logged-route.ts';
 
 const POSTS = [
@@ -145,7 +144,7 @@ class EmberStyleRoute extends Route {
 }
 
 module('@emberx/router | Actions on a page', function (hooks) {
-  setupTest(hooks, () => {
+  setupRenderingTest(hooks, () => {
     Router.addServices({ sharing: new Sharing() });
 
     return Router.start([

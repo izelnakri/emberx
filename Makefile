@@ -5,7 +5,7 @@ REGRESSION_THRESHOLD ?= 26
 BENCH_BASE ?=
 
 .PHONY: bench bench-check bench-print bench-update build check check-static clean coverage \
-        dev docker-build docker-test fix fmt format help install lint release setup test test-all-browsers \
+        dev docs jsr-check site docker-build docker-test fix fmt format help install lint release setup test test-all-browsers \
         test-browser test-browser-dev test-chrome test-firefox test-deno test-doctests test-node test-release test-webkit typecheck \
         vendor vendor-check
 
@@ -40,7 +40,7 @@ check: check-static test test-doctests
 
 # What needs no build and no browser, so it fails in seconds. `make release` runs it
 # before the benchmarks and the suites, the order qunitx and qunitx-cli release in.
-check-static: format lint typecheck vendor-check
+check-static: format lint jsr-check typecheck vendor-check
 
 # Formatting is prettier, configured by the "prettier" key in package.json; the
 # files it skips are negated patterns in the npm scripts, so there is no
@@ -60,6 +60,11 @@ fix fmt:
 #   no-explicit-any, ban-ts-comment   existing type debt, tightened separately
 lint:
 	npm run lint
+
+# What `deno publish` would refuse in the JSR packages: an export without an
+# explicit type, or a module augmenting another.
+jsr-check:
+	npm run publish:jsr -- --dry-run
 
 typecheck:
 	npm run typecheck
@@ -109,10 +114,6 @@ test-webkit:
 #   npx playwright install firefox webkit
 test-all-browsers: test-browser test-firefox test-webkit
 
-# V8 line coverage of the browser suite, mapped back to package sources:
-# a terminal summary plus tmp/coverage/lcov.info and tmp/coverage/index.html.
-# Chromium only. The figure includes the test modules themselves, since
-# qunitx-cli only excludes the entry file (test/index.ts).
 # Packs all seven packages, installs the tarballs into a throwaway directory, and
 # runs a consumer smoke test plus the node suite against what got installed, not
 # the checkout. Catches what source tests cannot: a missing `files` entry, a
@@ -120,8 +121,31 @@ test-all-browsers: test-browser test-firefox test-webkit
 test-release:
 	npm run test:release
 
+# Coverage of packages/@emberx/*/src from the Deno suite, the browser suite plus
+# @emberx/ssr: a summary, tmp/coverage/lcov.info for Codecov, tmp/coverage/html/.
 coverage:
 	npm run test:coverage
+
+# ── Site ──────────────────────────────────────────────────────────────────────
+
+# Each package's API docs, from its sources' JSDoc, into tmp/site/api/<package>/:
+# deno doc over the entries its package.json exports.
+docs:
+	@mkdir -p tmp/site/api
+	@for package in component helper router ssr string test-helpers; do \
+		entries=$$(node -p "Object.values(require('./packages/@emberx/$$package/package.json').exports).join(' ')"); \
+		(cd packages/@emberx/$$package && deno doc --quiet --html --name=@emberx/$$package --output=../../../tmp/site/api/$$package $$entries) || exit 1; \
+	done
+
+# What https://izelnakri.github.io/emberx/ serves, in tmp/site/: docs/index.html with
+# the version, the line coverage and the commit filled in, the API docs, and the
+# coverage report. The Pages workflow deploys it; `npx serve tmp/site` previews it.
+site: docs coverage
+	cp -r tmp/coverage/html tmp/site/coverage
+	sed -e "s/{{VERSION}}/$$(node -p "require('./package.json').version")/g" \
+		-e "s/{{COVERAGE}}/$$(awk -F: '/^LF:/ { found += $$2 } /^LH:/ { hit += $$2 } END { printf "%.1f", 100 * hit / found }' tmp/coverage/lcov.info)/g" \
+		-e "s/{{COMMIT}}/$$(git rev-parse --short HEAD)/g" \
+		docs/index.html > tmp/site/index.html
 
 # ── Benchmarks ────────────────────────────────────────────────────────────────
 
@@ -220,11 +244,12 @@ help:
 	@echo ""
 	@echo "Verify"
 	@echo "  check             check-static + test + test-doctests"
-	@echo "  check-static      format + lint + typecheck + vendor-check: no build, no browser"
+	@echo "  check-static      format + lint + jsr-check + typecheck + vendor-check: no build, no browser"
 	@echo "  format            Check formatting (prettier)"
 	@echo "  fix / fmt         Auto-fix formatting"
 	@echo "  lint              Lint sources (deno lint)"
-	@echo "  typecheck         tsc --noEmit over all package sources"
+	@echo "  jsr-check         What deno publish would refuse in the JSR packages"
+	@echo "  typecheck         tsc --noEmit over all package sources and test/types.ts"
 	@echo "  vendor            Rewrite @emberx/vendor from the pinned packages"
 	@echo "  vendor-check      Fail if @emberx/vendor differs from them"
 	@echo "  test              Node, Deno and browser suites, from the sources"
@@ -237,7 +262,11 @@ help:
 	@echo "  test-webkit       Full suite in webkit"
 	@echo "  test-all-browsers chromium, then firefox, then webkit"
 	@echo "  test-release      Test the packed tarballs, not the checkout"
-	@echo "  coverage          Browser-suite line coverage -> tmp/coverage/"
+	@echo "  coverage          Coverage of the packages' sources -> tmp/coverage/"
+	@echo ""
+	@echo "Site"
+	@echo "  docs              API docs of each package -> tmp/site/api/"
+	@echo "  site              docs + coverage + the landing page -> tmp/site/, as Pages serves it"
 	@echo ""
 	@echo "Benchmarks"
 	@echo "  bench             Run benchmarks and print results"

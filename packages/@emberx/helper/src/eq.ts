@@ -1,10 +1,10 @@
-import helper from './helper.ts';
+import helper, { type HelperFunction } from './helper.ts';
 
-const eq = helper(function (params) {
+const eq: HelperFunction = helper(function (params) {
   return params[0] === params[1];
 });
 
-const neq = helper(function (params) {
+const neq: HelperFunction = helper(function (params) {
   return params[0] !== params[1];
 });
 

@@ -1,6 +1,6 @@
-import helper from '../helper.ts';
+import helper, { type HelperFunction } from '../helper.ts';
 
-const assign = helper(function (params) {
+const assign: HelperFunction = helper(function (params) {
   return Object.assign({}, ...params);
 });
 

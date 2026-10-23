@@ -59,9 +59,6 @@
       "types": "./@ember/template-factory/index.d.ts",
       "default": "./@ember/template-factory/index.js"
     },
-    "./@glimmer/interfaces": {
-      "types": "./@glimmer/interfaces/index.d.ts"
-    },
     "./@glimmer/manager": {
       "types": "./@glimmer/manager/index.d.ts",
       "default": "./@glimmer/manager/index.js"

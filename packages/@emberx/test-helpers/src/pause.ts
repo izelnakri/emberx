@@ -1,10 +1,7 @@
 import { getAssert } from './context.ts';
 
-declare global {
-  interface Window {
-    resumeTest?: () => void;
-  }
-}
+/** `window`, which has `resumeTest` while a test is paused. Not a global declaration, which JSR does not allow. */
+type WindowWithResumeTest = Window & { resumeTest?: () => void };
 
 let resume: (() => void) | undefined;
 
@@ -41,7 +38,7 @@ export function pauseTest(): Promise<void> {
 
   return new Promise((resolve) => {
     resume = resolve;
-    window.resumeTest = resumeTest;
+    (window as WindowWithResumeTest).resumeTest = resumeTest;
   });
 }
 
@@ -54,6 +51,6 @@ export function resumeTest(): void {
   const resolve = resume;
 
   resume = undefined;
-  window.resumeTest = undefined;
+  (window as WindowWithResumeTest).resumeTest = undefined;
   resolve();
 }

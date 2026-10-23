@@ -1,7 +1,7 @@
 // @ts-nocheck
-import helper from '../helper.ts';
+import helper, { type HelperFunction } from '../helper.ts';
 
-const take = helper(function ([object, keysToTake]) {
+const take: HelperFunction = helper(function ([object, keysToTake]) {
   return Object.keys(object).reduce((result, key) => {
     if (keysToTake.includes(key)) {
       return { ...result, [key]: object[key] };

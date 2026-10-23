@@ -1,6 +1,6 @@
-import helper from '../helper.ts';
+import helper, { type HelperFunction } from '../helper.ts';
 
-const debug = helper(function (params) {
+const debug: HelperFunction = helper(function (params) {
   return JSON.stringify(params[0]);
 });
 

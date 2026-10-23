@@ -1,7 +1,7 @@
 // @ts-nocheck
-import helper from '../helper.ts';
+import helper, { type HelperFunction } from '../helper.ts';
 
-const drop = helper(function ([object, keysToDrop]) {
+const drop: HelperFunction = helper(function ([object, keysToDrop]) {
   return Object.keys(object).reduce((result, key) => {
     if (!keysToDrop.includes(key)) {
       return { ...result, [key]: object[key] };

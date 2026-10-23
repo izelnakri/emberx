@@ -1,6 +1,6 @@
-import helper from './helper.ts';
+import helper, { type HelperFunction } from './helper.ts';
 
-const lt = helper(function ([left, right]: number[], hash) {
+const lt: HelperFunction<number[], { forceNumber?: boolean }> = helper(function ([left, right]: number[], hash) {
   if (hash.forceNumber) {
     if (typeof left !== 'number') {
       left = Number(left);
@@ -13,7 +13,7 @@ const lt = helper(function ([left, right]: number[], hash) {
   return left < right;
 });
 
-const lte = helper(function ([left, right]: number[], hash) {
+const lte: HelperFunction<number[], { forceNumber?: boolean }> = helper(function ([left, right]: number[], hash) {
   if (hash.forceNumber) {
     if (typeof left !== 'number') {
       left = Number(left);

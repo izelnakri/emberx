@@ -102,7 +102,7 @@ export default class EmberXComponent<Args extends FreeObject = FreeObject> exten
   }
 
   /** Compiles the template, unless the build already did (@emberx/component/precompile). */
-  static setTemplate(this: EmberXComponentClass, template: string | PrecompiledTemplate) {
+  static setTemplate(this: EmberXComponentClass, template: string | PrecompiledTemplate): object {
     // A new object: `includes` may be a parent class's, or the one the caller passed to render().
     const scope = { ...BUILTINS, ...this.includes };
     const templateFactory: any =
@@ -116,7 +116,7 @@ export default class EmberXComponent<Args extends FreeObject = FreeObject> exten
   }
 }
 
-export function getAsyncActionsQueue() {
+export function getAsyncActionsQueue(): Set<unknown> {
   return ASYNC_ACTIONS_PROMISE_QUEUE;
 }
 

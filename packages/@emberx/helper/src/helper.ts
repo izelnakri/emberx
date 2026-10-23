@@ -1,7 +1,15 @@
 import { helperCapabilities, setHelperManager } from '@emberx/vendor/@glimmer/manager';
-import type { Arguments, Dict, HelperManager } from '@emberx/vendor/@glimmer/interfaces';
 
-type helperFunc<
+/** The arguments Glimmer's helper manager hands a helper: what @glimmer/interfaces calls Arguments. */
+interface Arguments {
+  positional: readonly unknown[];
+  named: Dict<unknown>;
+}
+
+type Dict<T> = Record<string, T>;
+
+/** A helper's function: its positional and named arguments, and the owner's services, to its value. */
+export type HelperFunction<
   Positional extends readonly unknown[] = readonly unknown[],
   Named extends Dict<unknown> = Dict<unknown>,
   Services = unknown,
@@ -14,12 +22,12 @@ interface HelperBucket<
   Owner = unknown,
   Result = unknown,
 > {
-  fn: helperFunc<Positional, Named, Owner, Result>;
+  fn: HelperFunction<Positional, Named, Owner, Result>;
   args: Arguments;
   services: unknown;
 }
 
-class HelperWithServicesManager implements HelperManager<HelperBucket> {
+class HelperWithServicesManager {
   capabilities = helperCapabilities('3.23', {
     hasValue: true,
   });
@@ -30,7 +38,7 @@ class HelperWithServicesManager implements HelperManager<HelperBucket> {
     this.owner = owner;
   }
 
-  createHelper(fn: helperFunc, args: Arguments): HelperBucket {
+  createHelper(fn: HelperFunction, args: Arguments): HelperBucket {
     return { fn, args, services: this.owner.services };
   }
 
@@ -43,7 +51,7 @@ class HelperWithServicesManager implements HelperManager<HelperBucket> {
 const HelperWithServicesManagerFactory = (owner: { services: unknown }): HelperWithServicesManager =>
   new HelperWithServicesManager(owner);
 
-export default function helper<T extends helperFunc>(fn: T): T {
+export default function helper<T extends HelperFunction>(fn: T): T {
   setHelperManager(HelperWithServicesManagerFactory, fn);
   return fn;
 }

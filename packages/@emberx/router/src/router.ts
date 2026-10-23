@@ -108,7 +108,7 @@ export default class Router {
   /** The routes Router.start() declared, as router_js maps them: each router it or createInstance() makes maps them. */
   static #routerJSRoutes: Array<routerJSRouteDefinition> = [];
 
-  static get owner() {
+  static get owner(): typeof Owner {
     return Owner;
   }
 
@@ -120,7 +120,7 @@ export default class Router {
     return Owner;
   }
 
-  static visit(url: string) {
+  static visit(url: string): Promise<void> {
     const routerService = Owner.lookup('service:router');
     if (!routerService) {
       throw new Error('Router.visit() was called before Router.start().');
@@ -187,7 +187,7 @@ export default class Router {
     return Owner.routes;
   }
 
-  static reset() {
+  static reset(): typeof Router {
     stopPreviousRouter();
     Owner.clear('routes');
     Owner.clear('services');

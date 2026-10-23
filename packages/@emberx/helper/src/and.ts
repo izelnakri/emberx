@@ -1,6 +1,6 @@
-import helper from './helper.ts';
+import helper, { type HelperFunction } from './helper.ts';
 
-const and = helper(function (params) {
+const and: HelperFunction = helper(function (params) {
   for (let i = 0, len = params.length; i < len; i++) {
     if (!!params[i] === false) {
       return params[i];

@@ -119,7 +119,7 @@ export default class Route extends EmberXComponent<FreeObject> {
    * the query params stay. For data that changed on the server, after a save
    * for example. Returns the transition.
    */
-  static refresh() {
+  static refresh(): PromiseLike<unknown> {
     // The running router, rather than this.router: that is set when a router
     // resolves this route, so for a route the running one never entered it is
     // an earlier router, or nothing.
@@ -136,7 +136,7 @@ export default class Route extends EmberXComponent<FreeObject> {
    * it or the route stays active, or, between transitions, from the active
    * routes, as Ember's does.
    */
-  static modelFor(routeKey: string) {
+  static modelFor(routeKey: string): any {
     const transition = this.router.activeTransition;
     if (transition) {
       if (!(routeKey in transition.resolvedModels)) {
@@ -184,7 +184,7 @@ export default class Route extends EmberXComponent<FreeObject> {
    * It is used to hand `model` its query params cast and with their declared
    * defaults, rather than the raw strings off the URL.
    */
-  static deserialize(params: FreeObject, transition: any) {
+  static deserialize(params: FreeObject, transition: any): unknown {
     // The model a server rendered the page with, which the first transition takes instead.
     const resolving = transition.routeInfos.find((routeInfo: any) => !routeInfo.isResolved && routeInfo.route === this);
     const preloaded = resolving && this.router.takePreloadedModel(resolving.name);

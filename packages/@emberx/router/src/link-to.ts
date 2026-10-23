@@ -27,7 +27,7 @@ export default class extends Component<{
 }> {
   @service router: any;
 
-  static template = hbs`
+  static template: string = hbs`
     <a
       href="{{this.link}}"
       aria-current={{if this.isActive "page"}}
@@ -40,11 +40,11 @@ export default class extends Component<{
     </a>
   `;
 
-  get tagName() {
+  get tagName(): string {
     return this.args.tagName || 'a';
   }
 
-  get preventDefault() {
+  get preventDefault(): boolean | undefined {
     return 'preventDefault' in this.args ? this.args.preventDefault : false;
   }
 
@@ -58,7 +58,7 @@ export default class extends Component<{
     }
   }
 
-  get link() {
+  get link(): string {
     const link = this.router.recognizer.generate(this.args.route, this.models);
     const linkWithParams = new URLSearchParams('');
 
@@ -72,7 +72,7 @@ export default class extends Component<{
     return queryParams === '' ? link : `${link}?${queryParams}`;
   }
 
-  get isLoading() {
+  get isLoading(): boolean {
     if (!this.isActive) {
       return false;
     }
@@ -86,21 +86,21 @@ export default class extends Component<{
     );
   }
 
-  get isActive() {
+  get isActive(): boolean {
     return this.router.currentURL === this.link;
   }
 
   /** The link leads where the transition under way is going. */
-  get isTransitioningIn() {
+  get isTransitioningIn(): boolean {
     return this.router.isTransitioning && this.isActive && this.router.transitionFromURL !== this.link;
   }
 
   /** The link leads where the transition under way is leaving. */
-  get isTransitioningOut() {
+  get isTransitioningOut(): boolean {
     return this.router.isTransitioning && !this.isActive && this.router.transitionFromURL === this.link;
   }
 
-  get models() {
+  get models(): FreeObject {
     // NOTE: maybe optimize rendering if there is no dynamic segments?
     // @ts-ignore
     const dynamicSegments = this.router.recognizer.names[this.args.route].handlers.reduce(
@@ -140,7 +140,7 @@ export default class extends Component<{
     return {};
   }
 
-  get class() {
+  get class(): string {
     return [
       this.args.disabled ? 'disabled' : null,
       this.isActive ? 'active' : null,
@@ -150,7 +150,8 @@ export default class extends Component<{
     ].join(' ');
   }
 
-  @action transition(event: MouseEvent) {
+  /** Follows the link, unless the click is the browser's to follow: the transition, or nothing. */
+  @action transition(event: MouseEvent): Promise<unknown> | undefined {
     // The link itself, not the element inside it that was clicked. A click
     // meant for a new tab or window, or a link opening in another target, is
     // the browser's to follow.

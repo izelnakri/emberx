@@ -9,4 +9,5 @@ import or from './or.ts';
 
 export default helper;
 
+export type { HelperFunction } from './helper.ts';
 export { and, assign, debug, drop, take, or, not, eq, neq, gt, gte, lt, lte };

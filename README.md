@@ -56,8 +56,9 @@ npm run examples:blog    # a routed blog, its comments fetched from its own API 
 npm run examples:blog -- --precompile   # the same, with its templates compiled at build time
 ```
 
-They serve http://localhost:1234 (`PORT=4000 npm run examples:blog` for another port). The
-end-to-end tests drive the blog.
+They serve http://localhost:1234 (`PORT=4000 npm run examples:blog` for another port).
+`benches/ssr-examples.bench.ts` measures both rendering, with templates compiled at runtime and at
+build time. The end-to-end tests drive the blog.
 
 Install from npm, or from [JSR](https://jsr.io/@izelnakri), where each package is
 `@izelnakri/emberx-<package>`:

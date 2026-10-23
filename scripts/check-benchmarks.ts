@@ -47,9 +47,11 @@
  *
  * emberx: each bench file is bundled by esbuild from the package sources, as
  * the build bundles dist/, before it runs: a page in Chrome cannot resolve bare imports, and bundling the Deno
- * files the same way keeps both measuring the same code.
+ * files the same way keeps both measuring the same code. A `*.precompiled.bench.ts` file is
+ * bundled with its templates compiled at build time.
  */
 import * as esbuild from 'esbuild';
+import precompilePlugin, { TEMPLATE_MODULES } from './lib/precompile-plugin.ts';
 
 const paint =
   (open: number, close: number) =>
@@ -171,6 +173,11 @@ async function run(command: string, args: string[], cwd = ROOT, quiet = false): 
   return new TextDecoder().decode(stdout).trim();
 }
 
+/** emberx: `*.precompiled.bench.ts` files are bundled with every template compiled at build time. */
+function isPrecompiledBench(file: string): boolean {
+  return file.endsWith('.precompiled.bench.ts');
+}
+
 /** emberx: `*.chrome.bench.ts` files run in Chrome, through scripts/lib/chrome-bench.js. */
 function isChromeBench(file: string): boolean {
   return file.endsWith('.chrome.bench.ts');
@@ -187,10 +194,20 @@ async function bundle(files: string[]): Promise<void> {
     logLevel: 'warning' as const,
     mainFields: ['module', 'main'],
   };
-  const denoFiles = files.filter((file) => !isChromeBench(file));
+  const denoFiles = files.filter((file) => !isChromeBench(file) && !isPrecompiledBench(file));
+  const precompiledFiles = files.filter(isPrecompiledBench);
   const chromeFiles = files.filter(isChromeBench);
   if (denoFiles.length > 0) {
     await esbuild.build({ ...common, entryPoints: denoFiles, platform: 'node', conditions: ['node'] });
+  }
+  if (precompiledFiles.length > 0) {
+    await esbuild.build({
+      ...common,
+      entryPoints: precompiledFiles,
+      platform: 'node',
+      conditions: ['node'],
+      plugins: [precompilePlugin(TEMPLATE_MODULES)],
+    });
   }
   if (chromeFiles.length > 0) {
     await esbuild.build({ ...common, entryPoints: chromeFiles, platform: 'browser' });
@@ -203,7 +220,15 @@ async function runBenchFile(file: string): Promise<BenchResult[]> {
   const bundled = `${BUNDLE_DIR}/${file.replace(/^.*\//, '').replace(/\.ts$/, '.js')}`;
   if (!isChromeBench(file)) {
     return parseResults(
-      await run(Deno.execPath(), ['bench', '--json', '--no-check', '--allow-read', '--allow-env', bundled]),
+      await run(Deno.execPath(), [
+        'bench',
+        '--json',
+        '--no-check',
+        '--allow-read',
+        '--allow-env',
+        '--allow-net=localhost',
+        bundled,
+      ]),
     );
   }
   const results = parseResults(await run('node', ['scripts/lib/chrome-bench.js', bundled]));

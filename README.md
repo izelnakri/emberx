@@ -1,21 +1,48 @@
-# EmberX: Explicitly resolvable & node.js friendly Ember.js
+# EmberX: Ember.js as plain npm packages, with no Ember-specific build
 
-Ember's components, router and test helpers as npm packages you import, with no Ember-specific
-build system: the same modules run in the browser, under node and under Deno, rendered by
-ember-source 7. Routes, components and helpers are imported where they are used, so they can be
-published and shared as plain npm packages too. Tests run with
-[QUnitX](https://github.com/izelnakri/qunitx) and `@emberx/test-helpers`.
+[![CI](https://github.com/izelnakri/emberx/actions/workflows/ci.yml/badge.svg)](https://github.com/izelnakri/emberx/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/izelnakri/emberx/branch/main/graph/badge.svg)](https://codecov.io/gh/izelnakri/emberx)
+[![npm](https://img.shields.io/npm/v/@emberx/component?label=npm)](https://www.npmjs.com/org/emberx)
+[![npm downloads](https://img.shields.io/npm/dm/@emberx/component)](https://www.npmjs.com/package/@emberx/component)
+[![API docs](https://img.shields.io/badge/docs-API-d4412b)](https://izelnakri.github.io/emberx/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![Sponsor](https://img.shields.io/badge/sponsor-%E2%99%A5-pink)](https://github.com/sponsors/izelnakri)
 
-| Package                                                           | What it is                                                                     |
-| ----------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| [`@emberx/component`](packages/@emberx/component/README.md)       | Glimmer components, `@tracked`/`@action`/`@service`/`@cached`, rendering       |
-| [`@emberx/router`](packages/@emberx/router/README.md)             | Ember's router: route hooks, query params, substates, actions, `<LinkTo>`      |
-| [`@emberx/helper`](packages/@emberx/helper/README.md)             | template helpers (`eq`, `and`, `take`...), and `helper()` for your own         |
-| [`@emberx/test-helpers`](packages/@emberx/test-helpers/README.md) | `render`, `visit`, `click` and the rest, which wait for what they start        |
-| [`@emberx/ssr`](packages/@emberx/ssr/README.md)                   | components and whole pages rendered to HTML on a server, hydrated in a browser |
-| [`@emberx/string`](packages/@emberx/string/README.md)             | Ember's string utilities: `camelize`, `dasherize`...                           |
+**Ember's rendering engine, router and test helpers, as ES modules you import.** No Ember CLI, no
+resolver, no addons: write a component in a `.ts` file, import it where it is used, and the same
+module runs in the browser through any bundler, under node, and under Deno as it is.
 
-This README and each package's are the documentation; every code example in them that is not
+- **Glimmer, from ember-source 7.** `@tracked` state and templates that update only the DOM that
+  depends on what changed. Templates compile in the browser on first render, or at build time when
+  you want no `eval`.
+- **Ember's router, whole.** Nested routes, model hooks, query params, loading and error substates,
+  redirects, page titles and `<head>`. A page is a route: no controllers.
+- **Server rendering with hydration.** `renderURL()` renders any URL with a router of its own per
+  request, and answers with its status; the browser adopts the server's HTML instead of rebuilding
+  it, and its models instead of fetching them again.
+- **Tests that run anywhere.** The same test file runs under node, Deno and real browsers through
+  [QUnitX](https://github.com/izelnakri/qunitx), and `@emberx/test-helpers` waits for the actions,
+  transitions and renders it starts, with no runloop.
+- **Shareable by design.** A template's `static includes` names what it uses, so a route, a
+  component or a helper is a module any npm package can ship.
+
+**[Website](https://izelnakri.github.io/emberx/)** ·
+**[API docs](https://izelnakri.github.io/emberx/#packages)** ·
+**[Coverage](https://izelnakri.github.io/emberx/coverage/)** ·
+**[npm](https://www.npmjs.com/org/emberx)** ·
+**[Changelog](CHANGELOG.md)**
+
+| Package                                                           | What it is                                                                     | npm                                                                                                                    | API                                                         |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| [`@emberx/component`](packages/@emberx/component/README.md)       | Glimmer components, `@tracked`/`@action`/`@service`/`@cached`, rendering       | [![npm](https://img.shields.io/npm/v/@emberx/component?label=)](https://www.npmjs.com/package/@emberx/component)       | [API](https://izelnakri.github.io/emberx/api/component/)    |
+| [`@emberx/router`](packages/@emberx/router/README.md)             | Ember's router: route hooks, query params, substates, actions, `<LinkTo>`      | [![npm](https://img.shields.io/npm/v/@emberx/router?label=)](https://www.npmjs.com/package/@emberx/router)             | [API](https://izelnakri.github.io/emberx/api/router/)       |
+| [`@emberx/helper`](packages/@emberx/helper/README.md)             | template helpers (`eq`, `and`, `take`...), and `helper()` for your own         | [![npm](https://img.shields.io/npm/v/@emberx/helper?label=)](https://www.npmjs.com/package/@emberx/helper)             | [API](https://izelnakri.github.io/emberx/api/helper/)       |
+| [`@emberx/test-helpers`](packages/@emberx/test-helpers/README.md) | `render`, `visit`, `click` and the rest, which wait for what they start        | [![npm](https://img.shields.io/npm/v/@emberx/test-helpers?label=)](https://www.npmjs.com/package/@emberx/test-helpers) | [API](https://izelnakri.github.io/emberx/api/test-helpers/) |
+| [`@emberx/ssr`](packages/@emberx/ssr/README.md)                   | components and whole pages rendered to HTML on a server, hydrated in a browser | [![npm](https://img.shields.io/npm/v/@emberx/ssr?label=)](https://www.npmjs.com/package/@emberx/ssr)                   | [API](https://izelnakri.github.io/emberx/api/ssr/)          |
+| [`@emberx/string`](packages/@emberx/string/README.md)             | Ember's string utilities: `camelize`, `dasherize`...                           | [![npm](https://img.shields.io/npm/v/@emberx/string?label=)](https://www.npmjs.com/package/@emberx/string)             | [API](https://izelnakri.github.io/emberx/api/string/)       |
+
+This README and each package's are the documentation, and the [website](https://izelnakri.github.io/emberx/)
+has each package's API docs, from the JSDoc in its sources; every code example in them that is not
 marked `ignore` runs as a test. `examples/` holds two apps: `basic`, and `blog`, which the
 end-to-end tests drive.
 

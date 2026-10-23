@@ -34,6 +34,8 @@
     "clean": "rm -rf packages/@emberx/*/dist dist tmp .tmp",
     "coverage:report": "deno coverage tmp/coverage --include='packages/@emberx/[a-z-]+/src/' --exclude=packages/@emberx/vendor/ && deno coverage tmp/coverage --include='packages/@emberx/[a-z-]+/src/' --exclude=packages/@emberx/vendor/ --lcov --output=tmp/coverage/lcov.info && deno coverage tmp/coverage --include='packages/@emberx/[a-z-]+/src/' --exclude=packages/@emberx/vendor/ --html",
     "dev": "esbuild examples/basic.bundle=examples/basic/index.ts examples/blog.bundle=examples/blog/index.ts --bundle --format=esm --target=es2022 --sourcemap=inline --outdir=public --servedir=public --serve=1234 --serve-fallback=public/index.html --watch",
+    "examples:basic": "node examples/build.ts basic && deno run --allow-read=. --allow-net=0.0.0.0,localhost --allow-env=PORT examples/serve.ts basic",
+    "examples:blog": "node examples/build.ts blog && deno run --allow-read=. --allow-net=0.0.0.0,localhost --allow-env=PORT examples/serve.ts blog",
     "format": "prettier --check . \"!CHANGELOG.md\" \"!package-lock.json\" \"!packages/@emberx/vendor/**\"",
     "format:fix": "prettier --write . \"!CHANGELOG.md\" \"!package-lock.json\" \"!packages/@emberx/vendor/**\"",
     "lint": "deno lint --rules-exclude=ban-ts-comment,no-explicit-any,no-window,no-window-prefix,require-await --ignore=packages/@emberx/vendor/",

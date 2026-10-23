@@ -30,8 +30,9 @@ packages/@emberx/       the seven published packages
   router/               routing on top of router_js
   test-helpers/         render/visit/click/settled, no runloop
   ssr/                  server-side rendering
-examples/basic          a component, a helper and a service, with its tests in tests/
-examples/blog           the app the end-to-end tests in test/e2e/ drive
+examples/basic          a component, a helper and a service, with its tests in tests/, and server.ts
+examples/blog           the app the end-to-end tests in test/e2e/ drive, and server.ts
+examples/build.ts       bundles an example for examples/serve.ts, which serves it: npm run examples:*
 benches/                Deno.bench and Chrome.bench files; results stay on your machine
 docs/index.html         the landing page of izelnakri.github.io/emberx, which `make site` fills in
 build.ts                the package build: each dist/ and its .d.ts files

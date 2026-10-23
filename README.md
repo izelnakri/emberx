@@ -45,8 +45,19 @@ module runs in the browser through any bundler, under node, and under Deno as it
 
 This README and each package's are the documentation, and the [website](https://izelnakri.github.io/emberx/)
 has each package's API docs, from the JSDoc in its sources; every code example in them that is not
-marked `ignore` runs as a test. `examples/` holds two apps: `basic`, and `blog`, which the
-end-to-end tests drive.
+marked `ignore` runs as a test.
+
+`examples/` holds two apps, each rendered on a server and hydrated in the browser. Deno serves
+them with read access to the repository and network access to localhost, nothing else:
+
+```sh
+npm run examples:basic   # a component with a service, rendered with renderToString: no data
+npm run examples:blog    # a routed blog, its comments fetched from its own API as it renders
+npm run examples:blog -- --precompile   # the same, with its templates compiled at build time
+```
+
+They serve http://localhost:1234 (`PORT=4000 npm run examples:blog` for another port). The
+end-to-end tests drive the blog.
 
 Install from npm, or from [JSR](https://jsr.io/@izelnakri), where each package is
 `@izelnakri/emberx-<package>`:

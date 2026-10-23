@@ -30,7 +30,7 @@ import { cp, rm, mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, relative } from 'node:path';
 import * as esbuild from 'esbuild';
-import { precompileTemplates } from './packages/@emberx/component/src/precompile.ts';
+import precompilePlugin from './scripts/lib/precompile-plugin.ts';
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 /** TypeScript 7's tsc, a native binary that this script starts, which node and Deno both run. */
@@ -61,15 +61,7 @@ const externalizeBareImports: esbuild.Plugin = {
  * can compile its own (@emberx/component/precompile), so an app that does
  * evaluates no template code at all.
  */
-const precompileOwnTemplates: esbuild.Plugin = {
-  name: 'emberx:precompile-templates',
-  setup(build) {
-    build.onLoad({ filter: /\/src\/[^/]+\.ts$/ }, async ({ path }) => ({
-      contents: precompileTemplates(await readFile(path, 'utf8'), { moduleName: relative(`${ROOT}/packages`, path) }),
-      loader: 'ts',
-    }));
-  },
-};
+const precompileOwnTemplates = precompilePlugin(/\/src\/[^/]+\.ts$/, (path) => relative(`${ROOT}/packages`, path));
 
 /** The directory `npm publish` and `npm pack` are given: a built package's dist/, or @emberx/vendor itself. */
 export function publishedDirectory(name: string): string {

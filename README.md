@@ -28,21 +28,22 @@ make dev        # serves examples/blog on http://localhost:1234
 
 Everything runs through `make`; run `make` on its own for the full list.
 
-| Command              | What it does                                            |
-| -------------------- | ------------------------------------------------------- |
-| `make check`         | format + lint + typecheck + tests, the core CI checks   |
-| `make test`          | the node, Deno and browser suites, with no build        |
-| `make test-node`     | the full suite under node + jsdom, plus @emberx/ssr     |
-| `make test-deno`     | the same suite under Deno                               |
-| `make test-doctests` | the code examples in the docs, run and checked          |
-| `make test-browser`  | the full suite in a real browser (chromium)             |
-| `make coverage`      | browser-suite line coverage, written to `tmp/coverage/` |
-| `make bench`         | runtime template-compilation and per-render benchmarks  |
-| `make build`         | `dist/` and `.d.ts` for every package, for publishing   |
-| `make dev`           | example app with watch rebuilds                         |
+| Command              | What it does                                           |
+| -------------------- | ------------------------------------------------------ |
+| `make check`         | format + lint + typecheck + tests, the core CI checks  |
+| `make test`          | the node, Deno and browser suites, with no build       |
+| `make test-node`     | the full suite under node + jsdom, plus @emberx/ssr    |
+| `make test-deno`     | the same suite under Deno                              |
+| `make test-doctests` | the code examples in the docs, run and checked         |
+| `make test-browser`  | the full suite in a real browser (chromium)            |
+| `make coverage`      | coverage of the packages' sources, to `tmp/coverage/`  |
+| `make bench`         | runtime template-compilation and per-render benchmarks |
+| `make build`         | `dist/` and `.d.ts` for every package, for publishing  |
+| `make dev`           | example app with watch rebuilds                        |
 
 CI runs these same checks as separate jobs, and also runs the browser suite in Firefox and WebKit,
-a benchmark regression check and a package verification step.
+a benchmark regression check, a package verification step, and coverage, which it sends to
+Codecov.
 
 Linting is `deno lint` and formatting is prettier, the same pair qunitx-cli uses. `deno fmt` would
 be the natural partner, but it always moves a class-field decorator onto its own line, turning

@@ -109,10 +109,6 @@ test-webkit:
 #   npx playwright install firefox webkit
 test-all-browsers: test-browser test-firefox test-webkit
 
-# V8 line coverage of the browser suite, mapped back to package sources:
-# a terminal summary plus tmp/coverage/lcov.info and tmp/coverage/index.html.
-# Chromium only. The figure includes the test modules themselves, since
-# qunitx-cli only excludes the entry file (test/index.ts).
 # Packs all seven packages, installs the tarballs into a throwaway directory, and
 # runs a consumer smoke test plus the node suite against what got installed, not
 # the checkout. Catches what source tests cannot: a missing `files` entry, a
@@ -120,6 +116,8 @@ test-all-browsers: test-browser test-firefox test-webkit
 test-release:
 	npm run test:release
 
+# Coverage of packages/@emberx/*/src from the Deno suite, the browser suite plus
+# @emberx/ssr: a summary, tmp/coverage/lcov.info for Codecov, tmp/coverage/html/.
 coverage:
 	npm run test:coverage
 
@@ -237,7 +235,7 @@ help:
 	@echo "  test-webkit       Full suite in webkit"
 	@echo "  test-all-browsers chromium, then firefox, then webkit"
 	@echo "  test-release      Test the packed tarballs, not the checkout"
-	@echo "  coverage          Browser-suite line coverage -> tmp/coverage/"
+	@echo "  coverage          Coverage of the packages' sources -> tmp/coverage/"
 	@echo ""
 	@echo "Benchmarks"
 	@echo "  bench             Run benchmarks and print results"

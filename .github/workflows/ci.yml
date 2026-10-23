@@ -92,6 +92,37 @@ jobs:
           retention-days: 3
           if-no-files-found: ignore
 
+  # Line and branch coverage of the packages' sources, from the Deno suite (which
+  # is the browser suite plus @emberx/ssr), sent to Codecov for the README's badge
+  # and the PR comment. The Pages workflow publishes the same report.
+  coverage:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: package.json
+          cache: npm
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: 2.9.7
+      - run: npm ci
+      - run: npm run test:coverage
+        env:
+          NO_COLOR: 1
+      - uses: codecov/codecov-action@v7
+        with:
+          files: tmp/coverage/lcov.info
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+      - uses: actions/upload-artifact@v7
+        with:
+          name: coverage-report
+          path: tmp/coverage/html/
+          retention-days: 3
+
   # Firefox and WebKit are slower and less load-bearing than chromium, so they
   # run as their own job rather than widening the matrix above.
   browser-compat:

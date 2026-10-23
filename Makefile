@@ -5,7 +5,7 @@ REGRESSION_THRESHOLD ?= 26
 BENCH_BASE ?=
 
 .PHONY: bench bench-check bench-print bench-update build check check-static clean coverage \
-        dev docker-build docker-test fix fmt format help install lint release setup test test-all-browsers \
+        dev docs site docker-build docker-test fix fmt format help install lint release setup test test-all-browsers \
         test-browser test-browser-dev test-chrome test-firefox test-deno test-doctests test-node test-release test-webkit typecheck \
         vendor vendor-check
 
@@ -120,6 +120,27 @@ test-release:
 # @emberx/ssr: a summary, tmp/coverage/lcov.info for Codecov, tmp/coverage/html/.
 coverage:
 	npm run test:coverage
+
+# ── Site ──────────────────────────────────────────────────────────────────────
+
+# Each package's API docs, from its sources' JSDoc, into tmp/site/api/<package>/:
+# deno doc over the entries its package.json exports.
+docs:
+	@mkdir -p tmp/site/api
+	@for package in component helper router ssr string test-helpers; do \
+		entries=$$(node -p "Object.values(require('./packages/@emberx/$$package/package.json').exports).join(' ')"); \
+		(cd packages/@emberx/$$package && deno doc --quiet --html --name=@emberx/$$package --output=../../../tmp/site/api/$$package $$entries) || exit 1; \
+	done
+
+# What https://izelnakri.github.io/emberx/ serves, in tmp/site/: docs/index.html with
+# the version, the line coverage and the commit filled in, the API docs, and the
+# coverage report. The Pages workflow deploys it; `npx serve tmp/site` previews it.
+site: docs coverage
+	cp -r tmp/coverage/html tmp/site/coverage
+	sed -e "s/{{VERSION}}/$$(node -p "require('./package.json').version")/g" \
+		-e "s/{{COVERAGE}}/$$(awk -F: '/^LF:/ { found += $$2 } /^LH:/ { hit += $$2 } END { printf "%.1f", 100 * hit / found }' tmp/coverage/lcov.info)/g" \
+		-e "s/{{COMMIT}}/$$(git rev-parse --short HEAD)/g" \
+		docs/index.html > tmp/site/index.html
 
 # ── Benchmarks ────────────────────────────────────────────────────────────────
 
@@ -236,6 +257,10 @@ help:
 	@echo "  test-all-browsers chromium, then firefox, then webkit"
 	@echo "  test-release      Test the packed tarballs, not the checkout"
 	@echo "  coverage          Coverage of the packages' sources -> tmp/coverage/"
+	@echo ""
+	@echo "Site"
+	@echo "  docs              API docs of each package -> tmp/site/api/"
+	@echo "  site              docs + coverage + the landing page -> tmp/site/, as Pages serves it"
 	@echo ""
 	@echo "Benchmarks"
 	@echo "  bench             Run benchmarks and print results"

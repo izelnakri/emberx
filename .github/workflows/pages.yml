@@ -1,0 +1,46 @@
+name: Pages
+
+# https://izelnakri.github.io/emberx/: the landing page (docs/index.html), each
+# package's API docs and the coverage report, as `make site` builds them.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: package.json
+          cache: npm
+      # Same pinned Deno as ci.yml: deno doc writes the API docs, and the coverage
+      # comes from the Deno suite.
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: 2.9.7
+      - run: npm ci
+      - run: make site
+        env:
+          NO_COLOR: 1
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: tmp/site
+      - id: deploy
+        uses: actions/deploy-pages@v5

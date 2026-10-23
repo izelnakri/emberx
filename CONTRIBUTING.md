@@ -33,11 +33,16 @@ packages/@emberx/       the seven published packages
 examples/basic          a component, a helper and a service, with its tests in tests/
 examples/blog           the app the end-to-end tests in test/e2e/ drive
 benches/                Deno.bench and Chrome.bench files; results stay on your machine
+docs/index.html         the landing page of izelnakri.github.io/emberx, which `make site` fills in
 build.ts                the package build: each dist/ and its .d.ts files
 scripts/                vendoring, benchmarks, publishing, the release test, node's loader
 test/                   the suites' entry points, the public API test, the blog's E2E tests;
                         each package's own suite is in packages/@emberx/*/test/
 ```
+
+https://izelnakri.github.io/emberx/ is what `make site` builds in `tmp/site/`: the landing page
+(`docs/index.html`), each package's API docs from its JSDoc (`make docs`) and the coverage report.
+The Pages workflow deploys it on every push to `main`; `npx serve tmp/site` previews it.
 
 `build.ts` and the scripts are TypeScript that Deno runs, as in qunitx and qunitx-cli. Two
 exceptions: `scripts/register.ts` is node's loader for the sources, and

@@ -37,6 +37,7 @@ Everything runs through `make`; run `make` on its own for the full list.
 | `make test-doctests` | the code examples in the docs, run and checked         |
 | `make test-browser`  | the full suite in a real browser (chromium)            |
 | `make coverage`      | coverage of the packages' sources, to `tmp/coverage/`  |
+| `make site`          | the docs site: API docs, coverage and the landing page |
 | `make bench`         | runtime template-compilation and per-render benchmarks |
 | `make build`         | `dist/` and `.d.ts` for every package, for publishing  |
 | `make dev`           | example app with watch rebuilds                        |

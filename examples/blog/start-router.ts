@@ -4,6 +4,7 @@ import PreviewUserPostsPostRoute from './routes/preview/user/posts/post.ts';
 import PreviewUserRoute from './routes/preview/user.ts';
 import PublicRoute from './routes/public.ts';
 import PublicBlogPostRoute from './routes/public/blog-post.ts';
+import API from './services/api.ts';
 import LocaleService from './services/intl.ts';
 import Router from '@emberx/router';
 
@@ -18,6 +19,7 @@ declare global {
 
 export default function startApplication() {
   Router.addServices({
+    api: new API(),
     intl: new LocaleService(),
   });
 
@@ -80,10 +82,6 @@ export default function startApplication() {
         route: PreviewUserRoute,
         indexRoute: PreviewUserRoute, // TODO: remove this and make this automatic
         name: 'preview.user',
-      },
-      {
-        path: '/*path',
-        name: '404',
       },
     ],
     oldRouterMap,

@@ -1,5 +1,9 @@
 import MockServer from '@memoria/server';
-import routes from './routes.ts';
+import findComments from '../comments.ts';
 
-// The blog's API, answered in the browser: the /comments its routes ask for.
-export default new MockServer({ routes });
+// The blog's API, answered in the browser, for the page `npm run dev` serves without a server.
+export default new MockServer({
+  routes() {
+    this.get('/comments', (request) => findComments(request.queryParams));
+  },
+});

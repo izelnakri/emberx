@@ -1,7 +1,7 @@
-import Component from '@emberx/component';
+import Component, { hbs } from '@emberx/component';
 
 export default class AppHeader extends Component {
-  static template = `
+  static template = hbs`
     <nav class="navbar navbar-light bg-light">
       <div class="container-fluid">
         <a class="navbar-brand">Izel Nakri</a>

@@ -247,10 +247,13 @@ standalone `emberx` binaries to the release.
 
 `@emberx/cli` ships three ways. npm has its `dist/`, `cli.js` the `emberx` bin; JSR has its sources,
 for `deno install`; and each release has a binary per platform, built by
-`scripts/build-cli-binaries.ts` (`make cli-binaries`): the CLI bundled, `deno compile`d, and
-archived with the esbuild binary it runs, which a compiled binary cannot run from inside itself,
-with SHA256SUMS, which `install.sh` and `emberx upgrade` check. CI's `cli-binary` job builds each
-runner's on every push and uses it to create and build an app. The CLI's version is
+`scripts/build-cli-binaries.ts` (`make cli-binaries`, which needs patchelf): the CLI bundled,
+`deno compile`d, and archived with the esbuild binary it runs, which a compiled binary cannot run
+from inside itself, with SHA256SUMS, which `install.sh` and `emberx upgrade` check. Deno links
+glibc, so for musl (Alpine) the bundle ships with node's musl build instead, and the libstdc++ and
+libgcc_s it links, from Alpine's packages. CI's `cli-binary` job builds each
+platform's on every push and uses it to create and build an app, the musl ones in a bare Alpine
+container. The CLI's version is
 `src/version.ts`, which the release stamps, as JSR serves no package.json to read it from.
 
 On JSR each package is `@izelnakri/emberx-<package>`, since a JSR name has one scope.

@@ -130,18 +130,24 @@ jobs:
           path: tmp/coverage/html/
           retention-days: 3
 
-  # The standalone `emberx` binary for each runner's platform, built as a release builds it
+  # The standalone `emberx` binary for each platform, built as a release builds it
   # (scripts/build-cli-binaries.ts), and used as a user uses it: it creates an app, adds a route
-  # and builds it, with nothing but the binary and the esbuild beside it.
+  # and builds it, server included, with nothing but the binary and what is beside it. The musl
+  # ones run in a bare Alpine container, which has no node, no libstdc++ and no curl.
   cli-binary:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork
-    name: cli-binary (${{ matrix.os }})
+    name: cli-binary (${{ matrix.target }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - { os: ubuntu-latest, target: linux-x64 }
+          - { os: macos-latest, target: macos-arm64 }
+          - { os: windows-latest, target: windows-x64 }
+          - { os: ubuntu-latest, target: linux-x64-musl, alpine: true }
+          - { os: ubuntu-24.04-arm, target: linux-arm64-musl, alpine: true }
     defaults:
       run:
         shell: bash
@@ -155,18 +161,28 @@ jobs:
         with:
           deno-version: 2.9.7
       - run: npm ci
-      - run: deno run -A scripts/build-cli-binaries.ts --host
+      - if: matrix.alpine
+        run: sudo apt-get install -y patchelf
+      - run: deno run -A scripts/build-cli-binaries.ts ${{ matrix.target }}
       # Inside the repository, so the app's @emberx imports resolve to the workspace's packages.
       - name: Use the binary
         run: |
-          mkdir -p tmp/binary && tar -xzf dist/cli-binaries/emberx-*.tar.gz -C tmp/binary
+          mkdir -p tmp/binary && tar -xzf dist/cli-binaries/emberx-${{ matrix.target }}.tar.gz -C tmp/binary
+          cat > tmp/use-binary.sh <<'SCRIPT'
+          set -eu
           emberx="$PWD/tmp/binary/emberx"
           "$emberx" --version
-          "$emberx" new tmp/binary-app --skip-install --skip-git
+          "$emberx" new tmp/binary-app --ssr --skip-install --skip-git
           cd tmp/binary-app
           "$emberx" generate route faq
-          "$emberx" build
-          test -f dist/index.html
+          "$emberx" build --ssr
+          test -f dist/index.html && test -f dist/server/server.js
+          SCRIPT
+          if [ "${{ matrix.alpine }}" = true ]; then
+            docker run --rm -v "$PWD:/repo" -w /repo alpine:3.22 sh tmp/use-binary.sh
+          else
+            bash tmp/use-binary.sh
+          fi
 
   # Firefox and WebKit are slower and less load-bearing than chromium, so they
   # run as their own job rather than widening the matrix above.
@@ -333,6 +349,7 @@ jobs:
         with:
           deno-version: 2.9.7
       - run: npm ci
+      - run: sudo apt-get install -y patchelf
       - run: deno run -A scripts/build-cli-binaries.ts
       - name: Attach them to the release
         env:

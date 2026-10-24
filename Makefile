@@ -154,7 +154,7 @@ site: docs coverage
 
 # The standalone `emberx` binaries a release attaches, every platform's, with
 # SHA256SUMS, in dist/cli-binaries/. `deno run -A scripts/build-cli-binaries.ts --host`
-# builds this machine's alone.
+# builds this machine's alone. The musl ones need patchelf.
 cli-binaries:
 	deno run -A scripts/build-cli-binaries.ts
 

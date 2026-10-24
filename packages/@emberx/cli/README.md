@@ -23,11 +23,19 @@ curl -fsSL https://raw.githubusercontent.com/izelnakri/emberx/main/install.sh | 
 export PATH="$HOME/.emberx/bin:$PATH"   # add this to your shell profile
 ```
 
-| Platform | Architecture | Notes                                                          |
-| -------- | ------------ | -------------------------------------------------------------- |
-| Linux    | x64, arm64   | glibc; on Alpine and other musl systems, use npm or Deno below |
-| macOS    | arm64, x64   |                                                                |
-| Windows  | x64          | from Git Bash or MSYS2                                         |
+In an Alpine container, which has wget but no curl:
+
+```dockerfile
+FROM alpine:3.22
+RUN wget -qO- https://raw.githubusercontent.com/izelnakri/emberx/main/install.sh | sh
+ENV PATH="/root/.emberx/bin:$PATH"
+```
+
+| Platform | Architecture | Notes                                                  |
+| -------- | ------------ | ------------------------------------------------------ |
+| Linux    | x64, arm64   | glibc, and musl: Alpine and the containers built on it |
+| macOS    | arm64, x64   |                                                        |
+| Windows  | x64          | from Git Bash or MSYS2                                 |
 
 Pin a version, or install somewhere else:
 
@@ -36,7 +44,9 @@ curl -fsSL https://raw.githubusercontent.com/izelnakri/emberx/main/install.sh \
   | VERSION=v0.6.0 INSTALL_DIR=$HOME/.local/bin sh
 ```
 
-The installer checks each download against the release's SHA256SUMS.
+The installer checks each download against the release's SHA256SUMS. On musl, `emberx` is
+node's musl build with the CLI and the two libraries node links that bare Alpine lacks, in
+`emberx-musl/`, which `emberx` links to.
 
 ### npm
 
@@ -241,6 +251,7 @@ that exists.
 | --------------------- | ------------------------------------------------------------------- |
 | `PORT`                | the port of `emberx dev`, `emberx serve` and the `--ssr` server     |
 | `ESBUILD_BINARY_PATH` | the esbuild binary to run, instead of the one installed with emberx |
+| `EMBERX_RELEASES_URL` | a mirror of the GitHub releases, for `emberx upgrade`               |
 
 ## A build of your own
 

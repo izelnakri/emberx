@@ -1,15 +1,17 @@
 #!/usr/bin/env sh
 # emberx installer: downloads the standalone `emberx` binary, and the esbuild binary it runs,
 # from the GitHub release, checks them against the release's SHA256SUMS, and puts them in
-# $INSTALL_DIR (~/.emberx/bin by default). Needs only curl and tar.
+# $INSTALL_DIR (~/.emberx/bin by default). Needs only curl, or wget, and tar: Alpine's busybox
+# has all of them.
 #
 #   curl -fsSL https://raw.githubusercontent.com/izelnakri/emberx/main/install.sh | sh
+#   wget -qO- https://raw.githubusercontent.com/izelnakri/emberx/main/install.sh | sh
 #   curl -fsSL https://raw.githubusercontent.com/izelnakri/emberx/main/install.sh | VERSION=v0.6.0 INSTALL_DIR=$HOME/.local/bin sh
 #
 # RELEASES_URL points it at a mirror of the releases, laid out as GitHub's are.
 #
-# Linux x64/arm64 (glibc), macOS x64/arm64, Windows x64 (Git Bash, MSYS2). Elsewhere it exits 1,
-# and says how to install with npm or Deno instead.
+# Linux x64/arm64 (glibc or musl), macOS x64/arm64, Windows x64 (Git Bash, MSYS2). Elsewhere it
+# exits 1, and says how to install with npm or Deno instead.
 
 set -eu
 
@@ -49,9 +51,12 @@ case "$TARGET" in
   *) fail "no emberx binary for $TARGET: $ELSEWHERE." ;;
 esac
 
-# A deno compiled binary links glibc, which Alpine and the other musl systems do not have.
+# A deno compiled binary links glibc, which Alpine and the other musl systems do not have: theirs is
+# node's musl build, with the libraries it links, in a directory of its own that `emberx` links to.
+MUSL=""
 if [ "$OS" = linux ] && { ls /lib/ld-musl-* >/dev/null 2>&1 || ldd --version 2>&1 | grep -qi musl; }; then
-  fail "this is a musl system, which the binary cannot run on: $ELSEWHERE."
+  MUSL=1
+  TARGET="$TARGET-musl"
 fi
 
 if [ -n "$VERSION" ]; then
@@ -65,9 +70,17 @@ ASSET="emberx-$TARGET.tar.gz"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
+download() {
+  if command -v curl >/dev/null 2>&1; then
+    curl -fsSL "$1" -o "$2"
+  else
+    wget -qO "$2" "$1"
+  fi || fail "could not download $1."
+}
+
 echo "downloading $ASSET${VERSION:+ $VERSION}"
-curl -fsSL "$BASE/$ASSET" -o "$WORK/$ASSET" || fail "could not download $BASE/$ASSET."
-curl -fsSL "$BASE/SHA256SUMS" -o "$WORK/SHA256SUMS" || fail "could not download $BASE/SHA256SUMS."
+download "$BASE/$ASSET" "$WORK/$ASSET"
+download "$BASE/SHA256SUMS" "$WORK/SHA256SUMS"
 
 EXPECTED="$(grep " $ASSET\$" "$WORK/SHA256SUMS" | cut -d' ' -f1)"
 if command -v sha256sum >/dev/null 2>&1; then
@@ -78,7 +91,16 @@ fi
 [ -n "$EXPECTED" ] && [ "$EXPECTED" = "$ACTUAL" ] || fail "$ASSET's sha256 is $ACTUAL, not the release's ${EXPECTED:-(missing)}: nothing was installed."
 
 mkdir -p "$INSTALL_DIR"
-tar -xzf "$WORK/$ASSET" -C "$INSTALL_DIR"
+# Unlinked first: over a musl install `emberx` is a link, which tar would write through.
+rm -f "$INSTALL_DIR/emberx"
+if [ -n "$MUSL" ]; then
+  rm -rf "$INSTALL_DIR/emberx-musl"
+  mkdir "$INSTALL_DIR/emberx-musl"
+  tar -xzf "$WORK/$ASSET" -C "$INSTALL_DIR/emberx-musl"
+  ln -s emberx-musl/emberx "$INSTALL_DIR/emberx"
+else
+  tar -xzf "$WORK/$ASSET" -C "$INSTALL_DIR"
+fi
 echo "installed $("$INSTALL_DIR/emberx" --version 2>/dev/null || echo emberx) in $INSTALL_DIR"
 
 case ":$PATH:" in

@@ -3,10 +3,11 @@
  * emberx: create, develop, build and test emberx apps. `emberx help` lists the commands.
  */
 import { existsSync } from 'node:fs';
-import { basename, dirname, join } from 'node:path';
+import { dirname, join } from 'node:path';
 import process from 'node:process';
 import { UsageError } from './args.ts';
 import { ALIASES } from './commands/help.ts';
+import { STANDALONE } from './standalone.ts';
 import { VERSION } from './version.ts';
 
 /** Each command's module, imported only when it runs: `emberx --version` loads no esbuild. */
@@ -43,17 +44,12 @@ if (['-v', '--version', 'version'].includes(command)) {
 }
 
 /**
- * The standalone binary (`deno compile`) cannot run the esbuild binary inside it, so its release
- * ships one beside it, as qunitx-cli's does: esbuild runs that one, unless ESBUILD_BINARY_PATH
- * names another.
+ * A standalone binary has no node_modules to find esbuild's binary in, so its release ships one
+ * beside it, as qunitx-cli's does: esbuild runs that one, unless ESBUILD_BINARY_PATH names another.
  */
 function useSidecarEsbuild(): void {
-  const runtime = (globalThis as { Deno?: { execPath(): string } }).Deno;
-  if (!runtime || process.env.ESBUILD_BINARY_PATH) return;
+  if (!STANDALONE || process.env.ESBUILD_BINARY_PATH) return;
 
-  const executable = runtime.execPath();
-  const sidecar = join(dirname(executable), process.platform === 'win32' ? 'esbuild.exe' : 'esbuild');
-  if (!/^deno(\.exe)?$/.test(basename(executable)) && existsSync(sidecar)) {
-    process.env.ESBUILD_BINARY_PATH = sidecar;
-  }
+  const sidecar = join(dirname(process.execPath), process.platform === 'win32' ? 'esbuild.exe' : 'esbuild');
+  if (existsSync(sidecar)) process.env.ESBUILD_BINARY_PATH = sidecar;
 }

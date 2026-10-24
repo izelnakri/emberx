@@ -1,9 +1,4 @@
-import AdminPostsPostRoute from './routes/admin/posts/post.ts';
-import LoginRoute from './routes/login.ts';
-import PreviewUserPostsPostRoute from './routes/preview/user/posts/post.ts';
-import PreviewUserRoute from './routes/preview/user.ts';
 import PublicRoute from './routes/public.ts';
-import PublicBlogPostRoute from './routes/public/blog-post.ts';
 import API from './services/api.ts';
 import LocaleService from './services/intl.ts';
 import Router from '@emberx/router';
@@ -16,6 +11,10 @@ declare global {
 }
 
 // initializers(array<function>)[cant I put this Router.init() somewhere instead),
+
+// Every route but the front page is imported when it is first entered, so a build splits each
+// into a chunk of its own, which the browser downloads only when the route is visited.
+const PreviewUserRoute = () => import('./routes/preview/user.ts');
 
 export default function startApplication() {
   Router.addServices({
@@ -59,22 +58,22 @@ export default function startApplication() {
       },
       {
         path: '/:slug',
-        route: PublicBlogPostRoute,
+        route: () => import('./routes/public/blog-post.ts'),
         name: 'public.blog-post',
       },
       {
         path: '/admin/posts/:slug',
-        route: AdminPostsPostRoute,
+        route: () => import('./routes/admin/posts/post.ts'),
         name: 'admin.posts.post',
       },
       {
         path: '/login',
-        route: LoginRoute,
+        route: () => import('./routes/login.ts'),
         name: 'login',
       },
       {
         path: '/preview/:user_id/posts/:post_id',
-        route: PreviewUserPostsPostRoute,
+        route: () => import('./routes/preview/user/posts/post.ts'),
         name: 'preview.user.posts.post',
       },
       {

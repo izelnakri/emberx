@@ -12,7 +12,6 @@ const app = Deno.args[0];
 const precompile = Deno.args.includes('--precompile');
 const directory = precompile ? `tmp/examples/${app}/precompiled` : `tmp/examples/${app}`;
 const respond = (await import(pathToFileURL(resolve(`${directory}/server.js`)).href)).default;
-const browserScript = await Deno.readTextFile(`${directory}/browser.js`);
 const port = Number(Deno.env.get('PORT') ?? 1234);
 
 Deno.serve(
@@ -24,8 +23,17 @@ Deno.serve(
   (request) => {
     const url = new URL(request.url);
 
-    return url.pathname === `/examples/${app}.bundle.js`
-      ? new Response(browserScript, { headers: { 'content-type': 'text/javascript; charset=utf-8' } })
+    // The browser build: the app's bundle, and the chunks it imports, a route's when it is entered.
+    return url.pathname.startsWith('/examples/') && url.pathname.endsWith('.js')
+      ? serveScript(`${directory}/browser/${url.pathname.slice('/examples/'.length)}`)
       : respond(url);
   },
 );
+
+async function serveScript(path: string): Promise<Response> {
+  try {
+    return new Response(await Deno.readFile(path), { headers: { 'content-type': 'text/javascript; charset=utf-8' } });
+  } catch {
+    return new Response('Not Found', { status: 404 });
+  }
+}

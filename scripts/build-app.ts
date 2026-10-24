@@ -10,6 +10,7 @@
  * (RouteLoader) are chunks the first page load does not download; it is minified, with
  * EMBERX_DEBUG off; and router_js gets native promises rather than rsvp. A flag turns each off.
  */
+import { readFileSync, rmSync } from 'node:fs';
 import { brotliCompressSync, gzipSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import * as esbuild from 'esbuild';
@@ -47,6 +48,8 @@ export async function buildApp({
   nativePromises = true,
   sourcemap = false,
 }: AppBuildOptions): Promise<BuiltFile[]> {
+  // A build's chunks are named by their content: those of an earlier build would stay beside them.
+  rmSync(outdir, { recursive: true, force: true });
   const { metafile } = await esbuild.build({
     entryPoints,
     outdir,
@@ -77,7 +80,6 @@ export async function buildApp({
   const entries = new Set(Object.values(entryPoints).map((entry) => entry.replace(/^\.\//, '')));
   outputs.filter(([, output]) => entries.has(output.entryPoint ?? '')).forEach(([path]) => visit(path));
 
-  const { readFileSync } = await import('node:fs');
   return outputs.map(([path]) => {
     const contents = readFileSync(path);
     return {

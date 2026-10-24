@@ -1,0 +1,4 @@
+declare module '@glimmer/reference' {
+    export { type AbstractIterator, createIteratorItemRef, createIteratorRef, type IterationItem, type IteratorDelegate, type OpaqueIterationItem, type OpaqueIterator, } from "@glimmer/reference/lib/iterable";
+    export { childRefFor, childRefFromParts, createComputeRef, createConstRef, createDebugAliasRef, createInvokableRef, createPrimitiveRef, createReadOnlyRef, createUnboundRef, FALSE_REFERENCE, isConstRef, isInvokableRef, isUpdatableRef, NULL_REFERENCE, REFERENCE, type Reference, type ReferenceEnvironment, TRUE_REFERENCE, UNDEFINED_REFERENCE, updateRef, valueForRef, } from "@glimmer/reference/lib/reference";
+}

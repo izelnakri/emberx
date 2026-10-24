@@ -190,7 +190,7 @@ async function locationBar(): Promise<Map<string, string>> {
 }
 
 /**
- * @glimmer/component's published dist/: its module with emberx's two changes
+ * @glimmer/component's published dist/: its module with emberx's changes
  * and its Ember imports pointed at the vendored modules, and its declarations,
  * which reference the vendored types.
  */
@@ -231,7 +231,38 @@ async function glimmerComponent(): Promise<{ vendored: Map<string, string>; impo
         1,
         where,
       );
-      source = source.replace(/^(import .* from ')(@ember\/[^']+)(';)$/gm, (_line, start, name, end) => {
+      // Without Ember's classic Component and run loop, which @emberx/component's renderer
+      // (renderer.ts) does without: the two are Glimmer's, and teardown is scheduled through
+      // Glimmer's global context, which that renderer sets, as Ember's run loop schedules it.
+      source = patch(
+        source,
+        "import { capabilities, setComponentManager } from '@ember/component';",
+        "import { componentCapabilities as capabilities, setComponentManager } from '@glimmer/manager';",
+        1,
+        where,
+      );
+      source = patch(
+        source,
+        "import { schedule } from '@ember/runloop';",
+        "import { scheduleDestroy, scheduleDestroyed } from '@glimmer/global-context';",
+        1,
+        where,
+      );
+      source = patch(
+        source,
+        "schedule('actions', component, component.willDestroy);",
+        'scheduleDestroy(component, (destroying) => destroying.willDestroy());',
+        1,
+        where,
+      );
+      source = patch(
+        source,
+        "schedule('destroy', this, scheduledDestroyComponent, component);",
+        'scheduleDestroyed(() => scheduledDestroyComponent(component));',
+        1,
+        where,
+      );
+      source = source.replace(/^(import .* from ')(@(?:ember|glimmer)\/[^']+)(';)$/gm, (_line, start, name, end) => {
         imports.add(name);
         return `${start}../../${emberFile(name)}${end}`;
       });

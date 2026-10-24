@@ -1,8 +1,8 @@
 /**
  * Builds an example app for examples/serve.ts with scripts/build-app.ts, as an app's production
  * build: its server.ts, and its browser script, which public/*.html loads as
- * /examples/<app>.bundle.js. Once with templates compiled at runtime (tmp/examples/<app>/), and
- * once at build time (…/precompiled/).
+ * /examples/<app>.bundle.js. Once with templates compiled at runtime (tmp/examples/<app>/runtime/),
+ * and once at build time (…/precompiled/).
  *
  *   node examples/build.ts blog
  *
@@ -20,8 +20,13 @@ if (!BROWSER_ENTRIES[app]) {
 }
 
 for (const precompile of [false, true]) {
-  const outdir = precompile ? `tmp/examples/${app}/precompiled` : `tmp/examples/${app}`;
+  const outdir = `tmp/examples/${app}/${precompile ? 'precompiled' : 'runtime'}`;
 
-  await buildApp({ entryPoints: { server: `examples/${app}/server.ts` }, outdir, platform: 'node', precompile });
+  await buildApp({
+    entryPoints: { server: `examples/${app}/server.ts` },
+    outdir: `${outdir}/server`,
+    platform: 'node',
+    precompile,
+  });
   await buildApp({ entryPoints: { [`${app}.bundle`]: BROWSER_ENTRIES[app] }, outdir: `${outdir}/browser`, precompile });
 }

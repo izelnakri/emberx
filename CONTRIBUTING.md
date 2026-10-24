@@ -114,17 +114,25 @@ entry point imports.
 
 Each in one place, so an ember-source update that changes it breaks that place alone:
 
-- **Internal imports**, only in `packages/@emberx/component/src/ember-internals.ts`: `Renderer`,
-  to render with Glimmer's `serializeBuilder` for `@emberx/ssr` and its `rehydrationBuilder` to
-  hydrate, since public `renderComponent` takes no builder; `_resetRenderers`, to forget every
-  renderer between tests; and Glimmer's tags, for `@tracked accessor`, since Ember's `tracked` is
-  a legacy decorator only. Keep any new internal import there.
-- **A root that throws on its first render stays in its renderer**, and every later render
-  through the same owner throws again. `renderComponent` renders each owner through a stand-in
-  that inherits from it (`renderingOwnerFor`), and `resetRendering()` destroys the stand-ins.
+- **emberx renders with Glimmer's VM itself** (`packages/@emberx/component/src/renderer.ts`),
+  set up as Ember's strict-mode renderer sets it up, rather than through Ember's `Renderer`, whose
+  module also brings Ember's run loop, object model and classic components: a third of what a
+  one-component app downloaded. Renders and teardown run in microtasks, and `renderSettled()`
+  waits for both. Its resolver has the built-in helpers Ember's template compiler emits for
+  strict-mode templates: `-track-array` (`{{#each}}`), `-each-in` and `-in-el-null`.
+- **Internal imports**, only in `ember-internals.ts` and `renderer.ts`: Glimmer's runtime,
+  program, global context and tags, for the renderer and for `@tracked accessor`, since Ember's
+  `tracked` is a legacy decorator only. Keep any new internal import there.
+- **`@glimmer/component` is vendored with its Ember imports changed**: `capabilities` and
+  `setComponentManager` from `@glimmer/manager`, which Ember's re-export, and its teardown
+  scheduled through Glimmer's global context rather than Ember's run loop.
+- **Each owner renders through a stand-in** that inherits from it (`renderingOwnerFor`), which
+  `resetRendering()` destroys, and everything rendered through it, between tests.
 
-These are what to ask of Ember upstream: a builder option on `renderComponent`, a failed root
-removed from its renderer, and a standard-decorator `tracked`. No script rewrites files in
+These are what to ask of Ember upstream: a public strict-mode renderer, with a builder option,
+whose module does not bring the classic layer (Ember 7 has one, `BaseRenderer`, internally, in a
+module that still imports the run loop and the object model); `@glimmer/component` without
+`@ember/component` and `@ember/runloop`; and a standard-decorator `tracked`. No script rewrites files in
 `node_modules`: a dependency that needs a change is vendored through
 `scripts/build-emberx-vendor.ts`, or pinned with an `overrides` entry.
 

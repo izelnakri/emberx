@@ -1,4 +1,3 @@
-import { renderComponent as emberRenderComponent, renderSettled } from '@emberx/vendor/@ember/renderer';
 import { setComponentTemplate } from '@emberx/vendor/@glimmer/manager';
 import { createTemplateFactory } from '@emberx/vendor/@ember/template-factory';
 import { destroy, registerDestructor, unregisterDestructor } from '@emberx/vendor/@ember/destroyable';
@@ -26,11 +25,14 @@ import {
   type TestWaiterDebugInfo,
 } from './waiters.ts';
 import {
-  _resetRenderers,
+  clientBuilder,
   isServerRendered,
   rehydrationBuilder,
-  renderWithBuilder,
+  render as renderWithBuilder,
+  renderSettled,
+  resetRenderers,
   tracked,
+  type Root,
 } from './ember-internals.ts';
 
 interface Owner {
@@ -190,51 +192,43 @@ async function renderComponent(ComponentClass: EmberXComponentClass, optionsOrEl
   const compiling = compileTemplates(ComponentClass);
   if (compiling) await compiling;
 
-  // Always an owner: Ember defaults it to a new `{}` per call and keeps one
-  // renderer per owner, so an ownerless render would build a whole renderer
-  // (and program heap) every time.
+  // Always an owner: there is a renderer per owner (renderer.ts), so a new `{}`
+  // for each ownerless render would build a whole renderer and program heap.
   const owner = renderingOwnerFor(options.owner ?? DEFAULT_OWNER);
 
-  if (isServerRendered(element)) {
-    const renderer = renderWithBuilder(ComponentClass, {
-      into: element,
-      args: options.args,
-      owner,
-      document: element.ownerDocument,
-      builder: rehydrationBuilder,
-      interactive: true,
-    });
-    hydratedRenderers.set(element, renderer);
-
-    return renderSettled();
+  // A render replaces the one before it in `element`, as Ember's does: it goes before it, and the
+  // one before is destroyed, its nodes removed as its teardown runs. Clearing the element behind
+  // its back would remove nodes its teardown still removes. The first render adopts a server's
+  // markup, or clears what the element holds.
+  const previous = renders.get(element);
+  const hydrate = !previous && isServerRendered(element);
+  if (!previous && !hydrate) {
+    element.innerHTML = '';
   }
 
-  const hydrated = hydratedRenderers.get(element);
-  if (hydrated) {
-    hydratedRenderers.delete(element);
-    hydrated.destroy();
-    // The hydrated render's teardown finishes before anything renders in its place.
-    await renderSettled();
-  }
-
-  emberRenderComponent(ComponentClass as object, { ...options, owner, into: element });
+  const root = renderWithBuilder(ComponentClass, {
+    into: element,
+    nextSibling: previous?.firstNode() ?? null,
+    args: options.args,
+    owner,
+    document: element.ownerDocument,
+    builder: hydrate ? rehydrationBuilder : clientBuilder,
+    interactive: true,
+  });
+  previous?.destroy();
+  renders.set(element, root);
 
   return renderSettled();
 }
 
-/** Renderers that hydrated server-rendered markup, by the element they hydrated. */
-const hydratedRenderers = new Map<Element, { destroy(): void }>();
+/** What renderComponent last rendered into each element, which its next render there replaces. */
+let renders = new WeakMap<Element, Root>();
 
 /**
- * Ember keeps one renderer per owner, and a root that throws during its first
- * render stays in that renderer: every later render through the same owner
- * re-renders it and throws again. emberx renders everything with one static
- * Owner, so one failed render would break every render after it.
- *
- * Each owner therefore renders through a stand-in that inherits from it
- * (getOwner(component).services still resolves), and resetRendering() destroys
- * the stand-ins, and with them everything rendered through them, then drops
- * Ember's global renderer list, giving the next render a fresh renderer.
+ * Each owner renders through a stand-in that inherits from it, so getOwner(component).services
+ * still resolves, and what rendered with it is a destroyable child of the stand-in rather than
+ * of the owner, which may be @emberx/router's static Owner: resetRendering() destroys the
+ * stand-ins, and with them everything rendered so far, and leaves the owners as they were.
  */
 let renderingOwners = new Map<object, object>();
 
@@ -243,12 +237,11 @@ let renderingOwners = new Map<object, object>();
  * every renderer. @emberx/test-helpers calls this after each test.
  */
 function resetRendering(): void {
-  // Ember makes each root a destroyable child of the owner it rendered with.
+  // Each root is a destroyable child of the owner it rendered with: see renderer.ts.
   renderingOwners.forEach((renderingOwner) => destroy(renderingOwner));
   renderingOwners = new Map();
-  hydratedRenderers.forEach((renderer) => renderer.destroy());
-  hydratedRenderers.clear();
-  _resetRenderers();
+  renders = new WeakMap();
+  resetRenderers();
 }
 
 /** Resolves once pending renders have flushed. Kept under its @glimmer/core name. */

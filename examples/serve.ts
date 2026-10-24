@@ -10,8 +10,8 @@ import { pathToFileURL } from 'node:url';
 
 const app = Deno.args[0];
 const precompile = Deno.args.includes('--precompile');
-const directory = precompile ? `tmp/examples/${app}/precompiled` : `tmp/examples/${app}`;
-const respond = (await import(pathToFileURL(resolve(`${directory}/server.js`)).href)).default;
+const directory = `tmp/examples/${app}/${precompile ? 'precompiled' : 'runtime'}`;
+const respond = (await import(pathToFileURL(resolve(`${directory}/server/server.js`)).href)).default;
 const port = Number(Deno.env.get('PORT') ?? 1234);
 
 Deno.serve(

@@ -1,10 +1,9 @@
-import { renderSettled } from '@emberx/vendor/@ember/renderer';
 import { serializeBuilder } from '@emberx/vendor/@glimmer/node';
 import { clientBuilder } from '@emberx/vendor/@glimmer/runtime';
 import createDocument from '@simple-dom/document';
 import HTMLSerializer from '@simple-dom/serializer';
 import voidMap from '@simple-dom/void-map';
-import { compileTemplates, renderWithBuilder, type EmberXComponentClass } from '@emberx/component';
+import { compileTemplates, didRender, renderWithBuilder, type EmberXComponentClass } from '@emberx/component';
 import Router, { Owner, type HeadElement, type RouteDefinition } from '@emberx/router';
 
 const ESCAPES: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' };
@@ -49,10 +48,12 @@ async function renderToString(component: EmberXComponentClass, options: RenderOp
     builder: options.hydratable === false ? clientBuilder : serializeBuilder,
     interactive: false,
   });
-  await renderSettled();
+  await didRender();
 
   const html = new HTMLSerializer(voidMap).serializeChildren(into);
   renderer.destroy();
+  // Torn down before it returns: what the page set up while it rendered is gone with it.
+  await didRender();
 
   return html;
 }

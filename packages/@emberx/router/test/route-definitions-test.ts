@@ -145,6 +145,30 @@ module('@emberx/router | Route definitions', function () {
     });
   });
 
+  module('a route that is its own indexRoute', function (hooks) {
+    let pages = 0;
+    class UserRoute extends Route {
+      static template = hbs`<h1 data-test-title>User {{@params.user_id}}</h1>`;
+
+      constructor(owner: object, args: object) {
+        super(owner, args);
+        pages++;
+      }
+    }
+
+    setupRenderingTest(hooks, () => {
+      pages = 0;
+      return Router.start([{ path: '/users/:user_id', route: UserRoute, indexRoute: UserRoute }]);
+    });
+
+    test('renders its page once a transition', async function (assert) {
+      await visit('/users/1');
+
+      assert.dom('[data-test-title]').hasText('User 1');
+      assert.equal(pages, 1);
+    });
+  });
+
   module('without a catch-all', function (hooks) {
     setupRenderingTest(hooks, () => Router.start([{ path: '/', route: HomeRoute }]));
 

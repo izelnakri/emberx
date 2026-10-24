@@ -233,6 +233,22 @@ with it, and win over it: `Router.start(definitions, { resolve })` without a map
 `Router.start(definitions, map, { resolve })` with one. A route that declares a
 `loadingRoute` keeps it whatever `resolve` returns for `<name>_loading`.
 
+#### Routes loaded when they are entered:
+
+A route can be a function that imports it, in a definition or from `resolve`, as
+`import.meta.glob` without `eager` returns them. The router imports it on the first transition
+that enters it, so a bundler that splits code (esbuild's `--splitting`) gives each such route a
+chunk of its own, which the browser downloads only when the route is visited:
+
+```ts ignore
+Router.start([
+  { path: '/', route: IndexRoute }, // in the page's own bundle
+  { path: '/posts/:post_id', route: () => import('./routes/post.ts') }, // imported on its first visit
+]);
+```
+
+Links to it have their URLs before it is imported, and a server renders it as it renders any route.
+
 This experiment is also a sketch/request for a new ember edition.
 
 #### Familiar @emberx/route:

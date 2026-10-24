@@ -103,6 +103,48 @@ module('@emberx/router | Route definitions', function () {
     });
   });
 
+  module('a route loaded when it is first entered', function (hooks) {
+    const imports: string[] = [];
+    // What `() => import('./routes/posts.ts')` returns, counted.
+    const load = (name: string, RouteClass: typeof Route) => () => {
+      imports.push(name);
+      return Promise.resolve({ default: RouteClass });
+    };
+    const loadPosts = load('posts', PostsRoute);
+    const loadPost = load('post', PostRoute);
+
+    setupRenderingTest(hooks, () => {
+      imports.length = 0;
+      return Router.start([
+        { path: '/', route: HomeRoute },
+        { path: '/posts', route: loadPosts },
+        { path: '/posts/:post_id', route: loadPost },
+      ]);
+    });
+
+    test('is imported on its first visit, once, and its class then takes its place', async function (assert) {
+      assert.deepEqual(imports, [], 'nothing is imported when the router starts');
+
+      await visit('/posts');
+      assert.dom('[data-test-title]').hasText('Posts');
+      assert.deepEqual(imports, ['posts']);
+      assert.strictEqual(Router.owner.routes['posts'].route, PostsRoute);
+
+      await visit('/');
+      await visit('/posts/2');
+      await visit('/posts');
+      assert.dom('[data-test-title]').hasText('Posts');
+      assert.deepEqual(imports, ['posts', 'post'], 'each route is imported once');
+    });
+
+    test('a link to it has its URL before it is imported', async function (assert) {
+      await render(hbs`<LinkTo @route="posts.post" @model={{3}} data-test-link>Post 3</LinkTo>`, { LinkTo });
+
+      assert.dom('[data-test-link]').hasAttribute('href', '/posts/3');
+      assert.deepEqual(imports, []);
+    });
+  });
+
   module('without a catch-all', function (hooks) {
     setupRenderingTest(hooks, () => Router.start([{ path: '/', route: HomeRoute }]));
 

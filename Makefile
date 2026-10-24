@@ -5,8 +5,8 @@ REGRESSION_THRESHOLD ?= 26
 BENCH_BASE ?=
 
 .PHONY: bench bench-check bench-print bench-update build check check-static clean coverage \
-        dev docs jsr-check site docker-build docker-test fix fmt format help install lint release setup test test-all-browsers \
-        test-browser test-browser-dev test-chrome test-firefox test-deno test-doctests test-node test-release test-webkit typecheck \
+        cli-binaries dev docs jsr-check site docker-build docker-test fix fmt format help install lint release setup test test-all-browsers \
+        test-browser test-browser-dev test-chrome test-firefox test-cli test-deno test-doctests test-node test-release test-webkit typecheck \
         vendor vendor-check
 
 # ── Build ─────────────────────────────────────────────────────────────────────
@@ -78,7 +78,7 @@ vendor:
 vendor-check:
 	npm run vendor -- --check
 
-# The node suite, the Deno suite and the browser suite, from the sources.
+# The node suite, the Deno suite, the browser suite and @emberx/cli's, from the sources.
 test:
 	npm test
 
@@ -90,6 +90,11 @@ test-node:
 # The same suite under Deno (needs Deno installed; see CONTRIBUTING.md).
 test-deno:
 	npm run test:deno
+
+# @emberx/cli run as a user runs it, on apps it creates in tmp/cli-test/: under node,
+# as it writes files and starts processes, which the other suites do not allow.
+test-cli:
+	npm run test:cli
 
 # Runs every ```ts/```js example in the READMEs and in JSDoc comments with
 # `deno test --doc`, assertions included. ```ts ignore skips a multi-file sketch.
@@ -114,7 +119,7 @@ test-webkit:
 #   npx playwright install firefox webkit
 test-all-browsers: test-browser test-firefox test-webkit
 
-# Packs all seven packages, installs the tarballs into a throwaway directory, and
+# Packs all eight packages, installs the tarballs into a throwaway directory, and
 # runs a consumer smoke test plus the node suite against what got installed, not
 # the checkout. Catches what source tests cannot: a missing `files` entry, a
 # wrong `exports` path, a dependency only declared at the root.
@@ -132,7 +137,7 @@ coverage:
 # deno doc over the entries its package.json exports.
 docs:
 	@mkdir -p tmp/site/api
-	@for package in component helper router ssr string test-helpers; do \
+	@for package in component helper router ssr string test-helpers cli; do \
 		entries=$$(node -p "Object.values(require('./packages/@emberx/$$package/package.json').exports).join(' ')"); \
 		(cd packages/@emberx/$$package && deno doc --quiet --html --name=@emberx/$$package --output=../../../tmp/site/api/$$package $$entries) || exit 1; \
 	done
@@ -146,6 +151,12 @@ site: docs coverage
 		-e "s/{{COVERAGE}}/$$(awk -F: '/^LF:/ { found += $$2 } /^LH:/ { hit += $$2 } END { printf "%.1f", 100 * hit / found }' tmp/coverage/lcov.info)/g" \
 		-e "s/{{COMMIT}}/$$(git rev-parse --short HEAD)/g" \
 		docs/index.html > tmp/site/index.html
+
+# The standalone `emberx` binaries a release attaches, every platform's, with
+# SHA256SUMS, in dist/cli-binaries/. `deno run -A scripts/build-cli-binaries.ts --host`
+# builds this machine's alone. The musl ones need patchelf.
+cli-binaries:
+	deno run -A scripts/build-cli-binaries.ts
 
 # ── Benchmarks ────────────────────────────────────────────────────────────────
 
@@ -183,7 +194,7 @@ docker-test: docker-build
 
 # ── Release ───────────────────────────────────────────────────────────────────
 
-# Checks, cheapest first, then bump, publish all seven packages, changelog, commit, tag, push.
+# Checks, cheapest first, then bump, publish all eight packages, changelog, commit, tag, push.
 # CI creates the GitHub release from the tag.
 #
 # Usage: make release LEVEL=patch|minor|major|x.y.z
@@ -222,7 +233,7 @@ release:
 	@VERSION=$$(node -p "require('./package.json').version"); \
 	npm install --package-lock-only --ignore-scripts && \
 	npm run changelog:update -- --tag "v$$VERSION" && \
-	git add package.json package-lock.json CHANGELOG.md packages/@emberx/*/package.json && \
+	git add package.json package-lock.json CHANGELOG.md packages/@emberx/*/package.json packages/@emberx/cli/src/version.ts && \
 	git commit -m "Release $$VERSION" && \
 	git tag "v$$VERSION" && \
 	git push origin main "v$$VERSION"
@@ -237,6 +248,7 @@ help:
 	@echo "Build"
 	@echo "  build             Bundle all packages to dist/ + emit .d.ts (for publishing)"
 	@echo "  clean             Remove every build artefact"
+	@echo "  cli-binaries      The standalone emberx binaries, every platform's -> dist/cli-binaries/"
 	@echo ""
 	@echo "Develop"
 	@echo "  dev               Serve examples/blog on :1234 with watch rebuilds"
@@ -254,6 +266,7 @@ help:
 	@echo "  vendor-check      Fail if @emberx/vendor differs from them"
 	@echo "  test              Node, Deno and browser suites, from the sources"
 	@echo "  test-node         string, helper and component under node + jsdom"
+	@echo "  test-cli          @emberx/cli, on apps it creates"
 	@echo "  test-deno         The same suite under Deno"
 	@echo "  test-doctests     Run the code examples in the docs"
 	@echo "  test-browser      Full suite in chromium (alias: test-chrome)"

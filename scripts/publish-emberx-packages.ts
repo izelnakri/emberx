@@ -10,7 +10,7 @@
  * `make release LEVEL=<patch|minor|major|x.y.z>`, which runs the checks first,
  * then commits, tags and pushes what this script stamped.
  *
- * All seven packages share one version, and their intra-@emberx dependency ranges
+ * All eight packages share one version, and their intra-@emberx dependency ranges
  * are rewritten to that exact version, so a published set is always internally
  * consistent.
  */
@@ -136,6 +136,14 @@ async function stampPackage(name: string, version: string) {
   }
 
   await writeFile(path, `${JSON.stringify(manifest, null, 2)}\n`);
+  // @emberx/cli reads its version from a module: JSR serves no package.json for it to read.
+  if (name === 'cli') {
+    const versionModule = `${ROOT}/packages/@emberx/cli/src/version.ts`;
+    await writeFile(
+      versionModule,
+      (await readFile(versionModule, 'utf8')).replace(/VERSION = '[^']+'/, `VERSION = '${version}'`),
+    );
+  }
 
   return manifest.name;
 }

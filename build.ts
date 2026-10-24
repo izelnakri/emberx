@@ -30,20 +30,20 @@ import { cp, rm, mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, relative } from 'node:path';
 import * as esbuild from 'esbuild';
-import precompilePlugin from './scripts/lib/precompile-plugin.ts';
+import precompilePlugin from './packages/@emberx/cli/src/build/precompile-plugin.ts';
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 /** TypeScript 7's tsc, a native binary that this script starts, which node and Deno both run. */
 const TSC = `${ROOT}/node_modules/typescript/lib/tsc.js`;
 
 /** Build order is irrelevant (packages are external to each other) but kept stable for readable logs. */
-export const PACKAGES = ['string', 'helper', 'component', 'router', 'test-helpers', 'ssr'];
+export const PACKAGES = ['string', 'helper', 'component', 'router', 'test-helpers', 'ssr', 'cli'];
 
 /**
  * What a release publishes, each package after the @emberx packages it depends
  * on. @emberx/vendor (scripts/build-emberx-vendor.ts) has no build.
  */
-export const PUBLISHED = ['string', 'vendor', 'helper', 'component', 'router', 'test-helpers', 'ssr'];
+export const PUBLISHED = ['string', 'vendor', 'helper', 'component', 'router', 'test-helpers', 'ssr', 'cli'];
 
 /** Mark every bare specifier external; only relative/absolute imports get inlined. */
 const externalizeBareImports: esbuild.Plugin = {
@@ -106,14 +106,17 @@ async function emitTypes(bundled: Promise<unknown>) {
   const staging = `${ROOT}/.tmp/types`;
 
   await rm(staging, { recursive: true, force: true });
-  await new Promise<void>((resolve, reject) => {
-    spawn(process.execPath, [...('Deno' in globalThis ? ['run', '-A'] : []), TSC, '-p', 'tsconfig.build.json'], {
-      cwd: ROOT,
-      stdio: 'inherit',
-    })
-      .on('error', reject)
-      .on('exit', (code) => (code === 0 ? resolve() : reject(new Error(`tsc exited with code ${code}`))));
-  });
+  // The CLI's after the others', with node's types: one at a time, as both write its dependencies' declarations.
+  for (const config of ['tsconfig.build.json', 'packages/@emberx/cli/tsconfig.build.json']) {
+    await new Promise<void>((resolve, reject) => {
+      spawn(process.execPath, [...('Deno' in globalThis ? ['run', '-A'] : []), TSC, '-p', config], {
+        cwd: ROOT,
+        stdio: 'inherit',
+      })
+        .on('error', reject)
+        .on('exit', (code) => (code === 0 ? resolve() : reject(new Error(`tsc exited with code ${code}`))));
+    });
+  }
 
   await pointDeclarationsAtJavaScript(staging);
   await bundled;
@@ -203,6 +206,17 @@ async function writeDistManifest(name: string) {
         return [subpath, { types: `${file}.d.ts`, default: `${file}.js` }];
       }),
     ),
+    // @emberx/cli's `emberx`, built from ./src/cli.ts to ./cli.js.
+    ...(fields.bin
+      ? {
+          bin: Object.fromEntries(
+            Object.entries(fields.bin as Record<string, string>).map(([name, source]) => [
+              name,
+              source.replace(/^\.\/src\//, './').replace(/\.ts$/, '.js'),
+            ]),
+          ),
+        }
+      : {}),
     dependencies,
   };
 

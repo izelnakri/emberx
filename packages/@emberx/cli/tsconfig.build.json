@@ -1,0 +1,14 @@
+{
+  /* The CLI's declarations, which build.ts emits beside the other packages' after their own tsc run:
+     with node's types, which theirs must not have. */
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "emitDeclarationOnly": true,
+    "declaration": true,
+    "declarationMap": true,
+    "rootDir": "../..",
+    "outDir": "../../../.tmp/types"
+  },
+  "include": ["src/**/*.ts"]
+}

@@ -1,5 +1,5 @@
 /**
- * Builds an example app for examples/serve.ts with scripts/build-app.ts, as an app's production
+ * Builds an example app for examples/serve.ts with @emberx/cli's buildApp, as `emberx build` does an app's production
  * build: its server.ts, and its browser script, which public/*.html loads as
  * /examples/<app>.bundle.js. Once with templates compiled at runtime (tmp/examples/<app>/runtime/),
  * and once at build time (…/precompiled/).
@@ -9,7 +9,7 @@
  * Run by node rather than Deno: esbuild spawns its binary with the whole environment, which
  * Deno would need --allow-run and --allow-env for, and the server then needs neither.
  */
-import { buildApp } from '../scripts/build-app.ts';
+import { buildApp } from '@emberx/cli';
 
 const BROWSER_ENTRIES: Record<string, string> = { basic: 'examples/basic/index.ts', blog: 'examples/blog/app.ts' };
 

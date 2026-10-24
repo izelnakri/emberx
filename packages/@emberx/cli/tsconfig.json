@@ -1,0 +1,10 @@
+{
+  /* @emberx/cli runs on node and Deno, not in a browser: it alone gets node's types, which the
+     other packages, whose code a browser runs, must not see. `npm run typecheck` checks it. */
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "types": ["node"]
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}

@@ -1,0 +1,36 @@
+{
+  "name": "@emberx/cli",
+  "version": "0.5.0",
+  "description": "Create, develop, build and test emberx apps: emberx new, generate, dev, build, serve, test",
+  "type": "module",
+  "author": "Izel Nakri",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/izelnakri/emberx.git",
+    "directory": "packages/@emberx/cli"
+  },
+  "keywords": [
+    "emberx",
+    "ember",
+    "glimmer",
+    "cli",
+    "build",
+    "ssr"
+  ],
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "bin": {
+    "emberx": "./src/cli.ts"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./cli": "./src/cli.ts"
+  },
+  "dependencies": {
+    "@emberx/component": "0.5.0",
+    "@emberx/string": "0.5.0",
+    "esbuild": "^0.28.2"
+  }
+}

@@ -48,5 +48,5 @@
     "types": []
   },
   "include": ["packages/@emberx/*/src/**/*.ts", "test/types.ts"],
-  "exclude": ["node_modules", "tmp", "dist", "**/dist/**"]
+  "exclude": ["node_modules", "tmp", "dist", "**/dist/**", "packages/@emberx/cli"]
 }

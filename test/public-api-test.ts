@@ -63,6 +63,7 @@ const PUBLIC_API: Record<string, string[]> = {
     'templateOnlyComponent',
     'tracked',
     'traverseAndCompileAllComponents',
+    'unmountComponent',
     'unregisterDestructor',
     'waitFor',
     'waitForPromise',

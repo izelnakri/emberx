@@ -81,6 +81,11 @@ export interface EmberXComponentClass {
   setTemplate(template: string | PrecompiledTemplate): unknown;
 }
 
+/** What renderComponent resolves to: the render, which destroy() removes from its element. */
+export interface RenderedComponent {
+  destroy(): void;
+}
+
 /**
  * A template @emberx/component/precompile compiled at build time: given the
  * template's scope, its wire format, for Ember's createTemplateFactory.
@@ -183,14 +188,29 @@ export function action<This, Args extends unknown[], Return>(
  * Glimmer's serialization marker, is hydrated instead: the render adopts the
  * server's DOM, and from then on updates it in place. A later render into the
  * same element replaces the hydrated one, as renderComponent replaces its own.
+ *
+ * Resolves to the render, whose destroy() removes it from its element, as a
+ * React effect's cleanup or Vue's onUnmounted does for a component they mount:
+ *
+ *   const rendered = await renderComponent(Greeting, { element, args });
+ *   rendered.destroy();
  */
-async function renderComponent(ComponentClass: EmberXComponentClass, optionsOrElement: any): Promise<void> {
+async function renderComponent(
+  ComponentClass: EmberXComponentClass,
+  optionsOrElement: any,
+): Promise<RenderedComponent> {
   const { element, ...options }: any =
     optionsOrElement instanceof HTMLElement ? { element: optionsOrElement } : optionsOrElement;
 
-  // Awaited only when it loads the compiler: otherwise the render is synchronous, as Ember's is.
+  // Awaited only when it loads the compiler: otherwise the render is synchronous, as Ember's is. A render
+  // into the element, or unmountComponent(), while it loads, takes its place.
+  const request = {};
+  requests.set(element, request);
   const compiling = compileTemplates(ComponentClass);
   if (compiling) await compiling;
+  if (requests.get(element) !== request) {
+    return { destroy() {} };
+  }
 
   // Always an owner: there is a renderer per owner (renderer.ts), so a new `{}`
   // for each ownerless render would build a whole renderer and program heap.
@@ -202,9 +222,10 @@ async function renderComponent(ComponentClass: EmberXComponentClass, optionsOrEl
   // markup, or clears what the element holds.
   const previous = renders.get(element);
   const hydrate = !previous && isServerRendered(element);
-  if (!previous && !hydrate) {
+  if (!previous && !hydrate && !unmounted.has(element)) {
     element.innerHTML = '';
   }
+  unmounted.delete(element);
 
   const root = renderWithBuilder(ComponentClass, {
     into: element,
@@ -217,12 +238,36 @@ async function renderComponent(ComponentClass: EmberXComponentClass, optionsOrEl
   });
   previous?.destroy();
   renders.set(element, root);
+  await renderSettled();
 
-  return renderSettled();
+  return {
+    destroy: () => {
+      if (renders.get(element) === root) unmountComponent(element);
+    },
+  };
+}
+
+/**
+ * Removes what renderComponent rendered into `element`, its teardown run, and
+ * cancels a render into it that is still loading its templates.
+ */
+function unmountComponent(element: Element): void {
+  requests.delete(element);
+  const root = renders.get(element);
+  if (!root) return;
+
+  renders.delete(element);
+  // Its nodes go as its teardown runs: a render into the element before then must not clear them first.
+  unmounted.add(element);
+  root.destroy();
 }
 
 /** What renderComponent last rendered into each element, which its next render there replaces. */
 let renders = new WeakMap<Element, Root>();
+/** The latest renderComponent call for each element, which a call or an unmount after it cancels. */
+let requests = new WeakMap<Element, object>();
+/** The elements unmountComponent emptied, whose nodes their teardown removes. */
+let unmounted = new WeakSet<Element>();
 
 /**
  * Each owner renders through a stand-in that inherits from it, so getOwner(component).services
@@ -241,6 +286,8 @@ function resetRendering(): void {
   renderingOwners.forEach((renderingOwner) => destroy(renderingOwner));
   renderingOwners = new Map();
   renders = new WeakMap();
+  requests = new WeakMap();
+  unmounted = new WeakSet();
   resetRenderers();
 }
 
@@ -333,6 +380,7 @@ export {
   getOwner,
   templateOnlyComponent,
   renderComponent,
+  unmountComponent,
   compileTemplates,
   loadTemplateCompiler,
   isTemplateCompilerLoaded,

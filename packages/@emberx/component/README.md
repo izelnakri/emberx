@@ -131,6 +131,30 @@ await renderComponent(UserTable, {
 assert.equal(document.querySelector('.my-table tbody td').textContent, 'Izel');
 ```
 
+## Mounted in an app of another framework
+
+A component renders into any element, as many on a page as you like, each with an `owner` of its
+own if it needs one. `renderComponent` resolves to the render, whose `destroy()` removes it, and
+`unmountComponent(element)` removes whatever an element holds: what a React effect's cleanup, or
+Vue's `onUnmounted`, calls.
+
+```ts
+import assert from 'node:assert/strict';
+import Component, { didRender, hbs, renderComponent } from '@emberx/component';
+
+class Greeting extends Component {
+  static template = hbs`<p>Hello {{@name}}</p>`;
+}
+
+const element = document.createElement('div');
+const rendered = await renderComponent(Greeting, { element, args: { name: 'React' } });
+assert.equal(element.textContent, 'Hello React');
+
+rendered.destroy(); // or unmountComponent(element)
+await didRender();
+assert.equal(element.textContent, '');
+```
+
 ## Cached getters, cleanup, and async work tests wait for
 
 `@cached` keeps a getter's value until the tracked state it read changes, `registerDestructor`

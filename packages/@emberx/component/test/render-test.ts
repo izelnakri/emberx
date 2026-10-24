@@ -3,6 +3,7 @@ import Component, {
   hbs,
   service,
   renderComponent,
+  trackedObject,
   unmountComponent,
   action,
   tracked,
@@ -262,6 +263,29 @@ module('@emberx/component | Render tests', function (hooks) {
       second.destroy();
       await didRender();
       assert.dom('[data-test-greeting]').doesNotExist();
+    });
+
+    test('args a trackedObject holds update the component in place when the app sets them', async function (assert) {
+      class Counter extends Component {
+        @tracked accessor clicks = 0;
+
+        static template = hbs`<p data-test-counter>{{@label}}: {{this.clicks}}</p><button {{on "click" this.click}} data-test-click>+</button>`;
+
+        @action click() {
+          this.clicks++;
+        }
+      }
+      const element = document.getElementById('ember-testing') as HTMLElement;
+      const args = trackedObject({ label: 'Clicks' });
+
+      await renderComponent(Counter, { element, args, owner: {} });
+      await click('[data-test-click]');
+      assert.dom('[data-test-counter]').hasText('Clicks: 1');
+
+      // What a React component's new props, or a Vue watcher, would set.
+      args.label = 'Taps';
+      await didRender();
+      assert.dom('[data-test-counter]').hasText('Taps: 1', 'the component keeps its own state');
     });
 
     test('unmountComponent removes what an element holds, and a render after it starts afresh', async function (assert) {

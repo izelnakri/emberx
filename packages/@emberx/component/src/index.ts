@@ -2,6 +2,14 @@ import { setComponentTemplate } from '@emberx/vendor/@glimmer/manager';
 import { createTemplateFactory } from '@emberx/vendor/@ember/template-factory';
 import { destroy, registerDestructor, unregisterDestructor } from '@emberx/vendor/@ember/destroyable';
 import { createCache, getValue } from '@emberx/vendor/@glimmer/tracking/primitives/cache';
+import {
+  trackedArray,
+  trackedMap,
+  trackedObject,
+  trackedSet,
+  trackedWeakMap,
+  trackedWeakSet,
+} from '@emberx/vendor/@ember/reactive/collections';
 import { getOwner } from '@emberx/vendor/@glimmer/owner';
 import templateOnlyComponent from '@emberx/vendor/@ember/component/template-only';
 import type EmberOwner from '@emberx/vendor/@ember/owner';
@@ -393,6 +401,12 @@ export {
   on,
   service,
   tracked,
+  trackedArray,
+  trackedMap,
+  trackedObject,
+  trackedSet,
+  trackedWeakMap,
+  trackedWeakSet,
   cached,
   registerDestructor,
   unregisterDestructor,

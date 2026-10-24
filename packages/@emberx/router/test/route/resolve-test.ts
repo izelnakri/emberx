@@ -108,6 +108,36 @@ module('@emberx/router | Routes found by name, with resolve', function (hooks) {
     });
   });
 
+  module('a Router.map() definition, its routes imported as a lazy glob finds them', function (hooks) {
+    // `import.meta.glob('./routes/**/*.ts')`, without `eager`: a function that imports each module.
+    const LAZY_MODULES = Object.fromEntries(
+      Object.entries(MODULES).map(([path, module]) => [path, () => Promise.resolve(module)]),
+    );
+
+    setupRenderingTest(hooks, () => {
+      return Router.start(
+        [],
+        function () {
+          this.route('posts', function () {
+            this.route('post', { path: '/:post_id' });
+          });
+        },
+        { resolve: (name) => LAZY_MODULES[`./routes/${name.replaceAll('.', '/')}.ts`] },
+      );
+    });
+
+    test('its routes are imported as they are entered', async function (assert) {
+      assert.strictEqual(typeof Router.owner.routes['posts'].route, 'function');
+      assert.notStrictEqual(Router.owner.routes['posts'].route, PostsRoute, 'not imported yet');
+
+      await visit('/posts');
+
+      assert.equal(currentRouteName(), 'posts.index');
+      assert.dom('[data-test-title]').hasText('Every post');
+      assert.strictEqual(Router.owner.routes['posts'].route, PostsRoute);
+    });
+  });
+
   module('route definitions', function (hooks) {
     setupRenderingTest(hooks, () => {
       return Router.start(

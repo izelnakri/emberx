@@ -246,6 +246,14 @@ module('@emberx/ssr | renderURLToString', function (hooks) {
     assert.equal((await renderURL('/posts/9')).status, 500);
   });
 
+  test('renders a route loaded when it is first entered', async function (assert) {
+    Router.start([{ path: '/lazy', route: () => Promise.resolve({ default: HomeRoute }) }], { location: 'none' });
+
+    const rendered = await renderURL('/lazy', { hydratable: false });
+    assert.equal(rendered.html, '<h1>Home</h1>');
+    assert.equal(rendered.title, 'Blog');
+  });
+
   test('a catch-all the app declares is answered with a 404 too', async function (assert) {
     class LostRoute extends Route {
       static template = hbs`<h1>Lost</h1>`;

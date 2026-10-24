@@ -1,4 +1,3 @@
-import RSVP from 'rsvp';
 import { Route, LinkTo, hbs } from '@emberx/router';
 
 export default class PreviewUserRoute extends Route {
@@ -10,7 +9,7 @@ export default class PreviewUserRoute extends Route {
     status: { refreshModel: true },
   };
 
-  static model(params, transition) {
+  static async model(params, transition) {
     if (this.router.LOG_ROUTES) {
       console.log('params are', params);
       console.log('transition is', transition);
@@ -21,7 +20,7 @@ export default class PreviewUserRoute extends Route {
       Object.entries(params.queryParams ?? {}).filter(([, value]) => value !== undefined) as [string, string][],
     ).toString();
 
-    return RSVP.hash({ comments: this.api.get(query === '' ? '/comments' : `/comments?${query}`) });
+    return { comments: await this.api.get(query === '' ? '/comments' : `/comments?${query}`) };
   }
 
   static includes = { LinkTo };

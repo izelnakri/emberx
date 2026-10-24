@@ -2,12 +2,14 @@
 // TODO: make this sticky params if needed
 import type RouterService from './router-service.ts';
 import { ROUTE_ABOVE_PAGE } from './route-above-page.ts';
-import Router from './index.ts';
 import Owner from './owner.ts';
 import { buildQueryParams, type QueryParamDeclarations } from './query-params.ts';
 import type { Body, Head } from './head.ts';
 import EmberXComponent, { action, hbs, service, type PrecompiledTemplate } from '@emberx/component';
 import { QUERY_PARAMS_SYMBOL } from 'router_js';
+
+/** The transitions whose page Route.setup rendered. */
+const RENDERED_TRANSITIONS = new WeakSet<object>();
 
 interface FreeObject {
   [propName: string]: any;
@@ -209,15 +211,18 @@ export default class Route extends EmberXComponent<FreeObject> {
   }
 
   static async setup(model: object, transition: FreeObject): Promise<any> {
-    if (Router.LOG_MODELS) {
+    if (this.router.logModels) {
       console.log(`'${transition.targetName}' Route[model] is`, model);
       console.log(`'${transition.targetName}' Route[transition] is`, transition);
     }
 
+    // The page is the deepest route's, rendered once a transition: a route that is its own indexRoute
+    // is set up twice, and a second render could replace what the first is hydrating.
     const routeInfos: RouteInfo[] = transition.routeInfos;
-    if (routeInfos[routeInfos.length - 1].route !== this) {
+    if (routeInfos[routeInfos.length - 1].route !== this || RENDERED_TRANSITIONS.has(transition)) {
       return;
     }
+    RENDERED_TRANSITIONS.add(transition);
 
     // No manual clearing: renderComponent replaces what it rendered before.
     // Clearing innerHTML behind its back removes nodes it still owns, and its

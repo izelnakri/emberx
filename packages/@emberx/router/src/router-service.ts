@@ -13,7 +13,8 @@ import {
 } from './query-params.ts';
 import { findSubstate, type Substate } from './substates.ts';
 import { ROUTE_ABOVE_PAGE } from './route-above-page.ts';
-import { classOf } from './route.ts';
+import Route, { classOf } from './route.ts';
+import type { RouteLoader } from './router.ts';
 import { applyHead, collectHead, type HeadElement } from './head.ts';
 
 /**
@@ -372,12 +373,26 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
     this.#endTransition();
   }
 
+  /**
+   * Router.LOG_MODELS, which routes read here: a route that imported the router
+   * would close an import cycle (router → not-found route → route), which a
+   * split bundle can enter at the route, before the class it extends exists.
+   */
+  get logModels(): boolean {
+    return EmberXRouter.LOG_MODELS;
+  }
+
   getRoute(name: string): any {
     if (EmberXRouter.LOG_ROUTES) {
       console.log('[EmberXRouter debug]:', name);
     }
 
     const RouteClass = this.Resolver.resolve(name);
+    if (isRouteLoader(RouteClass)) {
+      // router_js waits for a route that is a promise before running its hooks.
+      return loadRoute(RouteClass).then(() => this.getRoute(name));
+    }
+
     warnAboutEmberRouteMethods(RouteClass);
     if (this.owner === Owner) {
       return Object.assign(RouteClass, Owner.services);
@@ -554,7 +569,13 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
     });
 
     if (pivot && this.currentRouteInfos) {
-      this.refresh(pivot.route);
+      // The query-param transition under way aborts this one when it takes over, as #followBrowserURL's
+      // can be: no failure, and with native promises, which RSVP's are not, a rejection to handle.
+      this.refresh(pivot.route).catch((error: any) => {
+        if (error?.name !== 'TransitionAborted' && !this.isErrorHandled(error)) {
+          throw error;
+        }
+      });
     }
   }
 
@@ -607,6 +628,19 @@ const checkedRoutes = new WeakSet<object>();
  * as `@action error(error) {}`. emberx routes have no actions, so a route ported
  * from Ember would lose that handling without a sound: say so, once per route.
  */
+function isRouteLoader(value: unknown): value is RouteLoader {
+  return typeof value === 'function' && !(value.prototype instanceof Route);
+}
+
+/** Imports a lazy route, and puts its class where its loader was, for the lookups after this one. */
+async function loadRoute(loader: RouteLoader): Promise<void> {
+  const loaded = await loader();
+  const RouteClass = typeof loaded === 'function' ? loaded : loaded.default;
+  for (const definition of Object.values(Owner.routes)) {
+    if (definition.route === loader) definition.route = RouteClass;
+  }
+}
+
 function warnAboutEmberRouteMethods(Route: any) {
   if (!Route || checkedRoutes.has(Route)) {
     return;

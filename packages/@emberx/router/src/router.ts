@@ -16,28 +16,38 @@ export interface FreeObject {
   [propName: string]: any;
 }
 
+/**
+ * A route's module, loaded when a transition first enters the route, so that a
+ * bundler gives it a chunk of its own: `() => import('./routes/post.ts')`.
+ */
+export type RouteLoader = () => Promise<typeof Route | { default: typeof Route }>;
+
 export interface RouteDefinition {
   path?: string;
-  route: typeof Route | undefined;
+  /** The route's class, or a RouteLoader that imports it. */
+  route: typeof Route | RouteLoader | undefined;
   /** What LinkTo, transitionTo and modelFor call the route. Without one, it comes from the path: see routeNameFromPath. */
   name?: string;
   options?: FreeObject;
   /** What the route's own URL shows, when it has routes under it and should not show `route`. */
-  indexRoute?: typeof Route;
+  indexRoute?: typeof Route | RouteLoader;
   /**
    * Shown while this route, or a route under it without a loadingRoute of its
    * own, is loading. Ember's `<name>_loading` substate.
    */
-  loadingRoute?: typeof Route;
+  loadingRoute?: typeof Route | RouteLoader;
   /**
    * Shown when this route, or a route under it without an errorRoute of its
    * own, fails, with the error as its model. Ember's `<name>_error` substate.
    */
-  errorRoute?: typeof Route;
+  errorRoute?: typeof Route | RouteLoader;
 }
 
-/** A route class, or a module whose default export is one, as `import.meta.glob` returns them. */
-export type ResolvedRoute = typeof Route | { default: typeof Route } | null | undefined;
+/**
+ * A route class, a module whose default export is one, or a RouteLoader that
+ * imports it, as `import.meta.glob` returns them, eager or not.
+ */
+export type ResolvedRoute = typeof Route | { default: typeof Route } | RouteLoader | null | undefined;
 
 export interface StartOptions {
   /**
@@ -83,7 +93,7 @@ export interface InstanceOptions {
 
 export interface routerJSRouteDefinition {
   path?: string;
-  route: typeof Route | undefined;
+  route: typeof Route | RouteLoader | undefined;
   options?: FreeObject;
   name: string;
   nestedRoutes?: [routerJSRouteDefinition?];

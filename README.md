@@ -79,19 +79,20 @@ make dev        # serves examples/blog on http://localhost:1234
 
 Everything runs through `make`; run `make` on its own for the full list.
 
-| Command              | What it does                                           |
-| -------------------- | ------------------------------------------------------ |
-| `make check`         | format + lint + typecheck + tests, the core CI checks  |
-| `make test`          | the node, Deno and browser suites, with no build       |
-| `make test-node`     | the full suite under node + jsdom, plus @emberx/ssr    |
-| `make test-deno`     | the same suite under Deno                              |
-| `make test-doctests` | the code examples in the docs, run and checked         |
-| `make test-browser`  | the full suite in a real browser (chromium)            |
-| `make coverage`      | coverage of the packages' sources, to `tmp/coverage/`  |
-| `make site`          | the docs site: API docs, coverage and the landing page |
-| `make bench`         | runtime template-compilation and per-render benchmarks |
-| `make build`         | `dist/` and `.d.ts` for every package, for publishing  |
-| `make dev`           | example app with watch rebuilds                        |
+| Command                             | What it does                                           |
+| ----------------------------------- | ------------------------------------------------------ |
+| `make check`                        | format + lint + typecheck + tests, the core CI checks  |
+| `make test`                         | the node, Deno and browser suites, with no build       |
+| `make test-node`                    | the full suite under node + jsdom, plus @emberx/ssr    |
+| `make test-deno`                    | the same suite under Deno                              |
+| `make test-doctests`                | the code examples in the docs, run and checked         |
+| `make test-browser`                 | the full suite in a real browser (chromium)            |
+| `make coverage`                     | coverage of the packages' sources, to `tmp/coverage/`  |
+| `node scripts/build-app.ts <entry>` | an app's production build, with a size report          |
+| `make site`                         | the docs site: API docs, coverage and the landing page |
+| `make bench`                        | runtime template-compilation and per-render benchmarks |
+| `make build`                        | `dist/` and `.d.ts` for every package, for publishing  |
+| `make dev`                          | example app with watch rebuilds                        |
 
 CI runs these same checks as separate jobs, and also runs the browser suite in Firefox and WebKit,
 a benchmark regression check, a package verification step, and coverage, which it sends to
@@ -845,6 +846,15 @@ Templates compile in the browser on first render, which needs no build step. A p
 build can compile them ahead of time with `@emberx/component/precompile`, so the browser
 compiles nothing and evaluates no code: no `'unsafe-eval'` in a Content Security Policy. See
 [@emberx/component](packages/@emberx/component/README.md#compiling-templates-at-build-time).
+
+#### Building an app for production:
+
+`node scripts/build-app.ts src/app.ts` builds an app the way `emberx build` will: its templates
+precompiled, its code split so that Ember's template compiler and each route imported on entry
+are chunks of their own, minified, and with router_js on native promises rather than rsvp. It
+prints each file's size, and what a first page load downloads: 191 kB minified, 62 kB gzip, for
+an app of one component, half of what the same app bundled and minified downloads. Flags turn
+each default off: `--no-precompile`, `--no-split`, `--no-minify`, `--rsvp`.
 
 #### Testing:
 

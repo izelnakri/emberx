@@ -36,7 +36,8 @@ examples/build.ts       bundles an example for examples/serve.ts, which serves i
 benches/                Deno.bench and Chrome.bench files; results stay on your machine
 docs/index.html         the landing page of izelnakri.github.io/emberx, which `make site` fills in
 build.ts                the package build: each dist/ and its .d.ts files
-scripts/                vendoring, benchmarks, publishing, the release test, node's loader
+scripts/                vendoring, benchmarks, publishing, the release test, node's loader,
+                        and build-app.ts, an app's production build, `emberx build` to be
 test/                   the suites' entry points, the public API test, the blog's E2E tests;
                         each package's own suite is in packages/@emberx/*/test/
 ```

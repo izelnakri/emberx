@@ -42,6 +42,7 @@ module runs in the browser through any bundler, under node, and under Deno as it
 | [`@emberx/test-helpers`](packages/@emberx/test-helpers/README.md) | `render`, `visit`, `click` and the rest, which wait for what they start        | [![npm](https://img.shields.io/npm/v/@emberx/test-helpers?label=)](https://www.npmjs.com/package/@emberx/test-helpers) | [API](https://izelnakri.github.io/emberx/api/test-helpers/) | [![JSR](https://jsr.io/badges/@izelnakri/emberx-test-helpers)](https://jsr.io/@izelnakri/emberx-test-helpers) |
 | [`@emberx/ssr`](packages/@emberx/ssr/README.md)                   | components and whole pages rendered to HTML on a server, hydrated in a browser | [![npm](https://img.shields.io/npm/v/@emberx/ssr?label=)](https://www.npmjs.com/package/@emberx/ssr)                   | [API](https://izelnakri.github.io/emberx/api/ssr/)          | [![JSR](https://jsr.io/badges/@izelnakri/emberx-ssr)](https://jsr.io/@izelnakri/emberx-ssr)                   |
 | [`@emberx/string`](packages/@emberx/string/README.md)             | Ember's string utilities: `camelize`, `dasherize`...                           | [![npm](https://img.shields.io/npm/v/@emberx/string?label=)](https://www.npmjs.com/package/@emberx/string)             | [API](https://izelnakri.github.io/emberx/api/string/)       | [![JSR](https://jsr.io/badges/@izelnakri/emberx-string)](https://jsr.io/@izelnakri/emberx-string)             |
+| [`@emberx/cli`](packages/@emberx/cli/README.md)                   | `emberx`: create, develop, build and test an app                               | [![npm](https://img.shields.io/npm/v/@emberx/cli?label=)](https://www.npmjs.com/package/@emberx/cli)                   | [API](https://izelnakri.github.io/emberx/api/cli/)          | [![JSR](https://jsr.io/badges/@izelnakri/emberx-cli)](https://jsr.io/@izelnakri/emberx-cli)                   |
 
 This README and each package's are the documentation, and the [website](https://izelnakri.github.io/emberx/)
 has each package's API docs, from the JSDoc in its sources; every code example in them that is not
@@ -60,8 +61,16 @@ They serve http://localhost:1234 (`PORT=4000 npm run examples:blog` for another 
 `benches/ssr-examples.bench.ts` measures both rendering, with templates compiled at runtime and at
 build time. The end-to-end tests drive the blog.
 
-Install from npm, or from [JSR](https://jsr.io/@izelnakri), where each package is
-`@izelnakri/emberx-<package>`:
+Start an app with [`emberx`](packages/@emberx/cli/README.md), which serves it as you work on it,
+tests it and builds it for production:
+
+```sh
+npx @emberx/cli new my-app
+cd my-app && npm run dev   # http://localhost:4200
+```
+
+Or add the packages to an app of your own, from npm or from [JSR](https://jsr.io/@izelnakri), where
+each package is `@izelnakri/emberx-<package>`:
 
 ```sh
 npm install @emberx/component @emberx/router
@@ -79,20 +88,19 @@ make dev        # serves examples/blog on http://localhost:1234
 
 Everything runs through `make`; run `make` on its own for the full list.
 
-| Command                             | What it does                                           |
-| ----------------------------------- | ------------------------------------------------------ |
-| `make check`                        | format + lint + typecheck + tests, the core CI checks  |
-| `make test`                         | the node, Deno and browser suites, with no build       |
-| `make test-node`                    | the full suite under node + jsdom, plus @emberx/ssr    |
-| `make test-deno`                    | the same suite under Deno                              |
-| `make test-doctests`                | the code examples in the docs, run and checked         |
-| `make test-browser`                 | the full suite in a real browser (chromium)            |
-| `make coverage`                     | coverage of the packages' sources, to `tmp/coverage/`  |
-| `node scripts/build-app.ts <entry>` | an app's production build, with a size report          |
-| `make site`                         | the docs site: API docs, coverage and the landing page |
-| `make bench`                        | runtime template-compilation and per-render benchmarks |
-| `make build`                        | `dist/` and `.d.ts` for every package, for publishing  |
-| `make dev`                          | example app with watch rebuilds                        |
+| Command              | What it does                                           |
+| -------------------- | ------------------------------------------------------ |
+| `make check`         | format + lint + typecheck + tests, the core CI checks  |
+| `make test`          | the node, Deno and browser suites, with no build       |
+| `make test-node`     | the full suite under node + jsdom, plus @emberx/ssr    |
+| `make test-deno`     | the same suite under Deno                              |
+| `make test-doctests` | the code examples in the docs, run and checked         |
+| `make test-browser`  | the full suite in a real browser (chromium)            |
+| `make coverage`      | coverage of the packages' sources, to `tmp/coverage/`  |
+| `make site`          | the docs site: API docs, coverage and the landing page |
+| `make bench`         | runtime template-compilation and per-render benchmarks |
+| `make build`         | `dist/` and `.d.ts` for every package, for publishing  |
+| `make dev`           | example app with watch rebuilds                        |
 
 CI runs these same checks as separate jobs, and also runs the browser suite in Firefox and WebKit,
 a benchmark regression check, a package verification step, and coverage, which it sends to
@@ -864,12 +872,11 @@ compiles nothing and evaluates no code: no `'unsafe-eval'` in a Content Security
 
 #### Building an app for production:
 
-`node scripts/build-app.ts src/app.ts` builds an app the way `emberx build` will: its templates
-precompiled, its code split so that Ember's template compiler and each route imported on entry
-are chunks of their own, minified, and with router_js on native promises rather than rsvp. It
-prints each file's size, and what a first page load downloads: 191 kB minified, 62 kB gzip, for
-an app of one component, half of what the same app bundled and minified downloads. Flags turn
-each default off: `--no-precompile`, `--no-split`, `--no-minify`, `--rsvp`.
+`emberx build`, from [@emberx/cli](packages/@emberx/cli/README.md), builds an app into `dist/`: its
+templates precompiled, so the browser never downloads Ember's template compiler; its code split, so
+each route imported on its first visit is a chunk of its own; minified; and router_js on native
+promises rather than rsvp. It prints each file's size, and what a first page load downloads: 36 kB
+gzip for an app of one component.
 
 #### Testing:
 

@@ -9,8 +9,10 @@
 #   - scripts/release-consumer-test.ts, what an npm user does first: import each
 #     package, render a component, render one to a string;
 #   - the node suite (test/node.ts), with @emberx/* and ember-source resolved
-#     from the consumer's node_modules instead of the workspace.
-# The last two run under node, then under Deno.
+#     from the consumer's node_modules instead of the workspace;
+#   - the installed `emberx`: an app it creates, which it builds against the
+#     installed packages, with a server too.
+# The second and third run under node, then under Deno.
 #
 # Source tests cannot see packaging mistakes: a `files` entry that omits dist/,
 # an `exports` path that does not exist, or a dependency used at runtime but only
@@ -25,7 +27,7 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd)
 CONSUMER=$(mktemp -d)
 trap 'rm -rf "$CONSUMER"' EXIT
 
-PACKAGES=(vendor string helper component router test-helpers ssr)
+PACKAGES=(vendor string helper component router test-helpers ssr cli)
 
 # ── Build and pack ──────────────────────────────────────────────────────────
 cd "$ROOT"
@@ -96,6 +98,15 @@ node --test release-consumer-test.ts
 echo "test-release: node (full suite against the installed packages)"
 EMBERX_PACKAGES_FROM="$CONSUMER" node --import "$ROOT/scripts/register.ts" --import "$ROOT/test/setup-dom.js" \
   --test "$ROOT/test/node.ts"
+
+# ── CLI ─────────────────────────────────────────────────────────────────────
+# Apps inside the consumer, so their @emberx imports resolve to the installed tarballs.
+echo "test-release: cli"
+npx --no-install emberx --version
+npx --no-install emberx new cli-app --skip-install --skip-git > /dev/null
+(cd cli-app && npx --no-install emberx build > /dev/null && test -f dist/index.html)
+npx --no-install emberx new cli-ssr-app --ssr --skip-install --skip-git > /dev/null
+(cd cli-ssr-app && npx --no-install emberx build --ssr > /dev/null && test -f dist/server/server.js)
 
 # ── Deno ────────────────────────────────────────────────────────────────────
 echo "test-release: deno (consumer)"

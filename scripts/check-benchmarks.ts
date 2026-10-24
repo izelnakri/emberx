@@ -51,7 +51,7 @@
  * bundled with its templates compiled at build time.
  */
 import * as esbuild from 'esbuild';
-import precompilePlugin, { TEMPLATE_MODULES } from './lib/precompile-plugin.ts';
+import { precompilePlugin } from '@emberx/cli';
 
 const paint =
   (open: number, close: number) =>
@@ -206,7 +206,7 @@ async function bundle(files: string[]): Promise<void> {
       entryPoints: precompiledFiles,
       platform: 'node',
       conditions: ['node'],
-      plugins: [precompilePlugin(TEMPLATE_MODULES)],
+      plugins: [precompilePlugin()],
     });
   }
   if (chromeFiles.length > 0) {

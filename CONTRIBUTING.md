@@ -21,7 +21,7 @@ package sources. Run `make` with no arguments for every target.
 ## How the repository is laid out
 
 ```
-packages/@emberx/       the seven published packages
+packages/@emberx/       the eight published packages
   vendor/               the ember-source, @glimmer/component and location-bar code emberx
                         uses; written by scripts/build-emberx-vendor.ts, never by hand
   string/               Ember's string utilities
@@ -30,6 +30,7 @@ packages/@emberx/       the seven published packages
   router/               routing on top of router_js
   test-helpers/         render/visit/click/settled, no runloop
   ssr/                  server-side rendering
+  cli/                  `emberx`: new, generate, dev, build, test, upgrade; its own suite in test/
 examples/basic          a component, a helper and a service, with its tests in tests/, and server.ts
 examples/blog           the app the end-to-end tests in test/e2e/ drive, and server.ts
 examples/build.ts       bundles an example for examples/serve.ts, which serves it: npm run examples:*
@@ -37,7 +38,7 @@ benches/                Deno.bench and Chrome.bench files; results stay on your 
 docs/index.html         the landing page of izelnakri.github.io/emberx, which `make site` fills in
 build.ts                the package build: each dist/ and its .d.ts files
 scripts/                vendoring, benchmarks, publishing, the release test, node's loader,
-                        and build-app.ts, an app's production build, `emberx build` to be
+                        and the JSR build
 test/                   the suites' entry points, the public API test, the blog's E2E tests;
                         each package's own suite is in packages/@emberx/*/test/
 ```
@@ -214,7 +215,7 @@ its declarations give. A name starting with `_` is exported for emberx's own pac
 apps. `@emberx/vendor` is no package of its own to an app: what an app imports from Ember comes
 through the packages above.
 
-All seven packages share one version, which `make release` stamps. A change that removes or
+All eight packages share one version, which `make release` stamps. A change that removes or
 renames an export, or changes what one does in a way a caller would notice, is a breaking change:
 its commit says so with `!` and a `BREAKING-CHANGE:` trailer, and, while emberx is below 1.0, it
 releases as the next minor version (`LEVEL=minor`), from 1.0 the next major. An export added is
@@ -236,11 +237,15 @@ It runs only on `main`, in sync with `origin/main`, with a clean tree and a `nod
 matches the lockfile (`npm ci` after a pull that changed it): `npm publish` happens before the
 release commit, so releasing from anywhere else would publish code `main` never had. It runs the
 checks cheapest first: `make check-static`, `make bench-check`, the suites, the doctests, then
-`make test-release`. Then it stamps all seven packages to one version, their `@emberx/*` ranges
+`make test-release`. Then it stamps all eight packages to one version, their `@emberx/*` ranges
 included, and publishes each once the registry serves the `@emberx` packages it depends on:
 `npm publish` returns before the registry serves what it accepted. Then it prepends the release's
 section to `CHANGELOG.md` with [git-cliff](https://git-cliff.org), commits, tags and pushes. CI
 creates the GitHub release from the tag, and publishes the same version to JSR.
+
+`@emberx/cli` ships two ways. npm has its `dist/`, `cli.js` the `emberx` bin; JSR has its sources,
+for `deno install`. The CLI's version is `src/version.ts`, which the release stamps, as JSR serves
+no package.json to read it from.
 
 On JSR each package is `@izelnakri/emberx-<package>`, since a JSR name has one scope.
 `npm run build:jsr` builds them in `tmp/jsr/`, and the tag's `publish-jsr` job publishes them.

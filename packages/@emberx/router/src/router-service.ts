@@ -120,6 +120,9 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
    */
   location: 'history' | 'none' = typeof window === 'undefined' ? 'none' : 'history';
 
+  /** The element the pages render into, or a selector for it: see Router.start's `rootElement`. */
+  rootElement: Element | string = '#app';
+
   constructor(options: FreeObject | undefined) {
     super();
 
@@ -143,14 +146,15 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
   }
 
   /**
-   * Renders the page a transition ended on: into `#app`, or `#ember-testing`
-   * in a test. @emberx/ssr's renderURLToString() replaces it, to render the
-   * page to a string instead.
+   * Renders the page a transition ended on: into the root element, `#app` by
+   * default, or `#ember-testing` in a test. @emberx/ssr's renderURL() replaces
+   * it, to render the page to a string instead.
    */
   async renderPage(Page: object, args: FreeObject): Promise<void> {
-    const element = document.getElementById(this.testing ? 'ember-testing' : 'app');
+    const root = this.testing ? '#ember-testing' : this.rootElement;
+    const element = typeof root === 'string' ? document.querySelector(root) : root;
     if (!element) {
-      throw new Error('#app or #ember-testing not found for the @emberx/router to boot/render the application!');
+      throw new Error(`@emberx/router renders its pages into ${root}, which the document does not have.`);
     }
 
     await renderComponent(Page as any, { element, args, owner: this.owner });

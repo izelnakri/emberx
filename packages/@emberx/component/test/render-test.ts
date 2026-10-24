@@ -1,4 +1,13 @@
-import Component, { hbs, service, renderComponent, action, tracked } from '@emberx/component';
+import Component, {
+  didRender,
+  hbs,
+  service,
+  renderComponent,
+  trackedObject,
+  unmountComponent,
+  action,
+  tracked,
+} from '@emberx/component';
 import { module, test } from 'qunitx';
 import { click, setupRenderingTest } from '@emberx/test-helpers';
 
@@ -230,6 +239,68 @@ module('@emberx/component | Render tests', function (hooks) {
       await renderComponent(Appended, { element: document.getElementById('ember-testing'), owner: {} });
       assert.ok(target.querySelector('p') && target.querySelector('[data-test-appended]'), 'insertBefore=null appends');
       target.remove();
+    });
+  });
+
+  module('mounted in an app of another framework', function () {
+    class Greeting extends Component {
+      static template = hbs`<p data-test-greeting>Hello {{@name}}</p>`;
+    }
+
+    test('the render renderComponent resolves to removes itself, and only itself', async function (assert) {
+      const element = document.getElementById('ember-testing') as HTMLElement;
+      const first = await renderComponent(Greeting, { element, args: { name: 'first' }, owner: {} });
+      const second = await renderComponent(Greeting, { element, args: { name: 'second' }, owner: {} });
+      await didRender();
+      assert.dom('[data-test-greeting]').hasText('Hello second');
+
+      first.destroy();
+      await didRender();
+      assert
+        .dom('[data-test-greeting]')
+        .hasText('Hello second', "the first render's handle leaves the render that replaced it");
+
+      second.destroy();
+      await didRender();
+      assert.dom('[data-test-greeting]').doesNotExist();
+    });
+
+    test('args a trackedObject holds update the component in place when the app sets them', async function (assert) {
+      class Counter extends Component {
+        @tracked accessor clicks = 0;
+
+        static template = hbs`<p data-test-counter>{{@label}}: {{this.clicks}}</p><button {{on "click" this.click}} data-test-click>+</button>`;
+
+        @action click() {
+          this.clicks++;
+        }
+      }
+      const element = document.getElementById('ember-testing') as HTMLElement;
+      const args = trackedObject({ label: 'Clicks' });
+
+      await renderComponent(Counter, { element, args, owner: {} });
+      await click('[data-test-click]');
+      assert.dom('[data-test-counter]').hasText('Clicks: 1');
+
+      // What a React component's new props, or a Vue watcher, would set.
+      args.label = 'Taps';
+      await didRender();
+      assert.dom('[data-test-counter]').hasText('Taps: 1', 'the component keeps its own state');
+    });
+
+    test('unmountComponent removes what an element holds, and a render after it starts afresh', async function (assert) {
+      const element = document.getElementById('ember-testing') as HTMLElement;
+      const rendering = renderComponent(Greeting, { element, args: { name: 'gone' }, owner: {} });
+      unmountComponent(element);
+      await rendering;
+      await didRender();
+      assert.dom('[data-test-greeting]').doesNotExist();
+
+      await renderComponent(Greeting, { element, args: { name: 'again' }, owner: {} });
+      unmountComponent(element);
+      await renderComponent(Greeting, { element, args: { name: 'back' }, owner: {} });
+      await didRender();
+      assert.dom('[data-test-greeting]').exists({ count: 1 }).hasText('Hello back');
     });
   });
 });

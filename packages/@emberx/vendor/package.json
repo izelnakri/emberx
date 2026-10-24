@@ -35,6 +35,10 @@
       "types": "./@ember/owner/index.d.ts",
       "default": "./@ember/owner/index.js"
     },
+    "./@ember/reactive/collections": {
+      "types": "./@ember/reactive/collections.d.ts",
+      "default": "./@ember/reactive/collections.js"
+    },
     "./@ember/template-compiler/runtime": {
       "types": "./@ember/template-compiler/runtime.d.ts",
       "default": "./@ember/template-compiler/runtime.js"

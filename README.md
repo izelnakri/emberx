@@ -840,6 +840,21 @@ transition takes them instead of fetching them again; its first render hydrates 
 its own, so requests that arrive together render at once, each with the `services` it is given.
 See [@emberx/ssr](packages/@emberx/ssr/README.md) for a server.
 
+#### Inside an app of another framework:
+
+emberx needs no page of its own: a React, Vue or Svelte app, or a server-rendered page, can host it.
+
+- A component renders into any element, as many as you like: `renderComponent` resolves to the
+  render, whose `destroy()` removes it, and `unmountComponent(element)` removes what an element
+  holds, what a host's unmount calls. Args in a `trackedObject` update it in place when the host
+  sets them. See [@emberx/component](packages/@emberx/component/README.md#mounted-in-an-app-of-another-framework)
+  for a React and a Vue host.
+- A routed app renders into the element `Router.start(routes, { rootElement })` names, `#app`
+  by default, and with `location: 'none'` keeps its URL to itself, leaving the page's to the
+  host's router. There is one router a page: `Router` is static.
+- Nothing is global but Glimmer's own setup: no run loop, no `window` listeners until a router
+  follows the address bar, and an `owner` of each render's own for its services.
+
 #### Compiling templates at build time (optional):
 
 Templates compile in the browser on first render, which needs no build step. A production

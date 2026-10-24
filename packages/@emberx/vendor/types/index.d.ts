@@ -109,6 +109,7 @@
 /// <reference path="./@ember/object/mixin.d.ts" />
 /// <reference path="./@ember/object/observable.d.ts" />
 /// <reference path="./@ember/owner/index.d.ts" />
+/// <reference path="./@ember/reactive/collections.d.ts" />
 /// <reference path="./@ember/routing/-internals.d.ts" />
 /// <reference path="./@ember/routing/hash-location.d.ts" />
 /// <reference path="./@ember/routing/history-location.d.ts" />

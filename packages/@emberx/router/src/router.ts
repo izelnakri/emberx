@@ -65,6 +65,12 @@ export interface StartOptions {
    */
   location?: 'history' | 'none';
   /**
+   * The element the pages render into, or a selector for it: `#app` by
+   * default. With `location: 'none'`, an emberx app lives in one element of
+   * a page another framework's app owns, and leaves its URL alone.
+   */
+  rootElement?: Element | string;
+  /**
    * The models a server rendered the page with, by route name, as
    * @emberx/ssr's renderURL returns them: the first transition's routes take
    * these instead of running their model hooks, so the browser does not fetch
@@ -146,7 +152,7 @@ export default class Router {
   ): typeof Router {
     const routeMap = typeof routeMapOrOptions === 'function' ? routeMapOrOptions : undefined;
     const options = typeof routeMapOrOptions === 'object' ? routeMapOrOptions : startOptions;
-    const { resolve, location, models = readShoebox(options.shoebox ?? SHOEBOX) } = options;
+    const { resolve, location, rootElement, models = readShoebox(options.shoebox ?? SHOEBOX) } = options;
     stopPreviousRouter();
     Owner.clear('routes');
 
@@ -160,7 +166,7 @@ export default class Router {
     Owner.register(
       'service:router',
       mapRoutes(
-        new RouterService({ Resolver: this.Resolver, location, models, testing: this.testing }),
+        new RouterService({ Resolver: this.Resolver, location, rootElement, models, testing: this.testing }),
         this.#routerJSRoutes,
       ),
     );

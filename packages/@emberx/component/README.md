@@ -131,6 +131,84 @@ await renderComponent(UserTable, {
 assert.equal(document.querySelector('.my-table tbody td').textContent, 'Izel');
 ```
 
+## Mounted in an app of another framework
+
+A component renders into any element, as many on a page as you like, each with an `owner` of its
+own if it needs one. `renderComponent` resolves to the render, whose `destroy()` removes it, and
+`unmountComponent(element)` removes whatever an element holds: what a React effect's cleanup, or
+Vue's `onUnmounted`, calls.
+
+```ts
+import assert from 'node:assert/strict';
+import Component, { didRender, hbs, renderComponent } from '@emberx/component';
+
+class Greeting extends Component {
+  static template = hbs`<p>Hello {{@name}}</p>`;
+}
+
+const element = document.createElement('div');
+const rendered = await renderComponent(Greeting, { element, args: { name: 'React' } });
+assert.equal(element.textContent, 'Hello React');
+
+rendered.destroy(); // or unmountComponent(element)
+await didRender();
+assert.equal(element.textContent, '');
+```
+
+Args the app changes go in a `trackedObject`: setting one of its properties updates the component
+in place, keeping its own state, where rendering it again would start it over. `trackedArray`,
+`trackedMap`, `trackedSet` and the weak ones are exported too, Ember's own.
+
+```ts
+import assert from 'node:assert/strict';
+import Component, { didRender, hbs, renderComponent, trackedObject } from '@emberx/component';
+
+class Badge extends Component {
+  static template = hbs`<span>{{@count}} new</span>`;
+}
+
+const element = document.createElement('div');
+const args = trackedObject({ count: 1 });
+await renderComponent(Badge, { element, args });
+
+args.count = 2; // what new props, or a watcher, set
+await didRender();
+assert.equal(element.textContent, '2 new');
+```
+
+In React, an effect mounts it and its cleanup unmounts it, a render still loading included, so
+StrictMode's mount, unmount and mount again is fine; another effect passes props on:
+
+```tsx ignore
+function EmberXBadge({ count }) {
+  const element = useRef(null);
+  const [args] = useState(() => trackedObject({ count }));
+
+  useEffect(() => {
+    const mounted = element.current;
+    renderComponent(Badge, { element: mounted, args });
+    return () => unmountComponent(mounted);
+  }, []);
+  useEffect(() => void (args.count = count), [count]);
+
+  return <div ref={element} />;
+}
+```
+
+In Vue, the same with `onMounted`, `watch` and `onUnmounted`:
+
+```ts ignore
+const element = ref(null);
+const args = trackedObject({ count: props.count });
+
+onMounted(() => renderComponent(Badge, { element: element.value, args }));
+watch(
+  () => props.count,
+  (count) => (args.count = count),
+);
+onUnmounted(() => unmountComponent(element.value));
+```
+
 ## Cached getters, cleanup, and async work tests wait for
 
 `@cached` keeps a getter's value until the tracked state it read changes, `registerDestructor`

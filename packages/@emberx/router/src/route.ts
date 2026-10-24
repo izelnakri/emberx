@@ -2,7 +2,6 @@
 // TODO: make this sticky params if needed
 import type RouterService from './router-service.ts';
 import { ROUTE_ABOVE_PAGE } from './route-above-page.ts';
-import Router from './index.ts';
 import Owner from './owner.ts';
 import { buildQueryParams, type QueryParamDeclarations } from './query-params.ts';
 import type { Body, Head } from './head.ts';
@@ -209,7 +208,7 @@ export default class Route extends EmberXComponent<FreeObject> {
   }
 
   static async setup(model: object, transition: FreeObject): Promise<any> {
-    if (Router.LOG_MODELS) {
+    if (this.router.logModels) {
       console.log(`'${transition.targetName}' Route[model] is`, model);
       console.log(`'${transition.targetName}' Route[transition] is`, transition);
     }

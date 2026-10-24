@@ -373,6 +373,15 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
     this.#endTransition();
   }
 
+  /**
+   * Router.LOG_MODELS, which routes read here: a route that imported the router
+   * would close an import cycle (router → not-found route → route), which a
+   * split bundle can enter at the route, before the class it extends exists.
+   */
+  get logModels(): boolean {
+    return EmberXRouter.LOG_MODELS;
+  }
+
   getRoute(name: string): any {
     if (EmberXRouter.LOG_ROUTES) {
       console.log('[EmberXRouter debug]:', name);

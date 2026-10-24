@@ -56,6 +56,7 @@ module('@emberx/router | Public API', function (hooks) {
       'oldState',
       'owner',
       'recognizer',
+      'rootElement',
       'state',
       'testing',
     ]);

@@ -1,5 +1,6 @@
 import { module, test } from 'qunitx';
 import Router, { Route, LinkTo, NotFoundRoute as NotFoundPage, hbs } from '@emberx/router';
+import { didRender } from '@emberx/component';
 import { visit, render, currentURL, currentRouteName, setupRenderingTest } from '@emberx/test-helpers';
 
 class HomeRoute extends Route {
@@ -166,6 +167,39 @@ module('@emberx/router | Route definitions', function () {
 
       assert.dom('[data-test-title]').hasText('User 1');
       assert.equal(pages, 1);
+    });
+  });
+
+  module('rendered into an element of a page another app owns', function (hooks) {
+    setupRenderingTest(hooks);
+
+    test('rootElement, an element or a selector, is where its pages render, and location none leaves the URL', async function (assert) {
+      // As an app, not a test: a test renders into #ember-testing whatever rootElement is.
+      Router.testing = false;
+      const url = location.href;
+      const host = Object.assign(document.createElement('section'), { id: 'emberx-widget' });
+      document.body.append(host);
+
+      try {
+        Router.start(
+          [
+            { path: '/', route: HomeRoute },
+            { path: '/posts', route: PostsRoute },
+          ],
+          { rootElement: host, location: 'none' },
+        );
+        await Router.visit('/posts');
+        assert.equal(host.querySelector('[data-test-title]')?.textContent, 'Posts');
+        assert.equal(location.href, url, "the page's URL is the host app's");
+
+        Router.start([{ path: '/', route: HomeRoute }], { rootElement: '#emberx-widget', location: 'none' });
+        await Router.visit('/');
+        await didRender();
+        assert.equal(host.querySelector('[data-test-title]')?.textContent, 'Home');
+      } finally {
+        Router.testing = true;
+        host.remove();
+      }
     });
   });
 

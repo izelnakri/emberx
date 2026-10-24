@@ -2,9 +2,9 @@
 // bump @glimmer/component in package.json and run `npm run vendor`.
 // emberx: development checks follow EMBERX_DEBUG; @glimmer/env's DEBUG is false in every ember-source build.
 const DEBUG = typeof EMBERX_DEBUG !== 'undefined' && Boolean(EMBERX_DEBUG);
-import { capabilities, setComponentManager } from '../../@ember/component/index.js';
+import { componentCapabilities as capabilities, setComponentManager } from '../../@glimmer/manager/index.js';
 import { destroy } from '../../@ember/destroyable/index.js';
-import { schedule } from '../../@ember/runloop/index.js';
+import { scheduleDestroy, scheduleDestroyed } from '../../@glimmer/global-context/index.js';
 import { setOwner } from '../../@ember/owner/index.js';
 
 const DESTROYING = new WeakMap();
@@ -292,8 +292,8 @@ class EmberGlimmerComponentManager extends BaseComponentManager {
       return;
     }
     setDestroying(component);
-    schedule('actions', component, component.willDestroy);
-    schedule('destroy', this, scheduledDestroyComponent, component);
+    scheduleDestroy(component, (destroying) => destroying.willDestroy());
+    scheduleDestroyed(() => scheduledDestroyComponent(component));
   }
 }
 

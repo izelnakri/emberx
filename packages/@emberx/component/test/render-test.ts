@@ -168,4 +168,68 @@ module('@emberx/component | Render tests', function (hooks) {
     assert.dom('p').hasText('my eq');
     assert.deepEqual(Object.keys(includes), ['eq'], 'no built-in was written into it');
   });
+
+  module('the template syntax Ember compiles to built-in helpers', function () {
+    test('{{#each}} re-renders a tracked array set again, and {{#each-in}} iterates an object by key', async function (assert) {
+      class Lists extends Component {
+        @tracked accessor names = ['Ada', 'Grace'];
+        prices = { tea: 2, cake: 4 };
+
+        static template = hbs`
+          <ul>{{#each this.names as |name|}}<li data-test-name>{{name}}</li>{{/each}}</ul>
+          <dl>{{#each-in this.prices as |item price|}}<dt>{{item}}</dt><dd>{{price}}</dd>{{/each-in}}</dl>
+          <button {{on "click" this.add}} data-test-add>Add</button>
+        `;
+
+        @action add() {
+          this.names = [...this.names, 'Barbara'];
+        }
+      }
+
+      await renderComponent(Lists, { element: document.getElementById('ember-testing'), owner: {} });
+      assert.dom('[data-test-name]').exists({ count: 2 });
+      assert.deepEqual(
+        [...document.querySelectorAll('dt')].map((dt) => dt.textContent),
+        ['tea', 'cake'],
+      );
+      assert.deepEqual(
+        [...document.querySelectorAll('dd')].map((dd) => dd.textContent),
+        ['2', '4'],
+      );
+
+      await click('[data-test-add]');
+      assert.dom('[data-test-name]').exists({ count: 3 });
+      assert.dom('li:last-child').hasText('Barbara');
+    });
+
+    test('class interpolation, and {{#in-element}} with and without insertBefore', async function (assert) {
+      const target = document.createElement('div');
+      target.innerHTML = '<p>kept</p>';
+      document.getElementById('ember-testing')!.after(target);
+
+      class Placed extends Component {
+        @tracked accessor active = true;
+        target = target;
+
+        static template = hbs`
+          <span class="badge {{if this.active "on" "off"}}" data-test-badge>badge</span>
+          {{#in-element this.target}}<b data-test-replaced>replaced</b>{{/in-element}}
+        `;
+      }
+      class Appended extends Component {
+        target = target;
+
+        static template = hbs`{{#in-element this.target insertBefore=null}}<i data-test-appended>appended</i>{{/in-element}}`;
+      }
+
+      await renderComponent(Placed, { element: document.getElementById('ember-testing'), owner: {} });
+      assert.dom('[data-test-badge]').hasClass('badge').hasClass('on');
+      assert.equal(target.innerHTML.replace(/<!---->/g, ''), '<b data-test-replaced="">replaced</b>');
+
+      target.innerHTML = '<p>kept</p>';
+      await renderComponent(Appended, { element: document.getElementById('ember-testing'), owner: {} });
+      assert.ok(target.querySelector('p') && target.querySelector('[data-test-appended]'), 'insertBefore=null appends');
+      target.remove();
+    });
+  });
 });

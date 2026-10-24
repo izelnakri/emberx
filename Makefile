@@ -5,7 +5,7 @@ REGRESSION_THRESHOLD ?= 26
 BENCH_BASE ?=
 
 .PHONY: bench bench-check bench-print bench-update build check check-static clean coverage \
-        dev docs jsr-check site docker-build docker-test fix fmt format help install lint release setup test test-all-browsers \
+        cli-binaries dev docs jsr-check site docker-build docker-test fix fmt format help install lint release setup test test-all-browsers \
         test-browser test-browser-dev test-chrome test-firefox test-cli test-deno test-doctests test-node test-release test-webkit typecheck \
         vendor vendor-check
 
@@ -152,6 +152,12 @@ site: docs coverage
 		-e "s/{{COMMIT}}/$$(git rev-parse --short HEAD)/g" \
 		docs/index.html > tmp/site/index.html
 
+# The standalone `emberx` binaries a release attaches, every platform's, with
+# SHA256SUMS, in dist/cli-binaries/. `deno run -A scripts/build-cli-binaries.ts --host`
+# builds this machine's alone.
+cli-binaries:
+	deno run -A scripts/build-cli-binaries.ts
+
 # ── Benchmarks ────────────────────────────────────────────────────────────────
 
 # Benchmarks are Deno.bench files in benches/, run and checked by
@@ -242,6 +248,7 @@ help:
 	@echo "Build"
 	@echo "  build             Bundle all packages to dist/ + emit .d.ts (for publishing)"
 	@echo "  clean             Remove every build artefact"
+	@echo "  cli-binaries      The standalone emberx binaries, every platform's -> dist/cli-binaries/"
 	@echo ""
 	@echo "Develop"
 	@echo "  dev               Serve examples/blog on :1234 with watch rebuilds"

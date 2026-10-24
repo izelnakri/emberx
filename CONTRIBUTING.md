@@ -38,7 +38,8 @@ benches/                Deno.bench and Chrome.bench files; results stay on your 
 docs/index.html         the landing page of izelnakri.github.io/emberx, which `make site` fills in
 build.ts                the package build: each dist/ and its .d.ts files
 scripts/                vendoring, benchmarks, publishing, the release test, node's loader,
-                        and the JSR build
+                        the JSR build, and build-cli-binaries.ts, the standalone `emberx` binaries
+install.sh              installs the standalone `emberx`: curl … | sh
 test/                   the suites' entry points, the public API test, the blog's E2E tests;
                         each package's own suite is in packages/@emberx/*/test/
 ```
@@ -241,11 +242,16 @@ checks cheapest first: `make check-static`, `make bench-check`, the suites, the 
 included, and publishes each once the registry serves the `@emberx` packages it depends on:
 `npm publish` returns before the registry serves what it accepted. Then it prepends the release's
 section to `CHANGELOG.md` with [git-cliff](https://git-cliff.org), commits, tags and pushes. CI
-creates the GitHub release from the tag, and publishes the same version to JSR.
+creates the GitHub release from the tag, publishes the same version to JSR, and attaches the
+standalone `emberx` binaries to the release.
 
-`@emberx/cli` ships two ways. npm has its `dist/`, `cli.js` the `emberx` bin; JSR has its sources,
-for `deno install`. The CLI's version is `src/version.ts`, which the release stamps, as JSR serves
-no package.json to read it from.
+`@emberx/cli` ships three ways. npm has its `dist/`, `cli.js` the `emberx` bin; JSR has its sources,
+for `deno install`; and each release has a binary per platform, built by
+`scripts/build-cli-binaries.ts` (`make cli-binaries`): the CLI bundled, `deno compile`d, and
+archived with the esbuild binary it runs, which a compiled binary cannot run from inside itself,
+with SHA256SUMS, which `install.sh` and `emberx upgrade` check. CI's `cli-binary` job builds each
+runner's on every push and uses it to create and build an app. The CLI's version is
+`src/version.ts`, which the release stamps, as JSR serves no package.json to read it from.
 
 On JSR each package is `@izelnakri/emberx-<package>`, since a JSR name has one scope.
 `npm run build:jsr` builds them in `tmp/jsr/`, and the tag's `publish-jsr` job publishes them.

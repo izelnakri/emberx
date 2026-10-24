@@ -13,6 +13,30 @@ npm run build     # dist/, for production, and its size
 
 ## Installation
 
+### Standalone binary
+
+No Node or Deno needed: one binary, with esbuild beside it.
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/izelnakri/emberx/main/install.sh | sh
+export PATH="$HOME/.emberx/bin:$PATH"   # add this to your shell profile
+```
+
+| Platform | Architecture | Notes                                                          |
+| -------- | ------------ | -------------------------------------------------------------- |
+| Linux    | x64, arm64   | glibc; on Alpine and other musl systems, use npm or Deno below |
+| macOS    | arm64, x64   |                                                                |
+| Windows  | x64          | from Git Bash or MSYS2                                         |
+
+Pin a version, or install somewhere else:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/izelnakri/emberx/main/install.sh \
+  | VERSION=v0.6.0 INSTALL_DIR=$HOME/.local/bin sh
+```
+
+The installer checks each download against the release's SHA256SUMS.
+
 ### npm
 
 Node.js 24 or newer. An app `emberx new` creates has it as a devDependency already, so

@@ -569,7 +569,13 @@ export default class RouterJSRouter extends Router<RouterJSRoute> {
     });
 
     if (pivot && this.currentRouteInfos) {
-      this.refresh(pivot.route);
+      // The query-param transition under way aborts this one when it takes over, as #followBrowserURL's
+      // can be: no failure, and with native promises, which RSVP's are not, a rejection to handle.
+      this.refresh(pivot.route).catch((error: any) => {
+        if (error?.name !== 'TransitionAborted' && !this.isErrorHandled(error)) {
+          throw error;
+        }
+      });
     }
   }
 

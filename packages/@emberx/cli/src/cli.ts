@@ -6,6 +6,7 @@ import { existsSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 import process from 'node:process';
 import { UsageError } from './args.ts';
+import { ALIASES } from './commands/help.ts';
 import { VERSION } from './version.ts';
 
 /** Each command's module, imported only when it runs: `emberx --version` loads no esbuild. */
@@ -14,11 +15,11 @@ const COMMANDS: Record<string, () => Promise<{ run(args: string[]): Promise<numb
   generate: () => import('./commands/generate.ts'),
   dev: () => import('./commands/dev.ts'),
   build: () => import('./commands/build.ts'),
+  serve: () => import('./commands/serve.ts'),
   test: () => import('./commands/test.ts'),
   upgrade: () => import('./commands/upgrade.ts'),
   help: () => import('./commands/help.ts'),
 };
-const ALIASES: Record<string, string> = { g: 'generate', s: 'dev', serve: 'dev', b: 'build', t: 'test' };
 
 useSidecarEsbuild();
 

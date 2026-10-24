@@ -15,8 +15,9 @@ export function appFiles(name: string, { ssr = false }: { ssr?: boolean } = {}):
     private: true,
     type: 'module',
     scripts: {
-      dev: 'emberx dev',
+      dev: ssr ? 'emberx dev --ssr' : 'emberx dev',
       build: ssr ? 'emberx build --ssr' : 'emberx build',
+      serve: 'emberx serve',
       test: 'emberx test',
       ...(ssr ? { start: 'node dist/server/server.js' } : {}),
     },
@@ -174,9 +175,10 @@ module('Route | index', function (hooks) {
 An [emberx](https://github.com/izelnakri/emberx) app.
 
 \`\`\`sh
-npm run dev     # http://localhost:4200, rebuilt and reloaded on every change
+npm run dev     # http://localhost:4200, rebuilt and reloaded on every change${ssr ? ', each page rendered on the server' : ''}
 npm test        # the tests in tests/, with QUnitX
-npm run build   # dist/, for production${ssr ? '\nnpm start       # the server dist/server/server.js, rendering each page' : ''}
+npm run build   # dist/, for production
+npm run serve   # dist/, served as in production, on http://localhost:4300${ssr ? '\nnpm start       # the server dist/server/server.js, rendering each page' : ''}
 \`\`\`
 
 \`npx emberx generate route posts\` adds a route, \`npx emberx generate component post-card\` a
@@ -187,8 +189,8 @@ component, each with its test. \`npx emberx help\` lists every command.
 }
 
 function serverFile(): string {
-  return `// Renders each page on the server, which the browser hydrates: \`npm run build && npm start\`.
-// It serves what \`emberx build --ssr\` wrote: dist/, and itself as dist/server/server.js.
+  return `// Renders each page on the server, which the browser hydrates. \`emberx dev --ssr\` and
+// \`emberx serve\` call render(); run as dist/server/server.js, \`npm start\`, it serves the build.
 import { readFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { extname, join, normalize } from 'node:path';
@@ -196,8 +198,6 @@ import { fileURLToPath } from 'node:url';
 import { renderBaseHTMLToString, renderURL } from '@emberx/ssr';
 import startRouter from './router.ts';
 
-const DIST = fileURLToPath(new URL('../', import.meta.url));
-const PORT = Number(process.env.PORT ?? 3000);
 const TYPES: Record<string, string> = {
   '.js': 'text/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
@@ -207,25 +207,38 @@ const TYPES: Record<string, string> = {
   '.woff2': 'font/woff2',
 };
 
-const baseHTML = await readFile(join(DIST, 'index.html'), 'utf8');
 startRouter({ location: 'none' });
 
-createServer(async (request, response) => {
-  const url = new URL(request.url ?? '/', \`http://\${request.headers.host ?? 'localhost'}\`);
-  const file = join(DIST, normalize(url.pathname));
-  if (extname(url.pathname) && file.startsWith(DIST) && !file.startsWith(join(DIST, 'server'))) {
-    const contents = await readFile(file).catch(() => null);
-    response.writeHead(contents ? 200 : 404, { 'content-type': TYPES[extname(file)] ?? 'text/plain' });
-    return response.end(contents ?? 'Not Found');
-  }
+/** The document for \`url\`: index.html, \`baseHTML\`, with the page rendered into it. */
+export async function render(url: string, baseHTML: string): Promise<{ url: string; status: number; html: string }> {
+  const rendered = await renderURL(url);
+  return { url: rendered.url, status: rendered.status, html: renderBaseHTMLToString(baseHTML, rendered) };
+}
 
-  const rendered = await renderURL(url.pathname + url.search);
-  if (rendered.url !== url.pathname + url.search) {
-    response.writeHead(302, { location: rendered.url });
-    return response.end();
-  }
-  response.writeHead(rendered.status, { 'content-type': 'text/html; charset=utf-8' });
-  response.end(renderBaseHTMLToString(baseHTML, rendered));
-}).listen(PORT, () => console.log(\`http://localhost:\${PORT}\`));
+if (import.meta.main) serve(Number(process.env.PORT ?? 3000));
+
+/** dist/'s files, and every other URL's page, rendered. */
+async function serve(port: number): Promise<void> {
+  const dist = fileURLToPath(new URL('../', import.meta.url));
+  const baseHTML = await readFile(join(dist, 'index.html'), 'utf8');
+
+  createServer(async (request, response) => {
+    const url = new URL(request.url ?? '/', 'http://localhost');
+    const file = join(dist, normalize(url.pathname));
+    if (extname(url.pathname) && file.startsWith(dist) && !file.startsWith(join(dist, 'server'))) {
+      const contents = await readFile(file).catch(() => null);
+      response.writeHead(contents ? 200 : 404, { 'content-type': TYPES[extname(file)] ?? 'text/plain' });
+      return response.end(contents ?? 'Not Found');
+    }
+
+    const page = await render(url.pathname + url.search, baseHTML);
+    if (page.url !== url.pathname + url.search) {
+      response.writeHead(302, { location: page.url });
+      return response.end();
+    }
+    response.writeHead(page.status, { 'content-type': 'text/html; charset=utf-8' });
+    response.end(page.html);
+  }).listen(port, () => console.log(\`http://localhost:\${port}\`));
+}
 `;
 }

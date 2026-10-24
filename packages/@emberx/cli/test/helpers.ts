@@ -28,9 +28,24 @@ export function emberx(
   return { status, stdout, stderr };
 }
 
-/** Starts `emberx ...args` and returns the process, for `emberx dev`. */
-export function startEmberx(args: string[], cwd: string) {
-  return spawn(process.execPath, [CLI, ...args], { cwd, env: { ...process.env, NO_COLOR: '1' } });
+/**
+ * Starts `emberx ...args`, a server, `emberx dev` or `emberx serve`, on a port of its own:
+ * resolves with its origin once it listens, and stop(), which stops it.
+ */
+export async function startEmberx(args: string[], cwd: string): Promise<{ origin: string; stop(): void }> {
+  const port = 4800 + Math.floor(Math.random() * 1000);
+  const child = spawn(process.execPath, [CLI, ...args, '--port', String(port)], {
+    cwd,
+    env: { ...process.env, NO_COLOR: '1' },
+  });
+  const origin = `http://localhost:${port}`;
+  let output = '';
+  await new Promise<void>((resolve, reject) => {
+    child.stdout.on('data', (chunk) => (output += chunk) && output.includes(origin) && resolve());
+    child.stderr.on('data', (chunk) => (output += chunk));
+    child.on('exit', () => reject(new Error(`emberx ${args.join(' ')} exited:\n${output}`)));
+  });
+  return { origin, stop: () => child.kill('SIGINT') };
 }
 
 /** A new directory for one test, under the repository. */

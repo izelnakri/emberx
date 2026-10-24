@@ -28,11 +28,22 @@ module('@emberx/cli | emberx', function (hooks) {
   test('help lists the commands, and each command has its own', function (assert) {
     const { stdout, status } = emberx(['help']);
     assert.equal(status, 0);
-    for (const command of ['new', 'generate', 'dev', 'build', 'test', 'upgrade']) {
+    for (const command of ['new', 'generate', 'dev', 'build', 'serve', 'test', 'upgrade']) {
       assert.ok(stdout.includes(`  ${command} `), `lists ${command}`);
       assert.equal(emberx([command, '--help']).status, 0, `${command} --help`);
     }
-    assert.ok(emberx(['g', '--help']).stdout.startsWith('Usage: emberx generate'), "an alias has its command's help");
+    for (const [alias, command] of Object.entries({
+      n: 'new',
+      g: 'generate',
+      d: 'dev',
+      b: 'build',
+      s: 'serve',
+      server: 'serve',
+      t: 'test',
+      up: 'upgrade',
+    })) {
+      assert.ok(emberx([alias, '--help']).stdout.startsWith(`Usage: emberx ${command}`), `${alias} is ${command}`);
+    }
     assert.equal(emberx([]).stdout, stdout, 'emberx alone is help');
   });
 
@@ -56,7 +67,12 @@ module('@emberx/cli | emberx new', function (hooks) {
     const manifest = JSON.parse(readFileSync(join(app, 'package.json'), 'utf8'));
 
     assert.equal(manifest.name, 'my-app');
-    assert.deepEqual(manifest.scripts, { dev: 'emberx dev', build: 'emberx build', test: 'emberx test' });
+    assert.deepEqual(manifest.scripts, {
+      dev: 'emberx dev',
+      build: 'emberx build',
+      serve: 'emberx serve',
+      test: 'emberx test',
+    });
     assert.equal(manifest.dependencies['@emberx/router'], `^${VERSION}`);
     for (const file of [
       'index.html',
@@ -77,6 +93,7 @@ module('@emberx/cli | emberx new', function (hooks) {
     const manifest = JSON.parse(readFileSync(join(app, 'package.json'), 'utf8'));
 
     assert.ok(existsSync(join(app, 'src/server.ts')));
+    assert.equal(manifest.scripts.dev, 'emberx dev --ssr');
     assert.equal(manifest.scripts.build, 'emberx build --ssr');
     assert.equal(manifest.scripts.start, 'node dist/server/server.js');
     assert.equal(manifest.dependencies['@emberx/ssr'], `^${VERSION}`);

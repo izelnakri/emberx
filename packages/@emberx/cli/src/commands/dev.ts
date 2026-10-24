@@ -1,40 +1,30 @@
 /**
  * `emberx dev [entry]`: the app, served and rebuilt as it changes. See `emberx help dev`.
  */
-import { existsSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { createServer, type ServerResponse } from 'node:http';
+import { tmpdir } from 'node:os';
 import { extname, join, relative, resolve } from 'node:path';
 import process from 'node:process';
+import * as esbuild from 'esbuild';
 import { readArgs, UsageError } from '../args.ts';
 import { rewritePage } from '../build/html.ts';
 import { findProject } from '../project.ts';
+import { type AppServer, importServer, listen, respond, respondWithPage, TYPES, untilStopped } from '../http.ts';
 
 const RELOAD = '/__emberx/reload';
 const LIVE_RELOAD = `<script type="module">
 const events = new EventSource('${RELOAD}');
 events.addEventListener('reload', () => location.reload());
-events.addEventListener('failure', (event) => console.error('emberx dev: the build failed\\n' + event.data));
+events.addEventListener('failure', (event) => console.error('emberx dev: the build failed\\n' + JSON.parse(event.data)));
 </script>`;
-const TYPES: Record<string, string> = {
-  '.html': 'text/html; charset=utf-8',
-  '.js': 'text/javascript; charset=utf-8',
-  '.mjs': 'text/javascript; charset=utf-8',
-  '.css': 'text/css; charset=utf-8',
-  '.map': 'application/json; charset=utf-8',
-  '.json': 'application/json; charset=utf-8',
-  '.svg': 'image/svg+xml',
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.webp': 'image/webp',
-  '.ico': 'image/x-icon',
-  '.woff2': 'font/woff2',
-  '.txt': 'text/plain; charset=utf-8',
-};
+const NO_CACHE = { 'cache-control': 'no-cache' };
 
 export async function run(args: string[]): Promise<number> {
   const { values, positionals } = readArgs(args, {
     port: { type: 'string', short: 'p' },
     host: { type: 'string' },
+    ssr: { type: 'boolean' },
   });
   if (values.help) return (await import('./help.ts')).run(['dev']);
 
@@ -45,20 +35,81 @@ export async function run(args: string[]): Promise<number> {
       'no entry module: give one, `emberx dev src/app.ts`, or name it in package.json\'s "emberx": { "entry" }.',
     );
   }
+  if (values.ssr && !existsSync(project.server)) {
+    throw new UsageError(
+      `--ssr renders each page with ${relative(process.cwd(), project.server)}, which does not exist: \`emberx new my-app --ssr\` writes one.`,
+    );
+  }
   const port = Number(values.port ?? process.env.PORT ?? project.port);
   const host = (values.host as string | undefined) ?? 'localhost';
 
-  const esbuild = await import('esbuild');
-  const outdir = join(project.root, '.emberx-dev');
   const outputs = new Map<string, Uint8Array>();
   const listeners = new Set<ServerResponse>();
-  let firstBuild: () => void = () => {};
-  const built = new Promise<void>((resolve) => (firstBuild = resolve));
   const send = (event: string, data = '') => {
     for (const listener of listeners) listener.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
   };
+  let serving = false;
+  const failed = (name: string, errors: esbuild.Message[]) => {
+    const text = errors
+      .map((error) => `${error.location?.file ?? ''}:${error.location?.line ?? ''} ${error.text}`)
+      .join('\n');
+    console.error(`emberx dev: the ${name} build failed\n${text}`);
+    send('failure', text);
+  };
 
-  const context = await esbuild.context({
+  // With --ssr, src/server.ts too, for node, rebuilt with the browser's bundle: each build written under a name of its
+  // own, as an imported module stays imported, and imported, so each page renders with the latest render().
+  let appServer: AppServer | undefined;
+  const serverOutdir = values.ssr ? mkdtempSync(join(tmpdir(), 'emberx-dev-')) : '';
+  let serverBuilds = 0;
+  /** The server's own modules, which the browser's build watches too: one watcher, so one reload for a change. */
+  let serverInputs: string[] = [];
+  const server = values.ssr
+    ? await esbuild.context({
+        entryPoints: { server: project.server },
+        outdir: serverOutdir,
+        bundle: true,
+        platform: 'node',
+        format: 'esm',
+        target: 'es2022',
+        sourcemap: 'inline',
+        metafile: true,
+        write: false,
+        logLevel: 'silent',
+        define: { EMBERX_DEBUG: 'true' },
+      })
+    : undefined;
+  /** Whether the server built, and its module ran. */
+  const buildServer = async (): Promise<boolean> => {
+    try {
+      const { outputFiles, metafile } = await server!.rebuild();
+      serverInputs = Object.keys(metafile.inputs)
+        .filter((input) => !input.includes('node_modules'))
+        .map((input) => resolve(input));
+      const file = join(serverOutdir, `server-${++serverBuilds}.mjs`);
+      writeFileSync(file, outputFiles.find((output) => output.path.endsWith('.js'))!.contents);
+      try {
+        appServer = await importServer(file);
+      } finally {
+        rmSync(file, { force: true });
+      }
+      return true;
+    } catch (error) {
+      const { errors } = error as { errors?: esbuild.Message[] };
+      if (errors) {
+        failed('server', errors);
+      } else {
+        console.error(`emberx dev: the server module failed\n${(error as Error).stack ?? error}`);
+        send('failure', String(error));
+      }
+      return false;
+    }
+  };
+
+  const outdir = join(project.root, '.emberx-dev');
+  let firstBuilt = () => {};
+  const firstBuild = new Promise<void>((resolve) => (firstBuilt = resolve));
+  const browser = await esbuild.context({
     entryPoints: { app: entry },
     outdir,
     bundle: true,
@@ -74,36 +125,38 @@ export async function run(args: string[]): Promise<number> {
       {
         name: 'emberx:dev',
         setup(build) {
-          let first = true;
-          build.onEnd(({ errors, outputFiles }) => {
-            firstBuild();
+          build.onResolve({ filter: new RegExp(`^${entry.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`) }, ({ path }) => ({
+            path,
+            watchFiles: serverInputs,
+          }));
+          build.onEnd(async ({ errors, outputFiles = [] }) => {
             if (errors.length > 0) {
-              const text = errors
-                .map((error) => `${error.location?.file ?? ''}:${error.location?.line ?? ''} ${error.text}`)
-                .join('\n');
-              console.error(`emberx dev: the build failed\n${text}`);
-              send('failure', text);
-              return;
+              failed('browser', errors);
+            } else {
+              outputs.clear();
+              for (const file of outputFiles)
+                outputs.set(`/assets/${relative(outdir, file.path).split('\\').join('/')}`, file.contents);
+              // A server that failed leaves the page as it is, its failure in the console.
+              if (serving && (!server || (await buildServer()))) {
+                console.log(`emberx dev: rebuilt, reloading ${listeners.size} page${listeners.size === 1 ? '' : 's'}`);
+                send('reload');
+              }
             }
-            outputs.clear();
-            for (const file of outputFiles ?? [])
-              outputs.set(`/assets/${relative(outdir, file.path).split('\\').join('/')}`, file.contents);
-            if (!first) {
-              console.log(`emberx dev: rebuilt, reloading ${listeners.size} page${listeners.size === 1 ? '' : 's'}`);
-              send('reload');
-            }
-            first = false;
+            firstBuilt();
           });
         },
       },
     ],
   });
-  // watch() starts the first build without waiting for it: the server opens once there is a bundle to serve.
-  await context.watch();
-  await built;
 
-  const server = createServer((request, response) => {
-    const path = decodeURIComponent(new URL(request.url ?? '/', 'http://localhost').pathname);
+  if (server) await buildServer();
+  // watch() starts the first build without waiting for it: the server opens once there is a bundle to serve.
+  await browser.watch();
+  await firstBuild;
+
+  const http = createServer((request, response) => {
+    const url = new URL(request.url ?? '/', 'http://localhost');
+    const path = decodeURIComponent(url.pathname);
     if (path === RELOAD) {
       response.writeHead(200, {
         'content-type': 'text/event-stream',
@@ -117,18 +170,18 @@ export async function run(args: string[]): Promise<number> {
     }
 
     const output = outputs.get(path);
-    if (output) return respond(response, 200, TYPES[extname(path)] ?? 'application/octet-stream', output);
+    if (output) return respond(response, 200, TYPES[extname(path)] ?? 'application/octet-stream', output, NO_CACHE);
 
     const file = [join(project.publicDir, path), join(project.root, path)].find(
       (candidate) => !path.includes('..') && existsSync(candidate) && statSync(candidate).isFile(),
     );
     if (file && file !== project.html)
-      return respond(response, 200, TYPES[extname(file)] ?? 'application/octet-stream', readFileSync(file));
+      return respond(response, 200, TYPES[extname(file)] ?? 'application/octet-stream', readFileSync(file), NO_CACHE);
     // The icon every browser asks for: none yet is no error worth a line in the console.
     if (path === '/favicon.ico') return respond(response, 204, TYPES['.ico'], '');
     if (extname(path) && path !== '/index.html') return respond(response, 404, TYPES['.txt'], 'Not Found');
 
-    // Every other path is the app's to route: the page, which loads the bundle.
+    // Every other path is the app's to route: the page, which loads the bundle, and with --ssr, rendered.
     if (!existsSync(project.html)) {
       return respond(
         response,
@@ -145,28 +198,21 @@ export async function run(args: string[]): Promise<number> {
       styles: outputs.has('/assets/app.css') ? ['/assets/app.css'] : [],
       bodyEnd: LIVE_RELOAD,
     });
-    respond(response, 200, TYPES['.html'], page);
+    if (appServer) return respondWithPage(response, appServer, url.pathname + url.search, page, NO_CACHE);
+
+    respond(response, 200, TYPES['.html'], page, NO_CACHE);
   });
 
-  await new Promise<void>((resolve, reject) => {
-    server.once('error', reject);
-    server.listen(port, host, () => resolve());
-  });
-  console.log(`emberx dev: http://${host}:${port}, rebuilt and reloaded on every change (Ctrl-C stops it)`);
+  await listen(http, port, host);
+  serving = true;
+  console.log(
+    `emberx dev: http://${host}:${port}, rebuilt and reloaded on every change${values.ssr ? ', each page rendered on the server' : ''} (Ctrl-C stops it)`,
+  );
 
-  return await new Promise<number>((resolve) => {
-    const stop = async () => {
-      for (const listener of listeners) listener.end();
-      server.close();
-      await context.dispose();
-      resolve(0);
-    };
-    process.once('SIGINT', stop);
-    process.once('SIGTERM', stop);
+  return await untilStopped(async () => {
+    for (const listener of listeners) listener.end();
+    http.close();
+    await Promise.all([browser.dispose(), server?.dispose()]);
+    if (serverOutdir) rmSync(serverOutdir, { recursive: true, force: true });
   });
-}
-
-function respond(response: ServerResponse, status: number, type: string, body: string | Uint8Array): void {
-  response.writeHead(status, { 'content-type': type, 'cache-control': 'no-cache' });
-  response.end(body);
 }

@@ -65,9 +65,10 @@ export async function run(args: string[]): Promise<number> {
 ${name} is ready:
 
   cd ${where}${values['skip-install'] ? `\n  ${packageManager} install` : ''}
-  ${script('dev').padEnd(18)}serve it on http://localhost:4200, reloaded on every change
+  ${script('dev').padEnd(18)}serve it on http://localhost:4200, reloaded on every change${values.ssr ? ', each page rendered on the server' : ''}
   ${(packageManager === 'npm' ? 'npm test' : script('test')).padEnd(18)}run its tests
-  ${script('build').padEnd(18)}build it for production, into dist/${values.ssr ? `\n  ${script('start').padEnd(18)}serve dist/, each page rendered on the server` : ''}
+  ${script('build').padEnd(18)}build it for production, into dist/
+  ${script('serve').padEnd(18)}serve dist/ as in production, on http://localhost:4300${values.ssr ? `\n  ${script('start').padEnd(18)}the server, dist/server/server.js, without emberx` : ''}
 `);
   return 0;
 }

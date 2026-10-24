@@ -30,7 +30,7 @@ packages/@emberx/       the eight published packages
   router/               routing on top of router_js
   test-helpers/         render/visit/click/settled, no runloop
   ssr/                  server-side rendering
-  cli/                  `emberx`: new, generate, dev, build, test, upgrade; its own suite in test/
+  cli/                  `emberx`: new, generate, dev, build, serve, test, upgrade; its own suite in test/
 examples/basic          a component, a helper and a service, with its tests in tests/, and server.ts
 examples/blog           the app the end-to-end tests in test/e2e/ drive, and server.ts
 examples/build.ts       bundles an example for examples/serve.ts, which serves it: npm run examples:*

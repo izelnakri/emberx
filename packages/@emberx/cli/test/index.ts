@@ -3,4 +3,5 @@
 import './commands-test.ts';
 import './build-test.ts';
 import './dev-test.ts';
+import './serve-test.ts';
 import './html-test.ts';

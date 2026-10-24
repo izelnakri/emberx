@@ -3,17 +3,30 @@
  */
 import { VERSION } from '../version.ts';
 
+/** Each command's short names: `dev` works on the source, `serve` serves what `build` built. */
+export const ALIASES: Record<string, string> = {
+  n: 'new',
+  g: 'generate',
+  d: 'dev',
+  b: 'build',
+  s: 'serve',
+  server: 'serve',
+  t: 'test',
+  up: 'upgrade',
+};
+
 const OVERVIEW = `emberx ${VERSION}: create, develop, build and test emberx apps
 
 Usage: emberx <command> [options]
 
-Commands:
-  new <directory>            Create an app: routes, a component, their tests
-  generate <kind> <name>     Add a component, route, helper or service, with its test   (g)
-  dev [entry]                Serve the app, rebuilt and reloaded on every change      (serve, s)
-  build [entry]              Build the app for production into dist/, and its size    (b)
-  test [qunitx options]      Run the tests in tests/ with QUnitX                      (t)
-  upgrade [version]          Upgrade emberx itself
+Commands:                                                                          Aliases:
+  new <directory>            Create an app: routes, a component, their tests       n
+  generate <kind> <name>     Add a component, route, helper or service, and test   g
+  dev [entry]                Develop the app: served, rebuilt and reloaded         d
+  build [entry]              Build the app for production into dist/               b
+  serve                      Serve the build in dist/, as in production            s, server
+  test [qunitx options]      Run the tests in tests/ with QUnitX                   t
+  upgrade [version]          Upgrade emberx itself                                 up
   help [command]             Show a command's options
 
 Options:
@@ -26,7 +39,7 @@ Get started:
 https://github.com/izelnakri/emberx/tree/main/packages/@emberx/cli`;
 
 const COMMANDS: Record<string, string> = {
-  new: `Usage: emberx new <directory> [options]
+  new: `Usage: emberx new <directory> [options]               (alias: n)
 
 Creates an app in <directory>, which must be new or empty: a router with two routes, a component,
 tests for them, a tsconfig.json and a README. Then runs git init and installs its dependencies.
@@ -42,7 +55,7 @@ Examples:
   emberx new my-app
   emberx new blog --ssr --package-manager pnpm`,
 
-  generate: `Usage: emberx generate <kind> <name> [options]       (alias: g)
+  generate: `Usage: emberx generate <kind> <name> [options]        (alias: g)
 
 Adds a module to the app, and its test:
 
@@ -62,20 +75,23 @@ Examples:
   emberx g component user-card
   emberx g route posts/post --path /posts/:post_id`,
 
-  dev: `Usage: emberx dev [entry] [options]                  (aliases: serve, s)
+  dev: `Usage: emberx dev [entry] [options]                   (alias: d)
 
 Serves the app, rebuilt as you edit it, and reloads the browser after each rebuild. Templates
 compile in the browser and the development checks (EMBERX_DEBUG) are on. Every path without a
-file extension gets index.html, so the router routes it.
+file extension gets index.html, so the router routes it; with --ssr, the page src/server.ts's
+render() renders into it, which the browser hydrates.
 
 [entry] is the browser's entry module (default: package.json's "emberx": { "entry" }, or
 src/app.ts). public/ and the app's own files are served as they are.
 
 Options:
+  --ssr                      Render each page on the server too, with src/server.ts, rebuilt
+                             as the browser's bundle is
   -p, --port <number>        The port (default: PORT, package.json's "emberx": { "port" }, or 4200)
   --host <name>              The host to listen on (default: localhost)`,
 
-  build: `Usage: emberx build [entry] [options]                (alias: b)
+  build: `Usage: emberx build [entry] [options]                 (alias: b)
 
 Builds the app for production into dist/: index.html loading the bundle, the bundle in
 dist/assets/ with content-hashed names to cache forever, and public/ copied as it is. Prints each
@@ -96,7 +112,20 @@ Options:
   --no-minify                Leave the code readable
   --rsvp                     Bundle rsvp for router_js, rather than native promises`,
 
-  test: `Usage: emberx test [qunitx options]                  (alias: t)
+  serve: `Usage: emberx serve [options]                         (aliases: s, server)
+
+Serves what \`emberx build\` built, as production serves it: dist/'s files, those in
+dist/assets/ cached forever, and index.html for every other path without a file extension. A
+build with --ssr renders each page there with dist/server/server.js's render(), as \`npm start\`
+does.
+
+Options:
+  -p, --port <number>        The port (default: PORT, or 4300)
+  --host <name>              The host to listen on (default: localhost)
+  -o, --outdir <dir>         The build to serve (default: package.json's "emberx": { "outdir" }, or dist)
+  --base <path>              The path the app is served under, as built with \`emberx build --base\``,
+
+  test: `Usage: emberx test [qunitx options]                   (alias: t)
 
 Runs the tests with qunitx-cli: the files and folders given, or tests/. Every option is
 qunitx-cli's, passed on as it is: \`npx qunitx --help\` lists them.
@@ -106,7 +135,7 @@ Examples:
   emberx test --watch
   emberx test tests/routes --browser=firefox`,
 
-  upgrade: `Usage: emberx upgrade [version] [options]
+  upgrade: `Usage: emberx upgrade [version] [options]             (alias: up)
 
 Upgrades emberx to [version], or the latest. The standalone binary replaces itself, its sha256
 checked; installed with Deno, it reinstalls from JSR; installed with npm, it prints the command
@@ -117,8 +146,7 @@ Options:
 };
 
 export async function run([command]: string[] = []): Promise<number> {
-  const aliases: Record<string, string> = { g: 'generate', s: 'dev', serve: 'dev', b: 'build', t: 'test' };
-  const text = command ? COMMANDS[aliases[command] ?? command] : OVERVIEW;
+  const text = command ? COMMANDS[ALIASES[command] ?? command] : OVERVIEW;
   if (!text) {
     console.error(`emberx: there is no "${command}" command.\n\n${OVERVIEW}`);
     return 2;

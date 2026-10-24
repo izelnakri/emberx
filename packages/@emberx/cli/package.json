@@ -1,7 +1,7 @@
 {
   "name": "@emberx/cli",
   "version": "0.5.0",
-  "description": "Create, develop, build and test emberx apps: emberx new, generate, dev, build, test",
+  "description": "Create, develop, build and test emberx apps: emberx new, generate, dev, build, serve, test",
   "type": "module",
   "author": "Izel Nakri",
   "license": "MIT",

@@ -9,6 +9,7 @@ emberx new my-app && cd my-app
 npm run dev       # http://localhost:4200, rebuilt and reloaded on every change
 npm test          # the tests in tests/, in Chrome, with QUnitX
 npm run build     # dist/, for production, and its size
+npm run serve     # dist/, served as in production
 ```
 
 ## Installation
@@ -60,16 +61,18 @@ deno install --global --allow-all --name emberx jsr:@izelnakri/emberx-cli/cli
 ## Commands
 
 `emberx help` lists them, and `emberx help <command>`, or `emberx <command> --help`, shows one's
-options. An unknown command or option exits with 2 and says so.
+options. An unknown command or option exits with 2 and says so. `dev` works on the source, as you
+edit it; `serve` serves what `build` built, as production does.
 
-| Command                  | Alias        | What it does                                                     |
-| ------------------------ | ------------ | ---------------------------------------------------------------- |
-| `new <directory>`        |              | creates an app: routes, a component, their tests                 |
-| `generate <kind> <name>` | `g`          | adds a component, route, helper or service, with its test        |
-| `dev [entry]`            | `serve`, `s` | serves the app, rebuilt and reloaded on every change             |
-| `build [entry]`          | `b`          | builds the app for production into `dist/`, and reports its size |
-| `test [qunitx options]`  | `t`          | runs the tests in `tests/` with QUnitX                           |
-| `upgrade [version]`      |              | upgrades emberx itself                                           |
+| Command                  | Alias         | What it does                                                     |
+| ------------------------ | ------------- | ---------------------------------------------------------------- |
+| `new <directory>`        | `n`           | creates an app: routes, a component, their tests                 |
+| `generate <kind> <name>` | `g`           | adds a component, route, helper or service, with its test        |
+| `dev [entry]`            | `d`           | develops the app: served, rebuilt and reloaded on every change   |
+| `build [entry]`          | `b`           | builds the app for production into `dist/`, and reports its size |
+| `serve`                  | `s`, `server` | serves the build in `dist/`, as in production                    |
+| `test [qunitx options]`  | `t`           | runs the tests in `tests/` with QUnitX                           |
+| `upgrade [version]`      | `up`          | upgrades emberx itself                                           |
 
 ### `emberx new <directory>`
 
@@ -124,7 +127,9 @@ that did not keeps being served. Templates compile in the browser, as they do wi
 the development checks (`EMBERX_DEBUG`) are on. Every path without a file extension gets
 `index.html`, so the router routes it, and `public/` and the app's own files are served as they are.
 
-`--port` (or `PORT`) and `--host` change where it listens.
+`--ssr` renders each page on the server too, as production does, with `src/server.ts`'s
+`render()`, which is rebuilt with the browser's bundle: the browser hydrates the page, as it does
+in production. `--port` (or `PORT`) and `--host` change where it listens.
 
 ### `emberx build [entry]`
 
@@ -168,6 +173,14 @@ gzip on its first load.
 | `--no-minify`     | leaves the code readable                                            |
 | `--rsvp`          | bundles rsvp for router_js, rather than native promises             |
 
+### `emberx serve`
+
+Serves the build on http://localhost:4300 as production serves it: `dist/`'s files, those in
+`dist/assets/` cached forever as their names change with their contents, and `index.html` for
+every other path without a file extension. A build with `--ssr` renders each page with
+`dist/server/server.js`'s `render()`, and its status; `dist/server/` itself is never served.
+`--port`, `--host`, `--outdir` and `--base` take what they do for `dev` and `build`.
+
 ### `emberx test [qunitx options]`
 
 Runs the tests with [qunitx-cli](https://github.com/izelnakri/qunitx-cli): the files and folders
@@ -187,14 +200,20 @@ share a version. `--check` only reports, and exits 1 when a newer version exists
 
 ## Server-side rendering
 
-`emberx new my-app --ssr` adds `src/server.ts`: a node server that serves `dist/`, and renders
-every other URL with `@emberx/ssr`, with the status it should answer with, a 404 for a URL no
-route matches. The browser hydrates the page, and takes the models the server left in it rather
-than fetching them again.
+`emberx new my-app --ssr` adds `src/server.ts`, which exports `render(url, baseHTML)`: the
+document for a URL, the page rendered with `@emberx/ssr` into `index.html`, with the status it
+should answer with, a 404 for a URL no route matches. The browser hydrates the page, and takes the
+models the server left in it rather than fetching them again.
+
+`emberx dev --ssr` and `emberx serve` render each page with it. Run on its own, the file is a
+node server too, which serves `dist/` and renders every other URL: yours to change, or to replace
+with another server that calls `render()`.
 
 ```sh
-npm run build   # emberx build --ssr
-npm start       # node dist/server/server.js, on PORT or 3000
+npm run dev       # emberx dev --ssr
+npm run build     # emberx build --ssr
+npm run serve     # emberx serve, rendering with dist/server/server.js
+npm start         # node dist/server/server.js, on PORT or 3000, without emberx
 ```
 
 ## Configuration
@@ -220,7 +239,7 @@ that exists.
 
 | Environment variable  | What it does                                                        |
 | --------------------- | ------------------------------------------------------------------- |
-| `PORT`                | `emberx dev`'s port, and the `--ssr` server's                       |
+| `PORT`                | the port of `emberx dev`, `emberx serve` and the `--ssr` server     |
 | `ESBUILD_BINARY_PATH` | the esbuild binary to run, instead of the one installed with emberx |
 
 ## A build of your own

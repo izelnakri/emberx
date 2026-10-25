@@ -47,7 +47,7 @@
     "vendor": "deno run -A scripts/build-emberx-vendor.ts"
   },
   "devDependencies": {
-    "@glimmer/component": "2.1.1",
+    "@glimmer/component": "2.2.0",
     "@memoria/model": "0.0.33",
     "@memoria/server": "0.0.33",
     "ember-source": "7.3.1",

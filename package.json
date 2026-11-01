@@ -58,7 +58,7 @@
     "prettier": "^3.9.9",
     "qunit-dom": "^3.6.0",
     "qunitx": "^1.4.0",
-    "qunitx-cli": "^0.39.0",
+    "qunitx-cli": "^0.40.0",
     "rsvp": "^4.8.5",
     "typescript": "^7.0.2"
   },

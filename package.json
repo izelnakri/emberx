@@ -55,7 +55,7 @@
     "git-cliff": "^2.14.2",
     "jsdom": "30.1.3",
     "location-bar": "3.0.1",
-    "prettier": "^3.9.9",
+    "prettier": "^3.10.1",
     "qunit-dom": "^3.6.0",
     "qunitx": "^1.4.1",
     "qunitx-cli": "^0.42.0",
